@@ -101,8 +101,8 @@ public class PhongShader extends Shader {
         ArrayList<Light> lights = state.getEngine().getLights();
         if(lights.size() > 0) {
             Light l = lights.get(0);
-            glUniform3f(muLightDirectionHandle, l.mPosX, l.mPosY, l.mPosZ);
-            glUniform3f(muLightColorHandle, l.mColorR, l.mColorG, l.mColorB);
+            glUniform3f(muLightDirectionHandle, l.posX, l.posY, l.posZ);
+            glUniform3f(muLightColorHandle, l.colorR, l.colorG, l.colorB);
         } else {
             // set some default light properties if no light is defines
             glUniform3f(muLightDirectionHandle, 1, 1, 1);

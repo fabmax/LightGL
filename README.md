@@ -8,3 +8,5 @@ However there's a long way to go. Currently only basic triangle meshes and custo
 two shaders: a very basic color shader and a slightly more advanced Phong shader supporting per-pixel lighting.
 
 The included demo Activity shows a spinning color cube illuminated by a single light source.
+
+![Screenshot](/docs/images/screenshot.png)
