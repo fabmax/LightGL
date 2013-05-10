@@ -110,7 +110,8 @@ public class MeshFactory {
     }
     
     /**
-     * Creates a color cube mesh.
+     * Creates a cube mesh with valid vertex colors and texture coordinates. The texture coordinates
+     * are the same for every side, vertex colors are different for different sides.
      */
     public static Mesh createColorCube() {
         float[] pos = {
@@ -177,6 +178,38 @@ public class MeshFactory {
                  0.0f,  1.0f,  0.0f,
                  0.0f,  1.0f,  0.0f,
         };
+        float[] uvs = {
+            // front
+                 0.0f, 1.0f,
+                 0.0f, 0.0f,
+                 1.0f, 0.0f,
+                 1.0f, 1.0f,
+            // rear
+                 0.0f, 1.0f,
+                 0.0f, 0.0f,
+                 1.0f, 0.0f,
+                 1.0f, 1.0f,
+            // left
+                 0.0f, 1.0f,
+                 0.0f, 0.0f,
+                 1.0f, 0.0f,
+                 1.0f, 1.0f,
+            // right
+                 0.0f, 1.0f,
+                 0.0f, 0.0f,
+                 1.0f, 0.0f,
+                 1.0f, 1.0f,
+            // bottom
+                 0.0f, 1.0f,
+                 0.0f, 0.0f,
+                 1.0f, 0.0f,
+                 1.0f, 1.0f,
+            // top
+                 0.0f, 1.0f,
+                 0.0f, 0.0f,
+                 1.0f, 0.0f,
+                 1.0f, 1.0f,
+        };
         float[] colors = {
             // front
                  1.0f, 0.0f, 0.0f,
@@ -230,6 +263,6 @@ public class MeshFactory {
                 20, 23, 22,
         };
         
-        return MeshFactory.createMesh(pos, norms, null, colors, indcs);
+        return MeshFactory.createMesh(pos, norms, uvs, colors, indcs);
     }
 }

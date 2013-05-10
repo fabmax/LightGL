@@ -9,6 +9,8 @@ import com.github.fabmax.lightgl.GfxEngineListener;
 import com.github.fabmax.lightgl.Light;
 import com.github.fabmax.lightgl.PhongShader;
 import com.github.fabmax.lightgl.R;
+import com.github.fabmax.lightgl.Texture;
+import com.github.fabmax.lightgl.TextureProperties;
 import com.github.fabmax.lightgl.scene.Mesh;
 import com.github.fabmax.lightgl.scene.TransformGroup;
 import com.github.fabmax.lightgl.util.MeshFactory;
@@ -67,15 +69,21 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         engine.getCamera().setPosition(0, 3, 5);
         
         Light light = new Light();
-        light.colorR = 1;   light.colorG = 1;   light.colorB = 1;
-        light.posX = 1;     light.posY = 1;     light.posZ = 1;
+        light.colorR = 0.8f; light.colorG = 0.8f; light.colorB = 0.8f;
+        light.posX = 1;      light.posY = 1;      light.posZ = 1;
         engine.addLight(light);
         
         mScene = new TransformGroup();
         engine.setScene(mScene);
         
         Mesh colorCube = MeshFactory.createColorCube();
-        colorCube.setShader(new PhongShader(engine.getShaderManager()));
         mScene.addChild(colorCube);
+        
+        // colored cube
+        //colorCube.setShader(new PhongShader(engine.getShaderManager()));
+        
+        // textured cube
+        Texture tex = engine.getTextureManager().loadTexture(R.drawable.stone_wall, new TextureProperties());
+        colorCube.setShader(new PhongShader(engine.getShaderManager(), tex));
     }
 }

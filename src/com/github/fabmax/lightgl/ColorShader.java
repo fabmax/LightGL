@@ -2,6 +2,7 @@ package com.github.fabmax.lightgl;
 
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniformMatrix4fv;
+import android.util.Log;
 
 /**
  * A very basic shader. Meshes rendered with this shader must have defined color attributes.
@@ -11,17 +12,24 @@ import static android.opengl.GLES20.glUniformMatrix4fv;
  */
 public class ColorShader extends Shader {
 
+    private static final String TAG = "ColorShader";
+    
     private int mShaderHandle = 0;
     private int muMvpMatrixHandle = 0;
     
     /**
      * Creates a new ColorShader object.
      * 
-     * @param shaderMgr ShaderManager used to load the shader code
+     * @param shaderMgr
+     *            ShaderManager used to load the shader code
      */
     public ColorShader(ShaderManager shaderMgr) {
         // load color shader code
-        mShaderHandle = shaderMgr.loadShader("color");
+        try {
+            mShaderHandle = shaderMgr.loadShader("color");
+        } catch (GlException e) {
+            Log.e(TAG, e.getMessage());
+        }
 
         // get uniform locations
         muMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uMvpMatrix");

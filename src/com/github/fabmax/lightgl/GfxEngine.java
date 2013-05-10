@@ -27,6 +27,7 @@ import com.github.fabmax.lightgl.scene.Node;
 public class GfxEngine implements Renderer {
 
     private ShaderManager mShaderManager;
+    private TextureManager mTextureManager;
     private GfxState mState;
     
     private ArrayList<Light> mLights = new ArrayList<Light>();
@@ -48,7 +49,8 @@ public class GfxEngine implements Renderer {
         context = context.getApplicationContext();
         
         mShaderManager = new ShaderManager(context);
-        mState = new GfxState(this, mShaderManager);
+        mTextureManager = new TextureManager(context);
+        mState = new GfxState(this, mShaderManager, mTextureManager);
         
         // by default a standard perspective camera is used
         mCamera = new PerspectiveCamera();
@@ -72,6 +74,15 @@ public class GfxEngine implements Renderer {
      */
     public ShaderManager getShaderManager() {
         return mShaderManager;
+    }
+
+    /**
+     * Returns the {@link TextureManager} of this GfxEngine.
+     * 
+     * @return the {@link TextureManager} of this GfxEngine
+     */
+    public TextureManager getTextureManager() {
+        return mTextureManager;
     }
 
     /**

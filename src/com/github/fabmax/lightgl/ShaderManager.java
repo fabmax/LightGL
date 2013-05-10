@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseIntArray;
 
 /**
@@ -35,8 +34,7 @@ import android.util.SparseIntArray;
  *
  */
 public class ShaderManager {
-    private static final String TAG = "ShaderManager";
-
+    
     // context is needed to load assets
     private Context mContext;
     
@@ -98,14 +96,21 @@ public class ShaderManager {
      *            "_vert.glsl" for the vertex shader and name + "_frag.glsl" for the fragment
      *            shader.
      * @return the GL shader handle; is 0 if there was an error while loading the shader
+     * @throws GlException
+     *             if shader compilation failed
      */
-    public int loadShader(String name) {
-        // load vertex shader source code from assets
-        String vertShaderSrc = loadSource(name + "_vert.glsl", mContext);
-        String fragShaderSrc = loadSource(name + "_frag.glsl", mContext);
-        
-        // load shader from sources
-        return loadShader(vertShaderSrc, fragShaderSrc);
+    public int loadShader(String name) throws GlException {
+        try {
+            // load vertex shader source code from assets
+            String vertShaderSrc = loadSource(name + "_vert.glsl", mContext);
+            String fragShaderSrc = loadSource(name + "_frag.glsl", mContext);
+
+            // load shader from sources
+            return loadShader(vertShaderSrc, fragShaderSrc);
+            
+        } catch (IOException e) {
+            throw new GlException("Failed loading shader source", e);
+        }
     }
     
     /**
@@ -116,8 +121,10 @@ public class ShaderManager {
      * @param fragmentShaderSrc
      *            source code for the fragment shader
      * @return the GL shader handle; is 0 if there was an error while loading the shader
+     * @throws GlException
+     *             if shader compilation failed
      */
-    public int loadShader(String vertexShaderSrc, String fragmentShaderSrc) {
+    public int loadShader(String vertexShaderSrc, String fragmentShaderSrc) throws GlException {
         // check if this shader code was already loaded
         int hashcode = (vertexShaderSrc + fragmentShaderSrc).hashCode();
         int shaderHandle = mShaderHandles.get(hashcode);
@@ -136,11 +143,11 @@ public class ShaderManager {
         // check compilation result
         glGetShaderiv(vertShader, GL_COMPILE_STATUS, shaderResult, 0);
         if (shaderResult[0] != GL_TRUE) {
-            // shader compilation failed
+            // vertex shader compilation failed
             String log = glGetShaderInfoLog(vertShader);
-            Log.e(TAG, "Error compiling vertex shader: " + log);
+            // delete allocated shader objects
             glDeleteShader(vertShader);
-            return 0;
+            throw new GlException("Vertex shader compilation failed: " + log);
         }
 
         // create fragment shader object
@@ -151,12 +158,13 @@ public class ShaderManager {
         // check compilation result
         glGetShaderiv(fragShader, GL_COMPILE_STATUS, shaderResult, 0);
         if (shaderResult[0] != GL_TRUE) {
-            // shader compilation failed
+            // fragment shader compilation failed
             String log = glGetShaderInfoLog(fragShader);
-            Log.e(TAG, "Error compiling fragment shader: " + log);
+            // delete allocated shader objects
             glDeleteShader(vertShader);
             glDeleteShader(fragShader);
-            return 0;
+            // throw exception with error message
+            throw new GlException("Fragment shader compilation failed: " + log);
         }
 
         // link shader program
@@ -164,20 +172,20 @@ public class ShaderManager {
         glAttachShader(shaderHandle, vertShader);
         glAttachShader(shaderHandle, fragShader);
         glLinkProgram(shaderHandle);
+        // after linkage fragment and vertex shader are no longer needed
+        glDeleteShader(vertShader);
+        glDeleteShader(fragShader);
 
         // check linker result
         glGetProgramiv(shaderHandle, GL_LINK_STATUS, shaderResult, 0);
         if (shaderResult[0] != GL_TRUE) {
             // shader linkage failed
             String log = glGetProgramInfoLog(shaderHandle);
-            Log.e(TAG, "Error linking shader: " + log);
+            // delete allocated shader object
             glDeleteProgram(shaderHandle);
-            shaderHandle = 0;
+            // throw exception with error message
+            throw new GlException("Shader linkage failed failed: " + log);
         }
-
-        // after linkage fragment and vertex shader are no longer needed
-        glDeleteShader(vertShader);
-        glDeleteShader(fragShader);
 
         // if everything went well put the shader handle into the handle map
         if(shaderHandle != 0) {
@@ -191,23 +199,19 @@ public class ShaderManager {
     /*
      * Helper method that reads a asset file with shader source code into a String.
      */
-    private static String loadSource(String assetName, Context context) {
+    private static String loadSource(String assetName, Context context) throws IOException {
         StringBuffer sBuf = new StringBuffer();
         
-        try {
-            // open asset
-            InputStream in = context.getAssets().open(assetName);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            
-            // read shader source line by line
-            String line = reader.readLine();
-            while (line != null) {
-                sBuf.append(line);
-                sBuf.append('\n');
-                line = reader.readLine();
-            }           
-        } catch (IOException e) {
-            Log.e(TAG, "Error reading shader source " + assetName + ": " + e.getMessage());
+        // open asset
+        InputStream in = context.getAssets().open(assetName);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+        
+        // read shader source line by line
+        String line = reader.readLine();
+        while (line != null) {
+            sBuf.append(line);
+            sBuf.append('\n');
+            line = reader.readLine();
         }
         
         // return read source
