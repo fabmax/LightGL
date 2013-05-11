@@ -72,20 +72,20 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     @Override
     public void onLoadScene(GfxEngine engine) {
-        //setColorCubeScene(engine);
+        //setCubeScene(engine);
         setObjModelScene(engine);
     }
     
     /**
      * Loads a demo scene with a simple color cube.
      */
-    public void setColorCubeScene(GfxEngine engine) {
+    public void setCubeScene(GfxEngine engine) {
         // set camera position
         engine.getCamera().setPosition(0, 3, 5);
         
         // add a directional light
         Light light = new Light();
-        light.colorR = 0.9f; light.colorG = 0.9f; light.colorB = 0.9f;
+        light.colorR = 0.7f; light.colorG = 0.7f; light.colorB = 0.7f;
         light.posX = 1;      light.posY = 1;      light.posZ = 1;
         engine.addLight(light);
         
@@ -103,7 +103,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // add a color cube
         Mesh colorCube = MeshFactory.createColorCube();
         mScene.addChild(colorCube);
-        colorCube.setShader(new PhongShader(engine.getShaderManager()));
+        Texture tex = engine.getTextureManager().loadTexture(R.drawable.stone_wall, new TextureProperties());
+        colorCube.setShader(new PhongShader(engine.getShaderManager(), tex));
     }
     
     /**
