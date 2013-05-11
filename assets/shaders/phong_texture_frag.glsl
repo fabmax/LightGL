@@ -7,10 +7,11 @@
 
 precision mediump float;
 
+uniform sampler2D uTextureSampler;
 uniform float uShininess;
 uniform vec3 uLightColor;
 
-varying vec3 vFragmentColor;
+varying vec2 vTexCoord;
 varying vec3 vEyeDirection_cameraspace;
 varying vec3 vLightDirection_cameraspace;
 varying vec3 vNormal_cameraspace;
@@ -30,10 +31,11 @@ void main() {
 	float cosAlpha = clamp(dot(e, r), 0.0, 1.0);
 	
 	// Ambient color is the fragment color in dark
-	vec3 materialAmbientColor = vec3(0.3, 0.3, 0.3) * vFragmentColor;
+	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
+	vec3 materialAmbientColor = vec3(0.2, 0.2, 0.2) * fragmentColor;
 
 	// compute output color
 	gl_FragColor.rgb = materialAmbientColor +
-					   vFragmentColor * uLightColor * cosTheta +
+					   fragmentColor * uLightColor * cosTheta +
 					   uLightColor * pow(cosAlpha, uShininess);
 }

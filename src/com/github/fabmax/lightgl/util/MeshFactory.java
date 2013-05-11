@@ -113,6 +113,183 @@ public class MeshFactory {
      * Creates a cube mesh with valid vertex colors and texture coordinates. The texture coordinates
      * are the same for every side, vertex colors are different for different sides.
      */
+    public static Mesh createRoundCube() {
+        float[] pos = {
+            // front
+                -0.9f,  0.9f,  1.0f,
+                -0.9f, -0.9f,  1.0f,
+                 0.9f, -0.9f,  1.0f,
+                 0.9f,  0.9f,  1.0f,
+            // rear
+                -0.9f,  0.9f, -1.0f,
+                -0.9f, -0.9f, -1.0f,
+                 0.9f, -0.9f, -1.0f,
+                 0.9f,  0.9f, -1.0f,
+            // left
+                -1.0f, -0.9f,  0.9f,
+                -1.0f, -0.9f, -0.9f,
+                -1.0f,  0.9f, -0.9f,
+                -1.0f,  0.9f,  0.9f,
+            // right
+                 1.0f, -0.9f,  0.9f,
+                 1.0f, -0.9f, -0.9f,
+                 1.0f,  0.9f, -0.9f,
+                 1.0f,  0.9f,  0.9f,
+            // bottom
+                -0.9f, -1.0f,  0.9f,
+                -0.9f, -1.0f, -0.9f,
+                 0.9f, -1.0f, -0.9f,
+                 0.9f, -1.0f,  0.9f,
+            // top
+                -0.9f,  1.0f,  0.9f,
+                -0.9f,  1.0f, -0.9f,
+                 0.9f,  1.0f, -0.9f,
+                 0.9f,  1.0f,  0.9f,
+        };
+        float[] norms = {
+            // front
+                 0.0f,  0.0f,  1.0f,
+                 0.0f,  0.0f,  1.0f,
+                 0.0f,  0.0f,  1.0f,
+                 0.0f,  0.0f,  1.0f,
+            // rear
+                 0.0f,  0.0f, -1.0f,
+                 0.0f,  0.0f, -1.0f,
+                 0.0f,  0.0f, -1.0f,
+                 0.0f,  0.0f, -1.0f,
+            // left
+                -1.0f,  0.0f,  0.0f,
+                -1.0f,  0.0f,  0.0f,
+                -1.0f,  0.0f,  0.0f,
+                -1.0f,  0.0f,  0.0f,
+            // right
+                 1.0f,  0.0f,  0.0f,
+                 1.0f,  0.0f,  0.0f,
+                 1.0f,  0.0f,  0.0f,
+                 1.0f,  0.0f,  0.0f,
+            // bottom
+                 0.0f, -1.0f,  0.0f,
+                 0.0f, -1.0f,  0.0f,
+                 0.0f, -1.0f,  0.0f,
+                 0.0f, -1.0f,  0.0f,
+            // top
+                 0.0f,  1.0f,  0.0f,
+                 0.0f,  1.0f,  0.0f,
+                 0.0f,  1.0f,  0.0f,
+                 0.0f,  1.0f,  0.0f,
+        };
+        float[] colors = {
+            // front
+                 1.0f, 0.0f, 0.0f,
+                 1.0f, 0.0f, 0.0f,
+                 1.0f, 0.0f, 0.0f,
+                 1.0f, 0.0f, 0.0f,
+            // rear
+                 0.0f, 1.0f, 0.0f,
+                 0.0f, 1.0f, 0.0f,
+                 0.0f, 1.0f, 0.0f,
+                 0.0f, 1.0f, 0.0f,
+            // left
+                 0.0f, 0.0f, 1.0f,
+                 0.0f, 0.0f, 1.0f,
+                 0.0f, 0.0f, 1.0f,
+                 0.0f, 0.0f, 1.0f,
+            // right
+                 1.0f, 1.0f, 0.0f,
+                 1.0f, 1.0f, 0.0f,
+                 1.0f, 1.0f, 0.0f,
+                 1.0f, 1.0f, 0.0f,
+            // bottom
+                 1.0f, 0.0f, 1.0f,
+                 1.0f, 0.0f, 1.0f,
+                 1.0f, 0.0f, 1.0f,
+                 1.0f, 0.0f, 1.0f,
+            // top
+                 0.0f, 1.0f, 1.0f,
+                 0.0f, 1.0f, 1.0f,
+                 0.0f, 1.0f, 1.0f,
+                 0.0f, 1.0f, 1.0f,
+        };
+        int[] indcs = {
+            // front
+                 0,  1,  2,
+                 0,  2,  3,
+            // rear
+                 4,  6,  5,
+                 4,  7,  6,
+            // left
+                 8, 10,  9,
+                 8, 11, 10,
+            // right
+                12, 13, 14,
+                12, 14, 15,
+            // bottom
+                16, 17, 18,
+                16, 18, 19,
+            // top
+                20, 22, 21,
+                20, 23, 22,
+            // front top
+                 0,  3, 20,
+                20,  3, 23,
+            // front bottom
+                 2,  1, 16,
+                 2, 16, 19,
+            // front left
+                 1,  0, 11,
+                 8,  1, 11,
+            // front left
+                 3,  2, 12,
+                 3, 12, 15,
+            // rear top
+                 7,  4, 21,
+                 7, 21, 22,
+            // rear bottom
+                 5,  6, 17,
+                17,  6, 18,
+            // rear left
+                 4,  5, 10,
+                 5,  9, 10,
+            // rear right
+                 6,  7, 14,
+                13,  6, 14,
+            // top left
+                20, 21, 11,
+                11, 21, 10,
+            // top right
+                22, 23, 14,
+                14, 23, 15,
+            // bottom left
+                17, 16,  8,
+                17,  8,  9,
+            // bottom right
+                19, 18, 12,
+                12, 18, 13,
+            // top left front
+                20, 11,  0,
+            // top right front
+                23,  3, 15,
+            // top left rear
+                21,  4, 10,
+            // top right rear
+                22, 14,  7,
+            // bottom left front
+                16,  1,  8,
+            // bottom right front
+                19, 12,  2,
+            // bottom left rear
+                17,  9,  5,
+            // bottom right rear
+                18,  6, 13,
+        };
+        
+        return MeshFactory.createMesh(pos, norms, null, colors, indcs);
+    }
+    
+    /**
+     * Creates a cube mesh with valid vertex colors and texture coordinates. The texture coordinates
+     * are the same for every side, vertex colors are different for different sides.
+     */
     public static Mesh createColorCube() {
         float[] pos = {
             // front

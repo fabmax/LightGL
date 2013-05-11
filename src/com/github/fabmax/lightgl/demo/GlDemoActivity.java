@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import com.github.fabmax.lightgl.GfxEngine;
 import com.github.fabmax.lightgl.GfxEngineListener;
+import com.github.fabmax.lightgl.GlException;
 import com.github.fabmax.lightgl.Light;
 import com.github.fabmax.lightgl.PhongShader;
 import com.github.fabmax.lightgl.R;
@@ -14,6 +15,7 @@ import com.github.fabmax.lightgl.TextureProperties;
 import com.github.fabmax.lightgl.scene.Mesh;
 import com.github.fabmax.lightgl.scene.TransformGroup;
 import com.github.fabmax.lightgl.util.MeshFactory;
+import com.github.fabmax.lightgl.util.ObjLoader;
 
 /**
  * A demo Activity that shows a spinning color cube with Phong lighting.
@@ -56,7 +58,11 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     @Override
     public void onRenderFrame(GfxEngine engine) {
-        mScene.rotate(0.5f, 0.9f, 0.5f, 0.0f);
+        // spin the scene wildly
+        //mScene.rotate(0.5f, 0.9f, 0.5f, 0.0f);
+        
+        // spin the scene arounf the Y-axis
+        mScene.rotate(0.5f, 0, 1, 0);
     }
 
     /**
@@ -66,24 +72,66 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     @Override
     public void onLoadScene(GfxEngine engine) {
+        //setColorCubeScene(engine);
+        setObjModelScene(engine);
+    }
+    
+    /**
+     * Loads a demo scene with a simple color cube.
+     */
+    public void setColorCubeScene(GfxEngine engine) {
+        // set camera position
         engine.getCamera().setPosition(0, 3, 5);
         
+        // add a directional light
         Light light = new Light();
-        light.colorR = 0.8f; light.colorG = 0.8f; light.colorB = 0.8f;
+        light.colorR = 0.9f; light.colorG = 0.9f; light.colorB = 0.9f;
         light.posX = 1;      light.posY = 1;      light.posZ = 1;
         engine.addLight(light);
         
+        // create scene
         mScene = new TransformGroup();
+        mScene.rotate(180, 1, 0, 0);
         engine.setScene(mScene);
         
+        //Mesh roundCube = MeshFactory.createRoundCube();
+        //mScene.addChild(roundCube);
+        //roundCube.setShader(new PhongShader(engine.getShaderManager()));
+        //Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
+        //roundCube.setShader(new PhongShader(engine.getShaderManager(), tex));
+        
+        // add a color cube
         Mesh colorCube = MeshFactory.createColorCube();
         mScene.addChild(colorCube);
+        colorCube.setShader(new PhongShader(engine.getShaderManager()));
+    }
+    
+    /**
+     * Loads a demo scene with a loaded model.
+     */
+    public void setObjModelScene(GfxEngine engine) {
+        // set camera position
+        engine.getCamera().setPosition(0, 10, 15);
         
-        // colored cube
-        //colorCube.setShader(new PhongShader(engine.getShaderManager()));
+        // add a directional light
+        Light light = new Light();
+        light.colorR = 0.7f; light.colorG = 0.7f; light.colorB = 0.7f;
+        light.posX = 1;      light.posY = 1;      light.posZ = 1;
+        engine.addLight(light);
         
-        // textured cube
-        Texture tex = engine.getTextureManager().loadTexture(R.drawable.stone_wall, new TextureProperties());
-        colorCube.setShader(new PhongShader(engine.getShaderManager(), tex));
+        try {
+            // create scene
+            mScene = new TransformGroup();
+            engine.setScene(mScene);
+            
+            // load model and add it to the scene
+            Mesh room = ObjLoader.loadObj(this, "models/room_thickwalls.obj");
+            mScene.addChild(room);
+            // set model material
+            Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
+            room.setShader(new PhongShader(engine.getShaderManager(), tex));
+        } catch (GlException e) {
+            e.printStackTrace();
+        }
     }
 }

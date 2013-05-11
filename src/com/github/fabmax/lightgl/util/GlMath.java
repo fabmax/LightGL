@@ -66,4 +66,22 @@ public class GlMath {
         m[14] = -((2 * zNear * zFar) / frustumLen);
         m[15] = 0;
     }
+    
+    /**
+     * Returns the maximum value of the specified values.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return maximum value of a, b and c
+     */
+    public static int max3(int a, int b, int c) {
+        if (a > b && a > c) {
+            return a;
+        } else if(b > a && b > c) {
+            return b;
+        } else {
+            return c;
+        }
+    }
 }

@@ -31,18 +31,18 @@ import android.util.SparseIntArray;
  * The ShaderManager handles loading and binding of shaders.
  * 
  * @author fabmax
- *
+ * 
  */
 public class ShaderManager {
-    
+
     // context is needed to load assets
     private Context mContext;
-    
+
     // map that holds all generated shader handles
     private SparseIntArray mShaderHandles = new SparseIntArray();
     // currently bound shader
     private Shader mBoundShader;
-    
+
     /**
      * Creates a new ShaderManager object.
      * 
@@ -52,7 +52,7 @@ public class ShaderManager {
     protected ShaderManager(Context context) {
         mContext = context;
     }
-    
+
     /**
      * Binds the specified shader. If the shader is not already bound its onBind() method is called.
      * 
@@ -64,8 +64,8 @@ public class ShaderManager {
     public void bindShader(GfxState state, Shader shader) {
         if (shader != mBoundShader) {
             mBoundShader = shader;
-            
-            if(shader != null) {
+
+            if (shader != null) {
                 // bind shader program
                 glUseProgram(shader.getShaderHandle());
                 // notify shader that it was bound
@@ -85,11 +85,11 @@ public class ShaderManager {
     public Shader getBoundShader() {
         return mBoundShader;
     }
-    
+
     /**
-     * Loads the shader from the App's assets directory. The shader consists of 2 source files for
-     * the vertex and the fragment shader. The source files need to be named name + "_vert.glsl" for
-     * the vertex shader and name + "_frag.glsl" for the fragment shader.
+     * Loads the shader from the App's assets/shaders directory. The shader consists of 2 source
+     * files for the vertex and the fragment shader. The source files must be named name +
+     * "_vert.glsl" for the vertex shader and name + "_frag.glsl" for the fragment shader.
      * 
      * @param name
      *            Shader name used to load the source files. The source files must be named name +
@@ -102,17 +102,17 @@ public class ShaderManager {
     public int loadShader(String name) throws GlException {
         try {
             // load vertex shader source code from assets
-            String vertShaderSrc = loadSource(name + "_vert.glsl", mContext);
-            String fragShaderSrc = loadSource(name + "_frag.glsl", mContext);
+            String vertShaderSrc = loadSource("shaders/" + name + "_vert.glsl", mContext);
+            String fragShaderSrc = loadSource("shaders/" + name + "_frag.glsl", mContext);
 
             // load shader from sources
             return loadShader(vertShaderSrc, fragShaderSrc);
-            
+
         } catch (IOException e) {
             throw new GlException("Failed loading shader source", e);
         }
     }
-    
+
     /**
      * Compiles the shader from the specified source code strings.
      * 
@@ -132,7 +132,7 @@ public class ShaderManager {
             // this shader was already loaded, just return its handle
             return shaderHandle;
         }
-        
+
         int shaderResult[] = new int[1];
 
         // create vertex shader object
@@ -188,10 +188,10 @@ public class ShaderManager {
         }
 
         // if everything went well put the shader handle into the handle map
-        if(shaderHandle != 0) {
+        if (shaderHandle != 0) {
             mShaderHandles.put(hashcode, shaderHandle);
         }
-        
+
         // return shader program handle
         return shaderHandle;
     }
@@ -201,11 +201,11 @@ public class ShaderManager {
      */
     private static String loadSource(String assetName, Context context) throws IOException {
         StringBuffer sBuf = new StringBuffer();
-        
+
         // open asset
         InputStream in = context.getAssets().open(assetName);
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        
+
         // read shader source line by line
         String line = reader.readLine();
         while (line != null) {
@@ -213,7 +213,7 @@ public class ShaderManager {
             sBuf.append('\n');
             line = reader.readLine();
         }
-        
+
         // return read source
         return sBuf.toString();
     }
