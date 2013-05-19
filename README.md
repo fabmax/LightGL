@@ -15,6 +15,9 @@ Features:
 The included demo Activity shows a simple scene illuminated by a single light source.
 
 Screenshots:
+
 ![Texture Mapping 1](/docs/images/texture1.png)
+
 ![Texture Mapping 1](/docs/images/texture2.png)
+
 ![Loaded Model](/docs/images/model.png)
