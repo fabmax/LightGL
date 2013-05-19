@@ -61,8 +61,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // spin the scene wildly
         //mScene.rotate(0.5f, 0.9f, 0.5f, 0.0f);
         
-        // spin the scene arounf the Y-axis
-        mScene.rotate(0.5f, 0, 1, 0);
+        // spin the scene around the Y-axis
+        mScene.rotate(1f, 0, 1, 0);
     }
 
     /**
@@ -112,25 +112,27 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     public void setObjModelScene(GfxEngine engine) {
         // set camera position
-        engine.getCamera().setPosition(0, 10, 15);
+        engine.getCamera().setPosition(0, 12, 18);
+        engine.getCamera().setLookAt(0, 0, 4);
         
         // add a directional light
         Light light = new Light();
         light.colorR = 0.7f; light.colorG = 0.7f; light.colorB = 0.7f;
-        light.posX = 1;      light.posY = 1;      light.posZ = 1;
+        light.posX = 0.5f;   light.posY = 2.0f;   light.posZ = 1;
         engine.addLight(light);
         
         try {
             // create scene
             mScene = new TransformGroup();
+            //mScene.rotate(30, 1, 0, 0);
             engine.setScene(mScene);
             
             // load model and add it to the scene
-            Mesh room = ObjLoader.loadObj(this, "models/room_thickwalls.obj");
-            mScene.addChild(room);
+            Mesh scene = ObjLoader.loadObj(this, "models/room_thickwalls.obj");
+            mScene.addChild(scene);
             // set model material
             Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
-            room.setShader(new PhongShader(engine.getShaderManager(), tex));
+            scene.setShader(new PhongShader(engine.getShaderManager(), tex));
         } catch (GlException e) {
             e.printStackTrace();
         }

@@ -148,7 +148,7 @@ public class ObjLoader {
             Log.d(TAG, String.format("Created Mesh: %d vertices, %d faces",
                             vertexData.size() / vertElements, glIndices.size() / 3));
 
-            return new Mesh(meshData, meshIndices, vertElements, 0, normalOffset, texCoordOffset, 0);
+            return new Mesh(meshIndices, meshData, vertElements, 0, normalOffset, texCoordOffset, 0);
 
         } catch (Exception e) {
             throw new GlException("Failed parsing OBJ file: " + e.getMessage(), e);

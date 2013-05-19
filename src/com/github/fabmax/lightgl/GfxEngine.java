@@ -7,6 +7,7 @@ import static android.opengl.GLES20.GL_DEPTH_TEST;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glEnable;
+import static android.opengl.GLES20.glViewport;
 
 import java.util.ArrayList;
 
@@ -205,7 +206,11 @@ public class GfxEngine implements Renderer {
         mViewportW = width;
         mViewportH = height;
         
+        // update GL viewport size
+        glViewport(0, 0, width, height);
+        
         if (mCamera != null) {
+            // update camera matrix
             mCamera.setViewport(width, height);
         }
     }

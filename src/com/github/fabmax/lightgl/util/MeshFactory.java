@@ -1,10 +1,9 @@
 package com.github.fabmax.lightgl.util;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+import com.github.fabmax.lightgl.ShaderAttributeBinder;
 import com.github.fabmax.lightgl.scene.Mesh;
 
 /**
@@ -15,29 +14,6 @@ import com.github.fabmax.lightgl.scene.Mesh;
  * 
  */
 public class MeshFactory {
-
-    // temp buffer for vertex data during mesh construction
-    private static FloatBuffer mTmpVertBuf;
-    private static void ensureVertexBufferCapacity(int sz) {
-        if(mTmpVertBuf == null || mTmpVertBuf.capacity() < sz) {
-            // create a FlotBuffer with the specified capacity by allocating a byte buffer with
-            // correct size (1 float = 4 bytes)
-            mTmpVertBuf = ByteBuffer.allocateDirect(sz * 4).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        }
-        mTmpVertBuf.rewind();
-    }
-
-    // temp buffer for vertex indices during mesh construction
-    private static ShortBuffer mTmpIdxBuf;
-    private static void ensureIndexBufferCapacity(int sz) {
-        if(mTmpIdxBuf == null || mTmpIdxBuf.capacity() < sz) {
-            // create a FlotBuffer with the specified capacity by allocating a byte buffer with
-            // correct size (1 short = 2 bytes)
-            mTmpIdxBuf = ByteBuffer.allocateDirect(sz * 2).order(ByteOrder.nativeOrder()).asShortBuffer();
-        }
-        mTmpIdxBuf.rewind();
-    }
-    
     /**
      * Creates a new Mesh with the specified attributes.
      * 
@@ -61,17 +37,17 @@ public class MeshFactory {
         
         // determine elements per vertex, 3 elements needed for vertex position
         int elems = 3;
-        if(norms != null) {
+        if (norms != null) {
             // add normals to buffer
             normOffset = elems;
             elems += 3;
         }
-        if(uvs != null) {
+        if (uvs != null) {
             // add texture coordinates to buffer
             uvOffset = elems;
             elems += 2;
         }
-        if(colors != null) {
+        if (colors != null) {
             // add colors to buffer
             colorOffset = elems;
             elems += 3;
@@ -79,34 +55,54 @@ public class MeshFactory {
         
         // determine vertex buffer size
         int vertCnt = pos.length / 3;
-        ensureVertexBufferCapacity(vertCnt * elems);
+        FloatBuffer vertData = BufferHelper.createFloatBuffer(vertCnt * elems);
         // fill vertex buffer
         for (int i = 0, j = 0, k = 0; i < vertCnt; i++, j += 3, k += 2) {
             // vertex position
-            mTmpVertBuf.put(pos, j, 3);
-            if(norms != null) {
+            vertData.put(pos, j, 3);
+            if (norms != null) {
                 // vertex normal
-                mTmpVertBuf.put(norms, j, 3);
+                vertData.put(norms, j, 3);
             }
-            if(uvs != null) {
+            if (uvs != null) {
                 // vertex normal
-                mTmpVertBuf.put(uvs, k, 2);
+                vertData.put(uvs, k, 2);
             }
-            if(colors != null) {
+            if (colors != null) {
                 // vertex normal
-                mTmpVertBuf.put(colors, j, 3);
+                vertData.put(colors, j, 3);
             }
         }
-        mTmpVertBuf.rewind();
+        vertData.rewind();
         
         // fill index buffer
-        ensureIndexBufferCapacity(indcs.length);
+        ShortBuffer indexBuffer = BufferHelper.createShortBuffer(indcs.length);
         for (int i = 0; i < indcs.length; i++) {
-            mTmpIdxBuf.put((short) indcs[i]);
+            indexBuffer.put((short) indcs[i]);
         }
-        mTmpIdxBuf.rewind();
+        indexBuffer.rewind();
         
-        return new Mesh(mTmpVertBuf, mTmpIdxBuf, elems, posOffset, normOffset, uvOffset, colorOffset);
+        // create mesh
+        Mesh mesh = new Mesh(indexBuffer, vertData, elems, posOffset);
+        if (norms != null) {
+            // set attribute binder for vertex normals
+            ShaderAttributeBinder normalBinder = ShaderAttributeBinder.createFloatBufferBinder(vertData, 3, elems);
+            normalBinder.setOffset(normOffset);
+            mesh.setVertexNormalBinder(normalBinder);
+        }
+        if (uvs != null) {
+            // set attribute binder for vertex normals
+            ShaderAttributeBinder uvBinder = ShaderAttributeBinder.createFloatBufferBinder(vertData, 2, elems);
+            uvBinder.setOffset(uvOffset);
+            mesh.setVertexTexCoordBinder(uvBinder);
+        }
+        if (colors != null) {
+            // set attribute binder for vertex normals
+            ShaderAttributeBinder colorBinder = ShaderAttributeBinder.createFloatBufferBinder(vertData, 3, elems);
+            colorBinder.setOffset(colorOffset);
+            mesh.setVertexNormalBinder(colorBinder);
+        }
+        return mesh;
     }
     
     /**

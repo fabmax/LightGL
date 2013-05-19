@@ -1,22 +1,15 @@
 package com.github.fabmax.lightgl;
 
+import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
-import static android.opengl.GLES20.GL_TEXTURE_MAG_FILTER;
-import static android.opengl.GLES20.GL_TEXTURE_MIN_FILTER;
-import static android.opengl.GLES20.GL_TEXTURE_WRAP_S;
-import static android.opengl.GLES20.GL_TEXTURE_WRAP_T;
 import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glBindTexture;
 import static android.opengl.GLES20.glGenTextures;
-import static android.opengl.GLES20.glGenerateMipmap;
-import static android.opengl.GLES20.glTexParameteri;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLUtils;
 import android.util.SparseIntArray;
-
-import com.github.fabmax.lightgl.TextureProperties.MinFilterMethod;
 
 /**
  * The TextureManager handles loading and binding of textures.
@@ -101,25 +94,26 @@ public class TextureManager {
             // this resource was already loaded, return the texture handle
             return new Texture(handle);
         }
-
-        // generate texture handle
-        handle = genTextureHandle();
-
-        // set texture properties
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, texProps.minFilter.getGlMethod());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, texProps.magFilter.getGlMethod());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, texProps.xWrapping.getGlMethod());
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, texProps.yWrapping.getGlMethod());
-
-        // load texture data
+        // load bitmap from resources
         Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), resource);
+        
+        // create texture from bitmap
+        Texture tex = createTexture();
         GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
+        tex.setTextureProperties(texProps);
 
-        if (texProps.minFilter == MinFilterMethod.TRILINEAR) {
-            // build mipmaps if trilinear filtering is selected
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
+        return tex;
+    }
 
-        return new Texture(handle);
+    /**
+     * Generates and binds an empty texture handle.
+     * 
+     * @return the created texture
+     */
+    public Texture createTexture() {
+        // generate texture
+        Texture tex = new Texture(genTextureHandle());
+        bindTexture(tex, GL_TEXTURE0);
+        return tex;
     }
 }

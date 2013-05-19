@@ -22,11 +22,8 @@ public class PhongShader extends Shader {
 
     private static final String TAG = "PhongShader";
 
-    // shininess coefficient for phong lighting model
-    private float mShininess = 20.0f;
-
     // shader handle
-    private int mShaderHandle = 0;
+    protected int mShaderHandle = 0;
 
     // uniform handles
     private int muMvpMatrixHandle = 0;
@@ -35,8 +32,10 @@ public class PhongShader extends Shader {
     private int muLightDirectionHandle = 0;
     private int muShininessHandle = 0;
     private int muLightColorHandle = 0;
-    private int muTextureSampler = 0;
+    private int muTextureSamplerHandle = 0;
 
+    // shininess coefficient for phong lighting model
+    private float mShininess = 20.0f;
     // optional texture
     private Texture mTexture;
     
@@ -63,15 +62,26 @@ public class PhongShader extends Shader {
      *            Optional texture that is mapped onto the shaded object
      */
     public PhongShader(ShaderManager shaderMgr, Texture texture) {
+        this(shaderMgr, texture, texture != null ? "phong_texture" : "phong_color");
+    }
+
+    /**
+     * Creates a new PhongShader object with the specified shader file name. Shader implementations
+     * can subclass PhongShader, modify the shader source and use this constructor to load the
+     * modified shader version.
+     * 
+     * @param shaderMgr
+     *            ShaderManager used to load the shader code
+     * @param texture
+     *            Optional texture that is mapped onto the shaded object
+     * @param shaderFile
+     *            shader file name to load
+     */
+    protected PhongShader(ShaderManager shaderMgr, Texture texture, String shaderFile) {
         // load color shader code
         try {
-            if(texture != null) {
-                // load shader with texture mapping
-                mShaderHandle = shaderMgr.loadShader("phong_texture");
-            } else {
-                // load shader with color mapping
-                mShaderHandle = shaderMgr.loadShader("phong_color");
-            }
+            // load shader with texture mapping
+            mShaderHandle = shaderMgr.loadShader(shaderFile);
         } catch (GlException e) {
             Log.e(TAG, e.getMessage());
         }
@@ -88,7 +98,7 @@ public class PhongShader extends Shader {
 
         if (texture != null) {
             // enable texture mapping
-            muTextureSampler = glGetUniformLocation(mShaderHandle, "uTextureSampler");
+            muTextureSamplerHandle = glGetUniformLocation(mShaderHandle, "uTextureSampler");
             enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
         } else {
             // enable vertex colors
@@ -105,7 +115,7 @@ public class PhongShader extends Shader {
      * 
      * @return the shininess
      */
-    public float getmShininess() {
+    public float getShininess() {
         return mShininess;
     }
 
@@ -115,7 +125,7 @@ public class PhongShader extends Shader {
      * @param shininess
      *            the shininess to set
      */
-    public void setmShininess(float shininess) {
+    public void setShininess(float shininess) {
         mShininess = shininess;
     }
 
@@ -155,7 +165,7 @@ public class PhongShader extends Shader {
         // bind texture if enabled
         if(mTexture != null) {
             state.bindTexture(mTexture);
-            glUniform1i(muTextureSampler, 0);
+            glUniform1i(muTextureSamplerHandle, 0);
         }
     }
 

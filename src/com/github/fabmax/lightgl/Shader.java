@@ -1,11 +1,9 @@
 package com.github.fabmax.lightgl;
 
-import static android.opengl.GLES20.GL_ARRAY_BUFFER;
-import static android.opengl.GLES20.GL_FLOAT;
-import static android.opengl.GLES20.glBindBuffer;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
-import static android.opengl.GLES20.glVertexAttribPointer;
+
+import com.github.fabmax.lightgl.scene.Mesh;
 
 /**
  * Base class for custom shader implementations.
@@ -66,7 +64,7 @@ public abstract class Shader {
      * @param attribName
      *            name of the attribute in shader code
      */
-    public void enableAttribute(int attrib, String attribName) {
+    protected void enableAttribute(int attrib, String attribName) {
         if(attrib < 0 || attrib > mVertexAttributes.length) {
             throw new IllegalArgumentException("Illegal vertex attribute specified");
         }
@@ -76,34 +74,40 @@ public abstract class Shader {
     }
 
     /**
-     * Binds the specified GL vertex buffer object.
+     * Binds the specified Mesh as input to this shader. The mesh's ShaderAttributBinders will
+     * be bound to the Shader attributes.
      * 
-     * @param vertexBufPtr
-     *            vertex buffer to bind
+     * @param Mesh
+     *            Mesh to use as input for shader execution
      */
-    public void bindVertexBuffer(int vertexBufPtr) {
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufPtr);
-    }
-
-    /**
-     * Configures a vertex attribute pointer and enables the attribute.
-     * 
-     * @param attrib
-     *            the attribute to configure
-     * @param offset
-     *            vertex position offset in the GL buffer
-     * @param stride
-     *            buffer data stride
-     */
-    public void configureVertexAttribute(int attrib, int size, int offset, int stride) {
-        if(attrib < 0 || attrib > mVertexAttributes.length) {
-            throw new IllegalArgumentException("Illegal vertex attribute specified");
-        }
-        
-        int ptr = mVertexAttributes[attrib];
+    public void bindMesh(Mesh mesh) {
+        int ptr = mVertexAttributes[ATTRIBUTE_POSITIONS];
         if (ptr != -1) {
-            glVertexAttribPointer(ptr, size, GL_FLOAT, false, stride, offset);
-            glEnableVertexAttribArray(ptr);
+            ShaderAttributeBinder binder = mesh.getVertexPositionBinder();
+            if (binder != null && binder.bindAttribute(ptr)) {
+                glEnableVertexAttribArray(ptr);
+            }
+        }
+        ptr = mVertexAttributes[ATTRIBUTE_NORMALS];
+        if (ptr != -1) {
+            ShaderAttributeBinder binder = mesh.getVertexNormalBinder();
+            if (binder != null && binder.bindAttribute(ptr)) {
+                glEnableVertexAttribArray(ptr);
+            }
+        }
+        ptr = mVertexAttributes[ATTRIBUTE_TEXTURE_COORDS];
+        if (ptr != -1) {
+            ShaderAttributeBinder binder = mesh.getVertexTexCoordBinder();
+            if (binder != null && binder.bindAttribute(ptr)) {
+                glEnableVertexAttribArray(ptr);
+            }
+        }
+        ptr = mVertexAttributes[ATTRIBUTE_COLORS];
+        if (ptr != -1) {
+            ShaderAttributeBinder binder = mesh.getVertexColorBinder();
+            if (binder != null && binder.bindAttribute(ptr)) {
+                glEnableVertexAttribArray(ptr);
+            }
         }
     }
 }
