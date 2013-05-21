@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.Locale;
 import java.util.StringTokenizer;
 
 import android.content.Context;
@@ -71,7 +72,7 @@ public class ObjLoader {
                 // all other lines are ignored
             }
 
-            Log.d(TAG, String.format("Parsed OBJ file: vp:%d, vt:%d, vn:%d, f:%d",
+            Log.d(TAG, String.format(Locale.ENGLISH, "Parsed OBJ file: vp:%d, vt:%d, vn:%d, f:%d",
                     verts.size() / 3, texCoords.size() / 2, normals.size() / 3, indices.size() / 3));
 
             // determine number of indices per face vertex
@@ -145,7 +146,7 @@ public class ObjLoader {
             ShortBuffer meshIndices = BufferHelper.createShortBuffer(glIndices.size());
             glIndices.copyToBuffer(meshIndices);
 
-            Log.d(TAG, String.format("Created Mesh: %d vertices, %d faces",
+            Log.d(TAG, String.format(Locale.ENGLISH, "Created Mesh: %d vertices, %d faces",
                             vertexData.size() / vertElements, glIndices.size() / 3));
 
             return new Mesh(meshIndices, meshData, vertElements, 0, normalOffset, texCoordOffset, 0);

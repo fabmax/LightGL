@@ -1,6 +1,5 @@
 package com.github.fabmax.lightgl;
 
-import static android.opengl.GLES20.GL_BACK;
 import static android.opengl.GLES20.GL_COLOR_ATTACHMENT0;
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.GL_DEPTH_ATTACHMENT;
@@ -8,13 +7,13 @@ import static android.opengl.GLES20.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES20.GL_DEPTH_COMPONENT16;
 import static android.opengl.GLES20.GL_FRAMEBUFFER;
 import static android.opengl.GLES20.GL_RENDERBUFFER;
+import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TEXTURE1;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.glBindFramebuffer;
 import static android.opengl.GLES20.glBindRenderbuffer;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
-import static android.opengl.GLES20.glCullFace;
 import static android.opengl.GLES20.glFramebufferRenderbuffer;
 import static android.opengl.GLES20.glFramebufferTexture2D;
 import static android.opengl.GLES20.glGenFramebuffers;
@@ -64,7 +63,6 @@ public class ShadowPass implements RenderPass {
         int[] buffer = new int[1];
         glGenFramebuffers(1, buffer, 0);
         mFramebufferHandle = buffer[0];
-        
         glGenRenderbuffers(1, buffer, 0);
         mRenderbufferHandle = buffer[0];
 
@@ -90,8 +88,6 @@ public class ShadowPass implements RenderPass {
               
         // unbind framebuffer
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        
-        //setupRect(engine);
     }
 
     /**
@@ -118,12 +114,14 @@ public class ShadowPass implements RenderPass {
         glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferHandle);
         
         glViewport(0, 0, MAP_SIZE, MAP_SIZE);
+        // front face culling can improve shadow appearance in some cases
         //glCullFace(GL_FRONT);
+        // set the depth texture color values to infinite depth
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw scene
-        GfxState state = engine.getEngineState();
+        GfxState state = engine.getState();
         state.bindShader(mDepthShader);
         state.setLockShader(true);
         state.setCamera(mShadowCamera);
@@ -133,32 +131,29 @@ public class ShadowPass implements RenderPass {
         state.setLockShader(false);
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, engine.getViewportWidth(), engine.getViewportHeight());
-        glCullFace(GL_BACK);
+        //glCullFace(GL_BACK);
         
-        //engine.getTextureManager().bindTexture(mDepthTexture, mTextureUnit);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    }
-    
-    public Texture getTexture() {
-        return mDepthTexture;
+        engine.getTextureManager().bindTexture(mDepthTexture, mTextureUnit);
+        engine.getState().resetBackgroundColor();
     }
     
     /**
-     * Returns the texture unit the depth texture is bound to.
+     * Returns the index of the texture unit the depth texture is bound to.
      * 
-     * @return the texture unit the depth texture is bound to
+     * @return the index of the texture unit the depth texture is bound to
      */
     public int getTextureUnit() {
-        return mTextureUnit;
+        return mTextureUnit - GL_TEXTURE0;
     }
     
     /**
-     * Sets the texture unit the depth texture is bound to.
+     * Sets the texture unit the depth texture is bound to. Do not use GL_TEXTUREn but just the
+     * index.
      * 
      * @param texUnit the texture unit to use
      */
     public void setTextureUnit(int texUnit) {
-        mTextureUnit = texUnit;
+        mTextureUnit = texUnit + GL_TEXTURE0;
     }
     
     /**

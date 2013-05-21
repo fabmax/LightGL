@@ -208,7 +208,7 @@ public class Mesh extends Node {
         // setup shader for mesh rendering, the active shader is not necessarily mMeshShader
         Shader shader = state.getBoundShader();
         if (shader != null) {
-            // bind vertex buffer
+            // bind this mesh as input to the used shader
             shader.bindMesh(this);
             // draw triangles
             glDrawElements(GL_TRIANGLES, mIndexBufferSize, GL_UNSIGNED_SHORT, mIndexBuffer);

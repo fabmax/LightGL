@@ -103,7 +103,7 @@ public class GfxEngine implements Renderer {
      * 
      * @return the {@link GfxState} of this GfxEngine
      */
-    public GfxState getEngineState() {
+    public GfxState getState() {
         return mState;
     }
 
@@ -153,13 +153,6 @@ public class GfxEngine implements Renderer {
      */
     public void setScene(Node scene) {
         this.mScene = scene;
-    }
-
-    /**
-     * Sets the scene background color.
-     */
-    public void setBackgroundColor(float red, float green, float blue) {
-        glClearColor(red, green, blue, 0);
     }
 
     /**

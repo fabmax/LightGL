@@ -56,7 +56,6 @@ public class ShadowShader extends PhongShader {
         Matrix.multiplyMM(mTempMatrix, 0, shadowView, 0, mModelMatrix, 0);
         Matrix.multiplyMM(mShadowMvpMatrix, 0, shadowProj, 0, mTempMatrix, 0);
         Matrix.multiplyMM(mTempMatrix, 0, mShadowBiasMatrix, 0, mShadowMvpMatrix, 0);
-        //Matrix.multiplyMM(mTempMatrix, 0, mShadowBiasMatrix, 0, mShadowMvpMatrix, 0);
         
         glUniformMatrix4fv(muShadowMvpMatrixHandle, 1, false, mTempMatrix, 0);
     }

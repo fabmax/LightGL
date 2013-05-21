@@ -1,6 +1,7 @@
 package com.github.fabmax.lightgl;
 
 import static android.opengl.GLES20.GL_TEXTURE0;
+import static android.opengl.GLES20.glClearColor;
 import android.opengl.Matrix;
 
 /**
@@ -13,11 +14,9 @@ public class GfxState {
 
     public static final int MODEL_MATRIX_STACK_SIZE = 10;
 
-    private GfxEngine mEngine;
-    private ShaderManager mShaderManager;
-    private TextureManager mTextureManager;
-    
-    private boolean mLockShader = true;
+    private final GfxEngine mEngine;
+    private final ShaderManager mShaderManager;
+    private final TextureManager mTextureManager;
 
     // projection matrix - holds field of view and aspect ratio of the camera
     private final float[] mProjMatrix = new float[16];
@@ -30,6 +29,10 @@ public class GfxState {
     private final float[] mMvpMatrix = new float[16];
     // temp matrix buffer for calculations
     private final float[] mTempMatrix = new float[16];
+    
+    private final float[] mBackgroundColor;
+    
+    private boolean mLockShader = false;
 
     /**
      * Creates a new GfxState object.
@@ -43,6 +46,8 @@ public class GfxState {
         Matrix.setIdentityM(mViewMatrix, 0);
         Matrix.setIdentityM(mModelMatrix, 0);
         Matrix.setIdentityM(mMvpMatrix, 0);
+        
+        mBackgroundColor = new float[] { 0.0f, 0.0f, 0.0f };
     }
 
     /**
@@ -111,6 +116,23 @@ public class GfxState {
         Matrix.setIdentityM(mViewMatrix, 0);
         Matrix.setIdentityM(mProjMatrix, 0);
         Matrix.setIdentityM(mMvpMatrix, 0);
+    }
+
+    /**
+     * Sets the scene background color.
+     */
+    public void setBackgroundColor(float red, float green, float blue) {
+        mBackgroundColor[0] = red;
+        mBackgroundColor[1] = green;
+        mBackgroundColor[2] = blue;
+        resetBackgroundColor();
+    }
+
+    /**
+     * Resets the scene background color to the stored value.
+     */
+    public void resetBackgroundColor() {
+        glClearColor(mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], 1.0f);
     }
 
     /**
