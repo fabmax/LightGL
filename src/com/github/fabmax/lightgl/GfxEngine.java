@@ -23,40 +23,42 @@ import com.github.fabmax.lightgl.scene.Node;
  * The central engine management class.
  * 
  * @author fabmax
- *
+ * 
  */
 public class GfxEngine implements Renderer {
 
     private ShaderManager mShaderManager;
     private TextureManager mTextureManager;
     private GfxState mState;
-    
+
     private ArrayList<Light> mLights = new ArrayList<Light>();
     private Node mScene;
-    
+
     private Camera mCamera;
     private int mViewportW;
     private int mViewportH;
-    
+
     private GfxEngineListener mEngineListener;
-    
+    private RenderPass mPrePass;
+
     /**
      * Creates a new GfxEngine object.
      * 
-     * @param context the application context
+     * @param context
+     *            the application context
      */
     public GfxEngine(Context context) {
         // ensure that we have the application context
         context = context.getApplicationContext();
-        
+
         mShaderManager = new ShaderManager(context);
         mTextureManager = new TextureManager(context);
         mState = new GfxState(this, mShaderManager, mTextureManager);
-        
+
         // by default a standard perspective camera is used
         mCamera = new PerspectiveCamera();
     }
-    
+
     /**
      * Sets the specified {@link GfxEngineListener} as engine listener. The engine listener is
      * called on certain GL events.
@@ -66,6 +68,16 @@ public class GfxEngine implements Renderer {
      */
     public void setEngineListener(GfxEngineListener listener) {
         mEngineListener = listener;
+    }
+
+    /**
+     * Sets the render pre pass callback. The pre pass is processed before the frame is rendered.
+     * 
+     * @param prePass
+     *            the pre pass render callback to set
+     */
+    public void setPreRenderPass(RenderPass prePass) {
+        mPrePass = prePass;
     }
 
     /**
@@ -123,7 +135,7 @@ public class GfxEngine implements Renderer {
     public ArrayList<Light> getLights() {
         return mLights;
     }
-    
+
     /**
      * Returns the scene Node.
      * 
@@ -149,7 +161,7 @@ public class GfxEngine implements Renderer {
     public void setBackgroundColor(float red, float green, float blue) {
         glClearColor(red, green, blue, 0);
     }
-    
+
     /**
      * Returns the active camera.
      * 
@@ -158,17 +170,36 @@ public class GfxEngine implements Renderer {
     public Camera getCamera() {
         return mCamera;
     }
-    
+
     /**
      * Sets the specified camera.
      * 
-     * @param cam the camera to set
+     * @param cam
+     *            the camera to set
      */
     public void setCamera(Camera cam) {
         mCamera = cam;
         if (cam != null) {
             cam.setViewport(mViewportW, mViewportH);
         }
+    }
+    
+    /**
+     * Returns the viewport width in pixels.
+     * 
+     * @return the viewport width in pixels
+     */
+    public int getViewportWidth() {
+        return mViewportW;
+    }
+
+    /**
+     * Returns the viewport height in pixels.
+     * 
+     * @return the viewport height in pixels
+     */
+    public int getViewportHeight() {
+        return mViewportH;
     }
 
     /**
@@ -178,19 +209,23 @@ public class GfxEngine implements Renderer {
      */
     @Override
     public void onDrawFrame(GL10 unused) {
+        mState.reset();
+
         // clear screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        if(mCamera == null) {
-            // we need a valid camera to draw the scene
-            return;
-        }
-        mState.initNextFrame(mCamera);
 
-        if(mEngineListener != null) {
+        if (mEngineListener != null) {
             mEngineListener.onRenderFrame(this);
         }
         
+        if (mPrePass != null) {
+            mPrePass.doRenderPass(this);
+        }
+
+        if (mCamera != null) {
+            mState.setCamera(mCamera);
+        }
+
         if (mScene != null) {
             mScene.render(mState);
         }
@@ -205,12 +240,12 @@ public class GfxEngine implements Renderer {
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         mViewportW = width;
         mViewportH = height;
-        
+
         // update GL viewport size
         glViewport(0, 0, width, height);
-        
+
         if (mCamera != null) {
-            // update camera matrix
+            // update camera matrix for new screen size
             mCamera.setViewport(width, height);
         }
     }
@@ -226,9 +261,9 @@ public class GfxEngine implements Renderer {
         glClearColor(0, 0, 0, 1);
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
-        
+
         // notify registered listener that now is the right time to load scene data
-        if(mEngineListener != null) {
+        if (mEngineListener != null) {
             mEngineListener.onLoadScene(this);
         }
     }

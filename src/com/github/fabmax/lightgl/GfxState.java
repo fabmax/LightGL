@@ -16,6 +16,8 @@ public class GfxState {
     private GfxEngine mEngine;
     private ShaderManager mShaderManager;
     private TextureManager mTextureManager;
+    
+    private boolean mLockShader = true;
 
     // projection matrix - holds field of view and aspect ratio of the camera
     private final float[] mProjMatrix = new float[16];
@@ -73,6 +75,10 @@ public class GfxState {
     public void bindTexture(Texture texture, int texUnit) {
         mTextureManager.bindTexture(texture, texUnit);
     }
+    
+    public void setLockShader(boolean enabled) {
+        mLockShader = enabled;
+    }
 
     /**
      * Binds the specified shader that is to be used for successive rendering operations.
@@ -81,7 +87,9 @@ public class GfxState {
      *            the shader to be used for successive primitive rendering.
      */
     public void bindShader(Shader shader) {
-        mShaderManager.bindShader(this, shader);
+        if (!mLockShader) {
+            mShaderManager.bindShader(this, shader);
+        }
     }
 
     /**
@@ -95,18 +103,26 @@ public class GfxState {
 
     /**
      * Resets the current engine state. This method is called before a new frame is rendered.
+     */
+    public void reset() {
+        // reset matrices
+        mModelMatrixIdx = 0;
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.setIdentityM(mViewMatrix, 0);
+        Matrix.setIdentityM(mProjMatrix, 0);
+        Matrix.setIdentityM(mMvpMatrix, 0);
+    }
+
+    /**
+     * Sets the view and projection matrices for the specified camera.
      * 
      * @param camera
      *            the active camera used to compute the camera matrices.
      */
-    public void initNextFrame(Camera camera) {
-        // update camera matrices
+    public void setCamera(Camera camera) {
+    	// update camera matrices
         camera.getProjectionMatrix(mProjMatrix);
         camera.getViewMatrix(mViewMatrix);
-
-        // reset model matrix
-        mModelMatrixIdx = 0;
-        Matrix.setIdentityM(mModelMatrix, 0);
 
         matrixUpdate();
     }

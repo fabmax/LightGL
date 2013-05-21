@@ -4,12 +4,17 @@ import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 
+import com.github.fabmax.lightgl.Camera;
+import com.github.fabmax.lightgl.DepthShader;
 import com.github.fabmax.lightgl.GfxEngine;
 import com.github.fabmax.lightgl.GfxEngineListener;
 import com.github.fabmax.lightgl.GlException;
 import com.github.fabmax.lightgl.Light;
+import com.github.fabmax.lightgl.OrthograpicCamera;
 import com.github.fabmax.lightgl.PhongShader;
 import com.github.fabmax.lightgl.R;
+import com.github.fabmax.lightgl.ShadowPass;
+import com.github.fabmax.lightgl.ShadowShader;
 import com.github.fabmax.lightgl.Texture;
 import com.github.fabmax.lightgl.TextureProperties;
 import com.github.fabmax.lightgl.scene.Mesh;
@@ -81,6 +86,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     public void setCubeScene(GfxEngine engine) {
         // set camera position
+        engine.setBackgroundColor(1, 0, 0);
         engine.getCamera().setPosition(0, 3, 5);
         
         // add a directional light
@@ -99,12 +105,18 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         //roundCube.setShader(new PhongShader(engine.getShaderManager()));
         //Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
         //roundCube.setShader(new PhongShader(engine.getShaderManager(), tex));
+
+        // enable shadow rendering
+        ShadowPass shadow = new ShadowPass(engine);
+        engine.setPreRenderPass(shadow);
         
         // add a color cube
         Mesh colorCube = MeshFactory.createColorCube();
         mScene.addChild(colorCube);
         Texture tex = engine.getTextureManager().loadTexture(R.drawable.stone_wall, new TextureProperties());
-        colorCube.setShader(new PhongShader(engine.getShaderManager(), tex));
+        //colorCube.setShader(new PhongShader(engine.getShaderManager(), tex));
+        //colorCube.setShader(new PhongShader(engine.getShaderManager(), shadow.getTexture()));
+        colorCube.setShader(new DepthShader(engine.getShaderManager()));
     }
     
     /**
@@ -113,13 +125,22 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     public void setObjModelScene(GfxEngine engine) {
         // set camera position
         engine.getCamera().setPosition(0, 12, 18);
-        engine.getCamera().setLookAt(0, 0, 4);
         
         // add a directional light
         Light light = new Light();
         light.colorR = 0.7f; light.colorG = 0.7f; light.colorB = 0.7f;
-        light.posX = 0.5f;   light.posY = 2.0f;   light.posZ = 1;
+        light.posX = 1.0f;   light.posY = 1.0f;   light.posZ = 1.0f;
         engine.addLight(light);
+
+//        OrthograpicCamera cam = new OrthograpicCamera(); 
+//        cam.setPosition(0, 12, 18);
+//        cam.setClipSize(-10, 10, -10, 10, -10, 30);
+//        cam.setLookAt(0, 0, 0);
+//        engine.setCamera(cam);
+
+        // enable shadow rendering
+        ShadowPass shadow = new ShadowPass(engine);
+        engine.setPreRenderPass(shadow);
         
         try {
             // create scene
@@ -132,7 +153,9 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
             mScene.addChild(scene);
             // set model material
             Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
-            scene.setShader(new PhongShader(engine.getShaderManager(), tex));
+            //scene.setShader(new ShadowShader(engine.getShaderManager(), tex, shadow));
+            scene.setShader(new ShadowShader(engine.getShaderManager(), shadow.getTexture(), shadow));
+            //scene.setShader(new PhongShader(engine.getShaderManager(), tex));
         } catch (GlException e) {
             e.printStackTrace();
         }

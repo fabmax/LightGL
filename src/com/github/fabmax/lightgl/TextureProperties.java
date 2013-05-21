@@ -34,7 +34,7 @@ public class TextureProperties {
      */
     public enum MinFilterMethod {
         NEAREST(GL_NEAREST),
-        BILINEAR(GL_LINEAR),
+        LINEAR(GL_LINEAR),
         TRILINEAR(GL_LINEAR_MIPMAP_LINEAR);
         
         private int mMethod;

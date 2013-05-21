@@ -7,6 +7,8 @@ import static android.opengl.GLES20.glDrawElements;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
+import android.util.Log;
+
 import com.github.fabmax.lightgl.GfxState;
 import com.github.fabmax.lightgl.Shader;
 import com.github.fabmax.lightgl.ShaderAttributeBinder;
@@ -20,6 +22,8 @@ import com.github.fabmax.lightgl.util.MeshFactory;
  * 
  */
 public class Mesh extends Node {
+    
+    private static final String TAG = "Mesh";
 
     // vertex attributes
     private ShaderAttributeBinder mPositionBinder;
@@ -208,6 +212,8 @@ public class Mesh extends Node {
             shader.bindMesh(this);
             // draw triangles
             glDrawElements(GL_TRIANGLES, mIndexBufferSize, GL_UNSIGNED_SHORT, mIndexBuffer);
+        } else {
+            Log.w(TAG, "Failed rendering mesh: null material");
         }
     }
 

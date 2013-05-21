@@ -100,7 +100,7 @@ public class MeshFactory {
             // set attribute binder for vertex normals
             ShaderAttributeBinder colorBinder = ShaderAttributeBinder.createFloatBufferBinder(vertData, 3, elems);
             colorBinder.setOffset(colorOffset);
-            mesh.setVertexNormalBinder(colorBinder);
+            mesh.setVertexColorBinder(colorBinder);
         }
         return mesh;
     }

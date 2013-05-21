@@ -8,16 +8,21 @@ However there's a long way to go.
 
 Features:
 * Arbitrary triangle meshes with texture mapping or vertex colors
-* Simple scene graph supporting arbitrary object transformations
-* Custom shaders for Phong lighting, next will be shadow mapping
 * Model loading for .obj files
+* Simple scene graph supporting arbitrary object transformations
+* Various custom shaders
+* Dynamic shadow mapping
 
-The included demo Activity shows a simple scene illuminated by a single light source.
+The included demo Activity shows a simple scene illuminated by a single light source with dynamic shadows.
+Shadow mapping is very experimental and it took some effort to get this to work on my Galaxy Nexus since it
+does not support depth textures. The current code will only work for this demo scene.
 
 Screenshots:
+
+![Shadow Mapping 1](/docs/images/shadow1.png)
+
+![Shadow Mapping 1](/docs/images/shadow2.png)
 
 ![Texture Mapping 1](/docs/images/texture1.png)
 
 ![Texture Mapping 1](/docs/images/texture2.png)
-
-![Loaded Model](/docs/images/model.png)

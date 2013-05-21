@@ -4,7 +4,9 @@ import com.github.fabmax.lightgl.util.GlMath;
 
 public class PerspectiveCamera extends Camera {
 
-    private float fovy = 60;
+    private float mFovy = 60.0f;
+    private float mNear = 0.1f;
+    private float mFar = 100.0f;
 
     /**
      * Returns the field of view for this camera in Y direction.
@@ -12,7 +14,7 @@ public class PerspectiveCamera extends Camera {
      * @return the field of view in Y direction
      */
     public float getFovy() {
-        return fovy;
+        return mFovy;
     }
 
     /**
@@ -22,7 +24,20 @@ public class PerspectiveCamera extends Camera {
      *            the field of view to set
      */
     public void setFovy(float fovy) {
-        this.fovy = fovy;
+        mFovy = fovy;
+    }
+
+    /**
+     * Sets the near and far clip distances.
+     * 
+     * @param near
+     *            near clip distance
+     * @param far
+     *            far clip distance
+     */
+    public void setClipRange(float near, float far) {
+        mNear = near;
+        mFar = far;
     }
 
     /**
@@ -30,7 +45,7 @@ public class PerspectiveCamera extends Camera {
      */
     @Override
     public void getProjectionMatrix(float[] projMBuf) {
-        GlMath.perspectiveM(projMBuf, fovy, aspect, 0.1f, 100.0f);
+        GlMath.perspectiveM(projMBuf, mFovy, aspect, mNear, mFar);
     }
 
 }

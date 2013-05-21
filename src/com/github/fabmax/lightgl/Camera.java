@@ -55,7 +55,11 @@ public abstract class Camera {
     protected void setViewport(float width, float height) {
         mViewportW = width;
         mViewportH = height;
-        aspect = width / height;
+        if (height > 0) {
+            aspect = width / height;
+        } else {
+            aspect = 1;
+        }
     }
 
     /**

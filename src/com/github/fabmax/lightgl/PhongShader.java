@@ -37,10 +37,10 @@ public class PhongShader extends Shader {
     // shininess coefficient for phong lighting model
     private float mShininess = 20.0f;
     // optional texture
-    private Texture mTexture;
+    protected Texture mTexture;
     
     // buffer for current model matrix
-    private float[] mModelMatrix = new float[16];
+    protected float[] mModelMatrix = new float[16];
 
     /**
      * Creates a new PhongShader object. Rendered objects must provide vertex colors.
