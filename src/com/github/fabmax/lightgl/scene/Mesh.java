@@ -1,10 +1,17 @@
 package com.github.fabmax.lightgl.scene;
 
+import static android.opengl.GLES20.GL_ELEMENT_ARRAY_BUFFER;
+import static android.opengl.GLES20.GL_STATIC_DRAW;
 import static android.opengl.GLES20.GL_TRIANGLES;
+import static android.opengl.GLES20.GL_UNSIGNED_INT;
 import static android.opengl.GLES20.GL_UNSIGNED_SHORT;
+import static android.opengl.GLES20.glBindBuffer;
+import static android.opengl.GLES20.glBufferData;
 import static android.opengl.GLES20.glDrawElements;
+import static android.opengl.GLES20.glGenBuffers;
 
-import java.nio.FloatBuffer;
+import java.nio.Buffer;
+import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
 import android.util.Log;
@@ -22,7 +29,7 @@ import com.github.fabmax.lightgl.util.MeshFactory;
  * 
  */
 public class Mesh extends Node {
-    
+
     private static final String TAG = "Mesh";
 
     // vertex attributes
@@ -32,76 +39,72 @@ public class Mesh extends Node {
     private ShaderAttributeBinder mColorBinder;
 
     // index buffer
-    private ShortBuffer mIndexBuffer;
+    private int mIndexBufferHandle;
     private int mIndexBufferSize;
+    private int mIndexBufferType;
 
     // mesh material
     private Shader mMeshShader;
 
     /**
-     * Constructs a new Mesh from the supplied data. A attribute binder for vertex positions is
-     * created. If more attributes should be used set the binder using the corresponding setters.
+     * Constructs a Mesh with the specified indices and attribute binders. A Mesh can only be
+     * created with a valid GL context.
      * 
      * @see MeshFactory
      * 
-     * @param dataBuffer
-     *            buffer with the vertex data for this Mesh
      * @param indexBuffer
-     *            buffer with vertex indices of all triangles for this Mesh
-     * @param stride
-     *            data buffer element stride
-     * @param positionOffset
-     *            offset for vertex positions inside the buffer
+     *            Buffer with vertex indices. Must be an IntBuffer or a ShortBuffer.
+     * @param positions
+     *            Attribute binder for vertex positions. Must not be null.
+     * @param normals
+     *            Attribute binder for vertex normals. Can be null.
+     * @param texCoords
+     *            Attribute binder for vertex texture coordinates. Can be null.
+     * @param colors
+     *            Attribute binder for vertex colors. Can be null.
      */
-    public Mesh(ShortBuffer indexBuffer, FloatBuffer dataBuffer, int stride, int positionOffset) {
-        mIndexBuffer = indexBuffer;
-        mIndexBufferSize = indexBuffer.capacity();
+    public Mesh(Buffer indexBuffer, ShaderAttributeBinder positions, ShaderAttributeBinder normals,
+            ShaderAttributeBinder texCoords, ShaderAttributeBinder colors) {
+        createIndexBufferObject(indexBuffer);
 
-        // create attribute binders
-        mPositionBinder = ShaderAttributeBinder.createFloatBufferBinder(dataBuffer, 3, stride);
-        mPositionBinder.setOffset(positionOffset);
+        if (positions == null) {
+            throw new IllegalArgumentException("Vertex positions attribute binder is null");
+        }
+        
+        mPositionBinder = positions;
+        mNormalBinder = normals;
+        mTexCoordBinder = texCoords;
+        mColorBinder = colors;
     }
 
     /**
-     * Constructs a new Mesh from the supplied data. The data buffer does not have to contain data
-     * for all supported vertex attributes (positions, normals, texture coordinates and colors). The
-     * required attributes depend on the used shader. Offset values for unused attributes are
-     * ignored. Assuming a buffer with vertex positions and normals and a layout of [pos_x0, pos_y0,
-     * pos_z0, n_x0, n_y0, n_z0, pos_x1, ...] the stride would be 6, positionOffset would be 0 and
-     * normalOffset would be 3. Notice that the construction of a Mesh involves GL-calls, hence a
-     * valid GL context has to be available.
-     * 
-     * @see MeshFactory
+     * Creates a GL buffer object from the given indexBuffer.
      * 
      * @param indexBuffer
-     *            buffer with vertex indices of all triangles for this Mesh
-     * @param dataBuffer
-     *            buffer with the vertex data for this Mesh
-     * @param stride
-     *            data buffer element stride
-     * @param positionOffset
-     *            offset for vertex positions inside the buffer
-     * @param normalOffset
-     *            offset for vertex normals inside the buffer
-     * @param uvOffset
-     *            offset for vertex texture coordinates inside the buffer
-     * @param colorOffset
-     *            offset for vertex colors inside the buffer
+     *            Mesh index buffer. Must either be an IntBuffer or a ShortBuffer.
      */
-    public Mesh(ShortBuffer indexBuffer, FloatBuffer dataBuffer, int stride, int positionOffset,
-            int normalOffset, int uvOffset, int colorOffset) {
+    private void createIndexBufferObject(Buffer indexBuffer) {
+        int sizeInBytes = 0;
+        if (indexBuffer instanceof ShortBuffer) {
+            sizeInBytes = indexBuffer.capacity() * 2;
+            mIndexBufferType = GL_UNSIGNED_SHORT;
+        } else if (indexBuffer instanceof IntBuffer) {
+            sizeInBytes = indexBuffer.capacity() * 4;
+            mIndexBufferType = GL_UNSIGNED_INT;
+        } else {
+            throw new IllegalArgumentException(
+                    "indexBuffer must either be an IntBuffer or a ShortBuffer");
+        }
         mIndexBufferSize = indexBuffer.capacity();
-        mIndexBuffer = indexBuffer;
 
-        // create attribute binders, offsets and stride must be converted to byte indices (1 float = 4 bytes)
-        mPositionBinder = ShaderAttributeBinder.createFloatBufferBinder(dataBuffer, 3, stride);
-        mPositionBinder.setOffset(positionOffset);
-        mNormalBinder = ShaderAttributeBinder.createFloatBufferBinder(dataBuffer, 3, stride);
-        mNormalBinder.setOffset(normalOffset);
-        mTexCoordBinder = ShaderAttributeBinder.createFloatBufferBinder(dataBuffer, 2, stride);
-        mTexCoordBinder.setOffset(uvOffset);
-        mColorBinder = ShaderAttributeBinder.createFloatBufferBinder(dataBuffer, 3, stride);
-        mColorBinder.setOffset(colorOffset);
+        // create buffer object
+        int[] buf = new int[1];
+        glGenBuffers(1, buf, 0);
+        mIndexBufferHandle = buf[0];
+
+        // copy buffer data
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBufferHandle);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, indexBuffer, GL_STATIC_DRAW);
     }
 
     /**
@@ -135,7 +138,8 @@ public class Mesh extends Node {
     /**
      * Sets the binder for vertex positions.
      * 
-     * @param positionBinder the binder for vertex positions
+     * @param positionBinder
+     *            the binder for vertex positions
      */
     public void setVertexPositionBinder(ShaderAttributeBinder positionBinder) {
         mPositionBinder = positionBinder;
@@ -153,7 +157,8 @@ public class Mesh extends Node {
     /**
      * Sets the binder for vertex normals.
      * 
-     * @param normalBinder the binder for vertex normals
+     * @param normalBinder
+     *            the binder for vertex normals
      */
     public void setVertexNormalBinder(ShaderAttributeBinder normalBinder) {
         mNormalBinder = normalBinder;
@@ -171,7 +176,8 @@ public class Mesh extends Node {
     /**
      * Sets the binder for vertex texture coordinates.
      * 
-     * @param texCoordBinder the binder for vertex texture coordinates
+     * @param texCoordBinder
+     *            the binder for vertex texture coordinates
      */
     public void setVertexTexCoordBinder(ShaderAttributeBinder texCoordBinder) {
         mTexCoordBinder = texCoordBinder;
@@ -189,7 +195,8 @@ public class Mesh extends Node {
     /**
      * Sets the binder for vertex colors.
      * 
-     * @param colorBinder the binder for vertex positions
+     * @param colorBinder
+     *            the binder for vertex positions
      */
     public void setVertexColorBinder(ShaderAttributeBinder colorBinder) {
         mColorBinder = colorBinder;
@@ -211,7 +218,8 @@ public class Mesh extends Node {
             // bind this mesh as input to the used shader
             shader.bindMesh(this);
             // draw triangles
-            glDrawElements(GL_TRIANGLES, mIndexBufferSize, GL_UNSIGNED_SHORT, mIndexBuffer);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBufferHandle);
+            glDrawElements(GL_TRIANGLES, mIndexBufferSize, mIndexBufferType, 0);
         } else {
             Log.w(TAG, "Failed rendering mesh: null material");
         }

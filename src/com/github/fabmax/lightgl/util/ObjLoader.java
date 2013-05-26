@@ -1,10 +1,16 @@
 package com.github.fabmax.lightgl.util;
 
+import static android.opengl.GLES20.GL_ARRAY_BUFFER;
+import static android.opengl.GLES20.GL_STATIC_DRAW;
+import static android.opengl.GLES20.glBindBuffer;
+import static android.opengl.GLES20.glBufferData;
+import static android.opengl.GLES20.glGenBuffers;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
+import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
@@ -13,6 +19,7 @@ import android.util.Log;
 import android.util.SparseIntArray;
 
 import com.github.fabmax.lightgl.GlException;
+import com.github.fabmax.lightgl.ShaderAttributeBinder;
 import com.github.fabmax.lightgl.scene.Mesh;
 
 /**
@@ -141,15 +148,37 @@ public class ObjLoader {
             }
 
             // create Mesh
+            IntBuffer meshIndices = BufferHelper.createIntBuffer(glIndices.size());
+            glIndices.copyToBuffer(meshIndices);
+
+            // put vertex data in a VBO
+            int[] buf = new int[1];
             FloatBuffer meshData = BufferHelper.createFloatBuffer(vertexData.size());
             vertexData.copyToBuffer(meshData);
-            ShortBuffer meshIndices = BufferHelper.createShortBuffer(glIndices.size());
-            glIndices.copyToBuffer(meshIndices);
+            glGenBuffers(1, buf, 0);
+            glBindBuffer(GL_ARRAY_BUFFER, buf[0]);
+            glBufferData(GL_ARRAY_BUFFER, meshData.capacity() * 4, meshData, GL_STATIC_DRAW);
+            
+            // create attribute binders
+            ShaderAttributeBinder posBinder = ShaderAttributeBinder.createFloatBufferBinder(meshData, 3, vertElements * 4);
+            //ShaderAttributeBinder posBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, vertElements * 4);
+            ShaderAttributeBinder normalBinder = null;
+            ShaderAttributeBinder uvBinder = null;
+            if (!normals.isEmpty()) {
+                //normalBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, vertElements * 4);
+                normalBinder = ShaderAttributeBinder.createFloatBufferBinder(meshData, 3, vertElements * 4);
+                normalBinder.setOffset(normalOffset);
+            }
+            if (!texCoords.isEmpty()) {
+                //uvBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 2, vertElements * 4);
+                uvBinder = ShaderAttributeBinder.createFloatBufferBinder(meshData, 2, vertElements * 4);
+                uvBinder.setOffset(texCoordOffset);
+            }
 
             Log.d(TAG, String.format(Locale.ENGLISH, "Created Mesh: %d vertices, %d faces",
                             vertexData.size() / vertElements, glIndices.size() / 3));
 
-            return new Mesh(meshIndices, meshData, vertElements, 0, normalOffset, texCoordOffset, 0);
+            return new Mesh(meshIndices, posBinder, normalBinder, uvBinder, null);
 
         } catch (Exception e) {
             throw new GlException("Failed parsing OBJ file: " + e.getMessage(), e);

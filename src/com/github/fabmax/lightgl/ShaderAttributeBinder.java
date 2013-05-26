@@ -27,18 +27,18 @@ public abstract class ShaderAttributeBinder {
      * @param size
      *            number of primitives for this attribute
      * @param stride
-     *            buffer stride as floats
+     *            buffer stride as number of bytes
      * @return ShaderAttributeBinder for use with a {@link Mesh}
      */
     public static ShaderAttributeBinder createFloatBufferBinder(FloatBuffer buffer, int size, int stride) {
         ShaderAttributeBinder binder = new FloatBufferAttributeBinder(buffer);
-        binder.setStride(stride * 4);
+        binder.setStride(stride);
         binder.setSize(size);
         return binder;
     }
 
     /**
-     * Creates a ShaderAttributeBinder for a GL buffer. The type is set to GL_FLOAT and the offset
+     * Creates a ShaderAttributeBinder for a GL Vertex buffer object. The type is set to GL_FLOAT and the offset
      * to 0. Use {@link ShaderAttributeBinder#setType(int)} and
      * {@link ShaderAttributeBinder#setOffset(int)} to change them.
      * 
@@ -47,12 +47,12 @@ public abstract class ShaderAttributeBinder {
      * @param size
      *            number of primitives for this attribute
      * @param stride
-     *            buffer stride as floats
+     *            buffer stride as number of bytes
      * @return ShaderAttributeBinder for use with a {@link Mesh}
      */
-    public static ShaderAttributeBinder createGlBufferBinder(int ptr, int size, int stride) {
-        ShaderAttributeBinder binder = new GlBufferAttributeBinder(ptr);
-        binder.setStride(stride * 4);
+    public static ShaderAttributeBinder createVboBufferBinder(int ptr, int size, int stride) {
+        ShaderAttributeBinder binder = new VboBufferAttributeBinder(ptr);
+        binder.setStride(stride);
         binder.setSize(size);
         return binder;
     }
@@ -182,22 +182,22 @@ public abstract class ShaderAttributeBinder {
     }
 
     /**
-     * ShaderAttributeBinder implementation for GL buffer binding.
+     * ShaderAttributeBinder implementation for GL VBO binding.
      * 
      * @author fabmax
      * 
      */
-    private static class GlBufferAttributeBinder extends ShaderAttributeBinder {
+    private static class VboBufferAttributeBinder extends ShaderAttributeBinder {
 
         private final int mBuffer;
 
         /**
-         * Creates a ShaderAttributeBinder for a GL buffer object.
+         * Creates a ShaderAttributeBinder for a GL VBO.
          * 
          * @param buffer
          *            the buffer to use
          */
-        private GlBufferAttributeBinder(int buffer) {
+        private VboBufferAttributeBinder(int buffer) {
             mBuffer = buffer;
         }
 

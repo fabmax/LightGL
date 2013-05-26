@@ -1,5 +1,12 @@
 package com.github.fabmax.lightgl.util;
 
+import static android.opengl.GLES20.GL_ARRAY_BUFFER;
+import static android.opengl.GLES20.GL_STATIC_DRAW;
+import static android.opengl.GLES20.glBindBuffer;
+import static android.opengl.GLES20.glBufferData;
+import static android.opengl.GLES20.glGenBuffers;
+
+import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
@@ -15,7 +22,8 @@ import com.github.fabmax.lightgl.scene.Mesh;
  */
 public class MeshFactory {
     /**
-     * Creates a new Mesh with the specified attributes.
+     * Creates a static mesh with the specified attributes. A static mesh uses a GL Vertex Buffer Object
+     * to store the vertex data.
      * 
      * @param pos
      *            vertex positions (x, y, z)
@@ -29,8 +37,7 @@ public class MeshFactory {
      *            vertex indices
      * @return the created mesh
      */
-    public static Mesh createMesh(float[] pos, float[] norms, float[] uvs, float[] colors, int[] indcs) {
-        int posOffset = 0;
+    public static Mesh createStaticMesh(float[] pos, float[] norms, float[] uvs, float[] colors, int[] indcs) {
         int normOffset = 0;
         int uvOffset = 0;
         int colorOffset = 0;
@@ -74,212 +81,45 @@ public class MeshFactory {
             }
         }
         vertData.rewind();
+        // put vertex data in a VBO
+        int[] buf = new int[1];
+        glGenBuffers(1, buf, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, buf[0]);
+        glBufferData(GL_ARRAY_BUFFER, vertData.capacity() * 4, vertData, GL_STATIC_DRAW);
         
-        // fill index buffer
-        ShortBuffer indexBuffer = BufferHelper.createShortBuffer(indcs.length);
-        for (int i = 0; i < indcs.length; i++) {
-            indexBuffer.put((short) indcs[i]);
+        // create and fill index buffer
+        Buffer indexBuffer;
+        if(pos.length / 3 < 65536) {
+            indexBuffer = BufferHelper.createShortBuffer(indcs.length);
+            for (int i = 0; i < indcs.length; i++) {
+                ((ShortBuffer) indexBuffer).put((short) indcs[i]);
+            }
+            indexBuffer.rewind();
+        } else {
+            indexBuffer = BufferHelper.createIntBuffer(indcs);
         }
-        indexBuffer.rewind();
         
         // create mesh
-        Mesh mesh = new Mesh(indexBuffer, vertData, elems, posOffset);
+        ShaderAttributeBinder posBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, elems * 4);
+        ShaderAttributeBinder normalBinder = null;
+        ShaderAttributeBinder uvBinder = null;
+        ShaderAttributeBinder colorBinder = null;
         if (norms != null) {
             // set attribute binder for vertex normals
-            ShaderAttributeBinder normalBinder = ShaderAttributeBinder.createFloatBufferBinder(vertData, 3, elems);
+            normalBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, elems * 4);
             normalBinder.setOffset(normOffset);
-            mesh.setVertexNormalBinder(normalBinder);
         }
         if (uvs != null) {
             // set attribute binder for vertex normals
-            ShaderAttributeBinder uvBinder = ShaderAttributeBinder.createFloatBufferBinder(vertData, 2, elems);
+            uvBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 2, elems * 4);
             uvBinder.setOffset(uvOffset);
-            mesh.setVertexTexCoordBinder(uvBinder);
         }
         if (colors != null) {
             // set attribute binder for vertex normals
-            ShaderAttributeBinder colorBinder = ShaderAttributeBinder.createFloatBufferBinder(vertData, 3, elems);
+            colorBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, elems * 4);
             colorBinder.setOffset(colorOffset);
-            mesh.setVertexColorBinder(colorBinder);
         }
-        return mesh;
-    }
-    
-    /**
-     * Creates a cube mesh with valid vertex colors and texture coordinates. The texture coordinates
-     * are the same for every side, vertex colors are different for different sides.
-     */
-    public static Mesh createRoundCube() {
-        float[] pos = {
-            // front
-                -0.9f,  0.9f,  1.0f,
-                -0.9f, -0.9f,  1.0f,
-                 0.9f, -0.9f,  1.0f,
-                 0.9f,  0.9f,  1.0f,
-            // rear
-                -0.9f,  0.9f, -1.0f,
-                -0.9f, -0.9f, -1.0f,
-                 0.9f, -0.9f, -1.0f,
-                 0.9f,  0.9f, -1.0f,
-            // left
-                -1.0f, -0.9f,  0.9f,
-                -1.0f, -0.9f, -0.9f,
-                -1.0f,  0.9f, -0.9f,
-                -1.0f,  0.9f,  0.9f,
-            // right
-                 1.0f, -0.9f,  0.9f,
-                 1.0f, -0.9f, -0.9f,
-                 1.0f,  0.9f, -0.9f,
-                 1.0f,  0.9f,  0.9f,
-            // bottom
-                -0.9f, -1.0f,  0.9f,
-                -0.9f, -1.0f, -0.9f,
-                 0.9f, -1.0f, -0.9f,
-                 0.9f, -1.0f,  0.9f,
-            // top
-                -0.9f,  1.0f,  0.9f,
-                -0.9f,  1.0f, -0.9f,
-                 0.9f,  1.0f, -0.9f,
-                 0.9f,  1.0f,  0.9f,
-        };
-        float[] norms = {
-            // front
-                 0.0f,  0.0f,  1.0f,
-                 0.0f,  0.0f,  1.0f,
-                 0.0f,  0.0f,  1.0f,
-                 0.0f,  0.0f,  1.0f,
-            // rear
-                 0.0f,  0.0f, -1.0f,
-                 0.0f,  0.0f, -1.0f,
-                 0.0f,  0.0f, -1.0f,
-                 0.0f,  0.0f, -1.0f,
-            // left
-                -1.0f,  0.0f,  0.0f,
-                -1.0f,  0.0f,  0.0f,
-                -1.0f,  0.0f,  0.0f,
-                -1.0f,  0.0f,  0.0f,
-            // right
-                 1.0f,  0.0f,  0.0f,
-                 1.0f,  0.0f,  0.0f,
-                 1.0f,  0.0f,  0.0f,
-                 1.0f,  0.0f,  0.0f,
-            // bottom
-                 0.0f, -1.0f,  0.0f,
-                 0.0f, -1.0f,  0.0f,
-                 0.0f, -1.0f,  0.0f,
-                 0.0f, -1.0f,  0.0f,
-            // top
-                 0.0f,  1.0f,  0.0f,
-                 0.0f,  1.0f,  0.0f,
-                 0.0f,  1.0f,  0.0f,
-                 0.0f,  1.0f,  0.0f,
-        };
-        float[] colors = {
-            // front
-                 1.0f, 0.0f, 0.0f,
-                 1.0f, 0.0f, 0.0f,
-                 1.0f, 0.0f, 0.0f,
-                 1.0f, 0.0f, 0.0f,
-            // rear
-                 0.0f, 1.0f, 0.0f,
-                 0.0f, 1.0f, 0.0f,
-                 0.0f, 1.0f, 0.0f,
-                 0.0f, 1.0f, 0.0f,
-            // left
-                 0.0f, 0.0f, 1.0f,
-                 0.0f, 0.0f, 1.0f,
-                 0.0f, 0.0f, 1.0f,
-                 0.0f, 0.0f, 1.0f,
-            // right
-                 1.0f, 1.0f, 0.0f,
-                 1.0f, 1.0f, 0.0f,
-                 1.0f, 1.0f, 0.0f,
-                 1.0f, 1.0f, 0.0f,
-            // bottom
-                 1.0f, 0.0f, 1.0f,
-                 1.0f, 0.0f, 1.0f,
-                 1.0f, 0.0f, 1.0f,
-                 1.0f, 0.0f, 1.0f,
-            // top
-                 0.0f, 1.0f, 1.0f,
-                 0.0f, 1.0f, 1.0f,
-                 0.0f, 1.0f, 1.0f,
-                 0.0f, 1.0f, 1.0f,
-        };
-        int[] indcs = {
-            // front
-                 0,  1,  2,
-                 0,  2,  3,
-            // rear
-                 4,  6,  5,
-                 4,  7,  6,
-            // left
-                 8, 10,  9,
-                 8, 11, 10,
-            // right
-                12, 13, 14,
-                12, 14, 15,
-            // bottom
-                16, 17, 18,
-                16, 18, 19,
-            // top
-                20, 22, 21,
-                20, 23, 22,
-            // front top
-                 0,  3, 20,
-                20,  3, 23,
-            // front bottom
-                 2,  1, 16,
-                 2, 16, 19,
-            // front left
-                 1,  0, 11,
-                 8,  1, 11,
-            // front left
-                 3,  2, 12,
-                 3, 12, 15,
-            // rear top
-                 7,  4, 21,
-                 7, 21, 22,
-            // rear bottom
-                 5,  6, 17,
-                17,  6, 18,
-            // rear left
-                 4,  5, 10,
-                 5,  9, 10,
-            // rear right
-                 6,  7, 14,
-                13,  6, 14,
-            // top left
-                20, 21, 11,
-                11, 21, 10,
-            // top right
-                22, 23, 14,
-                14, 23, 15,
-            // bottom left
-                17, 16,  8,
-                17,  8,  9,
-            // bottom right
-                19, 18, 12,
-                12, 18, 13,
-            // top left front
-                20, 11,  0,
-            // top right front
-                23,  3, 15,
-            // top left rear
-                21,  4, 10,
-            // top right rear
-                22, 14,  7,
-            // bottom left front
-                16,  1,  8,
-            // bottom right front
-                19, 12,  2,
-            // bottom left rear
-                17,  9,  5,
-            // bottom right rear
-                18,  6, 13,
-        };
-        
-        return MeshFactory.createMesh(pos, norms, null, colors, indcs);
+        return new Mesh(indexBuffer, posBinder, normalBinder, uvBinder, colorBinder);
     }
     
     /**
@@ -436,6 +276,6 @@ public class MeshFactory {
                 20, 23, 22,
         };
         
-        return MeshFactory.createMesh(pos, norms, uvs, colors, indcs);
+        return MeshFactory.createStaticMesh(pos, norms, uvs, colors, indcs);
     }
 }

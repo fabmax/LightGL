@@ -5,7 +5,14 @@ import static android.opengl.GLES20.glUniform1i;
 import static android.opengl.GLES20.glUniformMatrix4fv;
 import android.opengl.Matrix;
 
-
+/**
+ * ShadowShader is a PhongShader that also supports dynamic shadows. To compute the necessary
+ * shadow depth map a {@link ShadowPass} must be set as pre-render pass with
+ * {@link GfxEngine#setPreRenderPass(RenderPass)}.
+ * 
+ * @author fabmax
+ * 
+ */
 public class ShadowShader extends PhongShader {
 
     private ShadowPass mShadowPass;
@@ -16,25 +23,24 @@ public class ShadowShader extends PhongShader {
     private float[] mTempMatrix = new float[16];
     private float[] mShadowMvpMatrix = new float[16];
     private float[] mShadowBiasMatrix;
-    
+
     /**
      * Creates a ShadowShader.
      * 
-     * @param shaderMgr the shader manager
-     * @param texture the texture to map on drawn objects
-     * @param shadowPass the ShadowPass used to compute the depth texture
+     * @param shaderMgr
+     *            the shader manager
+     * @param texture
+     *            the texture to map on drawn objects
+     * @param shadowPass
+     *            the ShadowPass used to compute the depth texture
      */
     public ShadowShader(ShaderManager shaderMgr, Texture texture, ShadowPass shadowPass) {
         super(shaderMgr, texture, "shadow");
-        
+
         mShadowPass = shadowPass;
-        mShadowBiasMatrix = new float[] {
-                0.5f, 0.0f, 0.0f, 0.0f,
-                0.0f, 0.5f, 0.0f, 0.0f,
-                0.0f, 0.0f, 0.5f, 0.0f,
-                0.5f, 0.5f, 0.5f, 1.0f,
-        };
-        
+        mShadowBiasMatrix = new float[] { 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.5f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, };
+
         muShadowSamplerHandle = glGetUniformLocation(mShaderHandle, "uShadowSampler");
         muShadowMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uShadowMvpMatrix");
     }
@@ -50,13 +56,13 @@ public class ShadowShader extends PhongShader {
 
         // compute the shadow mvp matrix
         // this matrix is needed to transform vertex coordinates to the corresponding point in the
-        // shadow texture
+        // shadow depth map
         float[] shadowView = mShadowPass.getShadowViewMatrix();
         float[] shadowProj = mShadowPass.getShadowProjectionMatrix();
         Matrix.multiplyMM(mTempMatrix, 0, shadowView, 0, mModelMatrix, 0);
         Matrix.multiplyMM(mShadowMvpMatrix, 0, shadowProj, 0, mTempMatrix, 0);
         Matrix.multiplyMM(mTempMatrix, 0, mShadowBiasMatrix, 0, mShadowMvpMatrix, 0);
-        
+
         glUniformMatrix4fv(muShadowMvpMatrixHandle, 1, false, mTempMatrix, 0);
     }
 
@@ -68,7 +74,7 @@ public class ShadowShader extends PhongShader {
     @Override
     public void onBind(GfxState state) {
         super.onBind(state);
-        
+
         glUniform1i(muShadowSamplerHandle, mShadowPass.getTextureUnit());
     }
 }
