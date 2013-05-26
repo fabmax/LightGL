@@ -86,6 +86,7 @@ public class MeshFactory {
         glGenBuffers(1, buf, 0);
         glBindBuffer(GL_ARRAY_BUFFER, buf[0]);
         glBufferData(GL_ARRAY_BUFFER, vertData.capacity() * 4, vertData, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         
         // create and fill index buffer
         Buffer indexBuffer;

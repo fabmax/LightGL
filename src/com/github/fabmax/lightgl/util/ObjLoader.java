@@ -158,20 +158,18 @@ public class ObjLoader {
             glGenBuffers(1, buf, 0);
             glBindBuffer(GL_ARRAY_BUFFER, buf[0]);
             glBufferData(GL_ARRAY_BUFFER, meshData.capacity() * 4, meshData, GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
             
             // create attribute binders
-            ShaderAttributeBinder posBinder = ShaderAttributeBinder.createFloatBufferBinder(meshData, 3, vertElements * 4);
-            //ShaderAttributeBinder posBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, vertElements * 4);
+            ShaderAttributeBinder posBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, vertElements * 4);
             ShaderAttributeBinder normalBinder = null;
             ShaderAttributeBinder uvBinder = null;
             if (!normals.isEmpty()) {
-                //normalBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, vertElements * 4);
-                normalBinder = ShaderAttributeBinder.createFloatBufferBinder(meshData, 3, vertElements * 4);
+                normalBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 3, vertElements * 4);
                 normalBinder.setOffset(normalOffset);
             }
             if (!texCoords.isEmpty()) {
-                //uvBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 2, vertElements * 4);
-                uvBinder = ShaderAttributeBinder.createFloatBufferBinder(meshData, 2, vertElements * 4);
+                uvBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 2, vertElements * 4);
                 uvBinder.setOffset(texCoordOffset);
             }
 
