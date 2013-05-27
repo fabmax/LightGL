@@ -5,7 +5,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.github.fabmax.lightgl.DepthShader;
 import com.github.fabmax.lightgl.GfxEngine;
 import com.github.fabmax.lightgl.GfxEngineListener;
 import com.github.fabmax.lightgl.GlException;
@@ -17,7 +16,6 @@ import com.github.fabmax.lightgl.Texture;
 import com.github.fabmax.lightgl.TextureProperties;
 import com.github.fabmax.lightgl.scene.Mesh;
 import com.github.fabmax.lightgl.scene.TransformGroup;
-import com.github.fabmax.lightgl.util.MeshFactory;
 import com.github.fabmax.lightgl.util.ObjLoader;
 
 /**
@@ -38,6 +36,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     private long mLastFpsOut = 0;
     private int mFrames = 0;
     private float mFps = 0;
+    
+    private BlockGenerator mBlocks;
     
     /**
      * Called on App startup.
@@ -70,7 +70,10 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         //mScene.rotate(0.5f, 0.9f, 0.5f, 0.0f);
         
         // spin the scene around the Y-axis
-        mScene.rotate(1f, 0, 1, 0);
+        //mScene.rotate(0.5f, 0, 1, 0);
+        
+        // interpolate block heights
+        mBlocks.interpolateHeights();
         
         // calculate frames per second and print them every second
         mFrames++;
@@ -90,8 +93,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     @Override
     public void onLoadScene(GfxEngine engine) {
-        //setCubeScene(engine);
-        setObjModelScene(engine);
+        setCubeScene(engine);
+        //setObjModelScene(engine);
     }
     
     /**
@@ -99,37 +102,29 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     public void setCubeScene(GfxEngine engine) {
         // set camera position
-        engine.getState().setBackgroundColor(1, 0, 0);
-        engine.getCamera().setPosition(0, 3, 5);
+        engine.getState().setBackgroundColor(0, 0, 0);
+        engine.getCamera().setPosition(0, 20, 12);
         
         // add a directional light
         Light light = new Light();
         light.colorR = 0.7f; light.colorG = 0.7f; light.colorB = 0.7f;
-        light.posX = 1;      light.posY = 1;      light.posZ = 1;
+        light.posX = 0.8f;      light.posY = 1;      light.posZ = 1;
         engine.addLight(light);
         
         // create scene
         mScene = new TransformGroup();
-        mScene.rotate(180, 1, 0, 0);
         engine.setScene(mScene);
-        
-        //Mesh roundCube = MeshFactory.createRoundCube();
-        //mScene.addChild(roundCube);
-        //roundCube.setShader(new PhongShader(engine.getShaderManager()));
-        //Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
-        //roundCube.setShader(new PhongShader(engine.getShaderManager(), tex));
 
         // enable shadow rendering
         ShadowPass shadow = new ShadowPass(engine);
         engine.setPreRenderPass(shadow);
         
-        // add a color cube
-        Mesh colorCube = MeshFactory.createColorCube();
-        mScene.addChild(colorCube);
-        //Texture tex = engine.getTextureManager().loadTexture(R.drawable.stone_wall, new TextureProperties());
-        //colorCube.setShader(new PhongShader(engine.getShaderManager(), tex));
-        //colorCube.setShader(new PhongShader(engine.getShaderManager(), shadow.getTexture()));
-        colorCube.setShader(new DepthShader(engine.getShaderManager()));
+        // add a mesh
+        mBlocks = new BlockGenerator(6, 6);
+        Mesh mesh = mBlocks.getMesh();
+        Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
+        mesh.setShader(new ShadowShader(engine.getShaderManager(), tex, shadow));
+        mScene.addChild(mesh);
     }
     
     /**

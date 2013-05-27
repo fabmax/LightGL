@@ -74,8 +74,8 @@ public class ShadowPass implements RenderPass {
         props.xWrapping = WrappingMethod.CLAMP;
         props.yWrapping = WrappingMethod.CLAMP;
         mDepthTexture.setTextureProperties(props);
-        ByteBuffer texBuffer = BufferHelper.createByteBuffer(512*512*4);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGB, 512, 512, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_SHORT_5_6_5, texBuffer);
+        ByteBuffer texBuffer = BufferHelper.createByteBuffer(MAP_SIZE * MAP_SIZE * 4);
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGB, MAP_SIZE, MAP_SIZE, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_SHORT_5_6_5, texBuffer);
 
         // create the render buffer needed for depth testing
         glBindRenderbuffer(GL_RENDERBUFFER, mRenderbufferHandle);

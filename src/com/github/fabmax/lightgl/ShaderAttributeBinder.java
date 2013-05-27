@@ -208,6 +208,7 @@ public abstract class ShaderAttributeBinder {
         public boolean bindAttribute(int target) {
             glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
             glVertexAttribPointer(target, mSize, mType, false, mStride, mOffset * 4);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
             return true;
         }
 

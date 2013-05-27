@@ -51,10 +51,10 @@ public class ObjLoader {
             InputStream in = context.getAssets().open(file);
             BufferedReader reader = new BufferedReader(new InputStreamReader(in));
 
-            GrowingFloatArray verts = new GrowingFloatArray();
-            GrowingFloatArray texCoords = new GrowingFloatArray();
-            GrowingFloatArray normals = new GrowingFloatArray();
-            GrowingIntArray indices = new GrowingIntArray();
+            FloatList verts = new FloatList();
+            FloatList texCoords = new FloatList();
+            FloatList normals = new FloatList();
+            IntList indices = new IntList();
 
             // parse elements from OBJ file
             String line;
@@ -101,8 +101,8 @@ public class ObjLoader {
             // OBJ supports different indices for attributes per vertex, OpenGL not - we need to
             // rebuild the vertex list
             int capa = GlMath.max3(verts.size(), normals.size(), texCoords.size()) * vertElements;
-            GrowingFloatArray vertexData = new GrowingFloatArray(capa);
-            GrowingIntArray glIndices = new GrowingIntArray();
+            FloatList vertexData = new FloatList(capa);
+            IntList glIndices = new IntList();
             SparseIntArray glIndexMap = new SparseIntArray();
             float[] vertex = new float[vertElements];
             for (int i = 0; i < indices.size(); i += idxPerVertex) {
@@ -148,13 +148,11 @@ public class ObjLoader {
             }
 
             // create Mesh
-            IntBuffer meshIndices = BufferHelper.createIntBuffer(glIndices.size());
-            glIndices.copyToBuffer(meshIndices);
+            IntBuffer meshIndices = glIndices.asBuffer();
 
             // put vertex data in a VBO
             int[] buf = new int[1];
-            FloatBuffer meshData = BufferHelper.createFloatBuffer(vertexData.size());
-            vertexData.copyToBuffer(meshData);
+            FloatBuffer meshData = vertexData.asBuffer();
             glGenBuffers(1, buf, 0);
             glBindBuffer(GL_ARRAY_BUFFER, buf[0]);
             glBufferData(GL_ARRAY_BUFFER, meshData.capacity() * 4, meshData, GL_STATIC_DRAW);
@@ -210,7 +208,7 @@ public class ObjLoader {
      * @param dstBuf
      *            destination buffer
      */
-    private static void parseFloats(String line, int parseCnt, GrowingFloatArray dstBuf) {
+    private static void parseFloats(String line, int parseCnt, FloatList dstBuf) {
         StringTokenizer tok = new StringTokenizer(line, " ");
         // skip first token (line prefix)
         tok.nextToken();
@@ -232,7 +230,7 @@ public class ObjLoader {
      * @throws GlException
      *             if the face has more than 3 vertices
      */
-    private static void parseFaceIndices(String line, GrowingIntArray dstBuf) throws GlException {
+    private static void parseFaceIndices(String line, IntList dstBuf) throws GlException {
         StringTokenizer tok = new StringTokenizer(line, " ");
         // skip first token (line prefix)
         tok.nextToken();

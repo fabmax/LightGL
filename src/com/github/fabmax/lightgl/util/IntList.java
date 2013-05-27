@@ -5,31 +5,31 @@ import java.nio.ShortBuffer;
 import java.util.Iterator;
 
 /**
- * GrowingIntArray is a integer array that dynamically increases its size while more elements are
+ * IntList is a integer array that dynamically increases its size while more elements are
  * added.
  * 
  * @author fabmax
  * 
  */
-public class GrowingIntArray implements Iterable<Integer> {
+public class IntList implements Iterable<Integer> {
 
     private int[] mBuffer;
     private int mSize = 0;
 
     /**
-     * Creates a GrowingIntArray with an initial capacity of 1000 elements.
+     * Creates a IntList with an initial capacity of 1000 elements.
      */
-    public GrowingIntArray() {
+    public IntList() {
         this(1000);
     }
 
     /**
-     * Creates a GrowingIntArray with the specified initial capacity.
+     * Creates a IntList with the specified initial capacity.
      * 
      * @param initialCapacity
      *            initial capacity of the underlying array
      */
-    public GrowingIntArray(int initialCapacity) {
+    public IntList(int initialCapacity) {
         if (initialCapacity < 1) {
             throw new IllegalArgumentException("initialCapacity must be >= 1");
         }
@@ -37,11 +37,11 @@ public class GrowingIntArray implements Iterable<Integer> {
     }
 
     /**
-     * Returns the array value at the specified index.
+     * Returns the list value at the specified index.
      * 
      * @param index
      *            index of the value to return
-     * @return the array value at the specified index
+     * @return the list value at the specified index
      */
     public int get(int index) {
         if (index < 0 || index >= mSize) {
@@ -51,7 +51,18 @@ public class GrowingIntArray implements Iterable<Integer> {
     }
     
     /**
-     * Copies the contents of the array to the specified IntBuffer.
+     * Creates a new IntBuffer and copies the content of this list to it.
+     * 
+     * @return a newly created IntBuffer with the same content as this list
+     */
+    public IntBuffer asBuffer() {
+        IntBuffer buf = BufferHelper.createIntBuffer(size());
+        copyToBuffer(buf);
+        return buf;
+    }
+    
+    /**
+     * Copies the contents of the list to the specified IntBuffer.
      * 
      * @param ib
      *            target IntBuffer
@@ -62,7 +73,7 @@ public class GrowingIntArray implements Iterable<Integer> {
     }
     
     /**
-     * Copies the contents of the array to the specified ShortBuffer.
+     * Copies the contents of the list to the specified ShortBuffer.
      * 
      * @param sb
      *            target ShortBuffer
@@ -75,7 +86,7 @@ public class GrowingIntArray implements Iterable<Integer> {
     }
 
     /**
-     * Adds a value to the end of the array.
+     * Adds a value to the end of the list.
      * 
      * @param i
      *            the value to add
@@ -110,25 +121,25 @@ public class GrowingIntArray implements Iterable<Integer> {
     }
     
     /**
-     * Returns the number of elements in this array.
+     * Returns the number of elements in this list.
      * 
-     * @return the number of elements in this array
+     * @return the number of elements in this list
      */
     public int size() {
         return mSize;
     }
     
     /**
-     * Returns whether this array is empty or not.
+     * Returns whether this list is empty or not.
      * 
-     * @return true if this array is empty, false otherwise
+     * @return true if this list is empty, false otherwise
      */
     public boolean isEmpty() {
         return mSize == 0;
     }
     
     /**
-     * Removes all elements from this array. The underlying buffer is not deleted.
+     * Removes all elements from this list. The underlying buffer is not deleted.
      */
     public void clear() {
         mSize = 0;
@@ -147,7 +158,7 @@ public class GrowingIntArray implements Iterable<Integer> {
     }
 
     /**
-     * Returns a Iterator that iterates over this GrowingIntArray.
+     * Returns a Iterator that iterates over this IntList.
      */
     @Override
     public Iterator<Integer> iterator() {
@@ -155,10 +166,7 @@ public class GrowingIntArray implements Iterable<Integer> {
     }
 
     /**
-     * Iterator class for GrowingFloatArray.
-     * 
-     * @author fabmax
-     * 
+     * Iterator class for IntList.
      */
     private class ArrayIterator implements Iterator<Integer> {
         // iterator position
@@ -176,9 +184,9 @@ public class GrowingIntArray implements Iterable<Integer> {
         }
 
         /**
-         * Returns the next array element.
+         * Returns the next list element.
          * 
-         * @return the next array element
+         * @return the next list element
          * @see Iterator#next()
          */
         @Override
@@ -193,7 +201,7 @@ public class GrowingIntArray implements Iterable<Integer> {
          */
         @Override
         public void remove() {
-            GrowingIntArray.this.remove(--mIndex);
+            IntList.this.remove(--mIndex);
         }
     }
 }

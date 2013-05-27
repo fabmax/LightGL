@@ -4,31 +4,31 @@ import java.nio.FloatBuffer;
 import java.util.Iterator;
 
 /**
- * GrowingFloatArray is a float array that dynamically increases its size while more elements are
+ * FloatList is a float array that dynamically increases its size while more elements are
  * added.
  * 
  * @author fabmax
  * 
  */
-public class GrowingFloatArray implements Iterable<Float> {
+public class FloatList implements Iterable<Float> {
 
     private float[] mBuffer;
     private int mSize = 0;
 
     /**
-     * Creates a GrowingFloatArray with an initial capacity of 1000 elements.
+     * Creates a FloatList with an initial capacity of 1000 elements.
      */
-    public GrowingFloatArray() {
+    public FloatList() {
         this(1000);
     }
 
     /**
-     * Creates a GrowingFloatArray with the specified initial capacity.
+     * Creates a FloatList with the specified initial capacity.
      * 
      * @param initialCapacity
      *            initial capacity of the underlying array
      */
-    public GrowingFloatArray(int initialCapacity) {
+    public FloatList(int initialCapacity) {
         if (initialCapacity < 1) {
             throw new IllegalArgumentException("initialCapacity must be >= 1");
         }
@@ -36,11 +36,11 @@ public class GrowingFloatArray implements Iterable<Float> {
     }
 
     /**
-     * Returns the array value at the specified index.
+     * Returns the list value at the specified index.
      * 
      * @param index
      *            index of the value to return
-     * @return the array value at the specified index
+     * @return the list value at the specified index
      */
     public float get(int index) {
         if (index < 0 || index >= mSize) {
@@ -50,7 +50,18 @@ public class GrowingFloatArray implements Iterable<Float> {
     }
     
     /**
-     * Copies the contents of the array to the specified FloatBuffer.
+     * Creates a new FloatBuffer and copies the content of this list to it.
+     * 
+     * @return a newly created FloatBuffer with the same content as this list
+     */
+    public FloatBuffer asBuffer() {
+        FloatBuffer buf = BufferHelper.createFloatBuffer(size());
+        copyToBuffer(buf);
+        return buf;
+    }
+    
+    /**
+     * Copies the contents of the list to the specified FloatBuffer.
      * 
      * @param fb
      *            target FloatBuffer
@@ -61,7 +72,7 @@ public class GrowingFloatArray implements Iterable<Float> {
     }
 
     /**
-     * Adds a value to the end of the array.
+     * Adds a value to the end of the list.
      * 
      * @param f
      *            the value to add
@@ -75,7 +86,7 @@ public class GrowingFloatArray implements Iterable<Float> {
     }
 
     /**
-     * Adds all values of the specified array to the end of the array.
+     * Adds all values of the specified array to the end of the list.
      * 
      * @param f
      *            the array to add
@@ -108,25 +119,25 @@ public class GrowingFloatArray implements Iterable<Float> {
     }
 
     /**
-     * Returns the number of elements in this array.
+     * Returns the number of elements in this list.
      * 
-     * @return the number of elements in this array
+     * @return the number of elements in this list
      */
     public int size() {
         return mSize;
     }
 
     /**
-     * Returns whether this array is empty or not.
+     * Returns whether this list is empty or not.
      * 
-     * @return true if this array is empty, false otherwise
+     * @return true if this list is empty, false otherwise
      */
     public boolean isEmpty() {
         return mSize == 0;
     }
 
     /**
-     * Removes all elements from this array. The underlying buffer is not deleted.
+     * Removes all elements from this list. The underlying buffer is not deleted.
      */
     public void clear() {
         mSize = 0;
@@ -145,7 +156,7 @@ public class GrowingFloatArray implements Iterable<Float> {
     }
 
     /**
-     * Returns a Iterator that iterates over this GrowingFloatArray.
+     * Returns a Iterator that iterates over this FloatList.
      */
     @Override
     public Iterator<Float> iterator() {
@@ -153,10 +164,7 @@ public class GrowingFloatArray implements Iterable<Float> {
     }
 
     /**
-     * Iterator class for GrowingFloatArray.
-     * 
-     * @author fabmax
-     * 
+     * Iterator class for FloatList.
      */
     private class ArrayIterator implements Iterator<Float> {
         // iterator position
@@ -174,9 +182,9 @@ public class GrowingFloatArray implements Iterable<Float> {
         }
 
         /**
-         * Returns the next array element.
+         * Returns the next list element.
          * 
-         * @return the next array element
+         * @return the next list element
          * @see Iterator#next()
          */
         @Override
@@ -191,7 +199,7 @@ public class GrowingFloatArray implements Iterable<Float> {
          */
         @Override
         public void remove() {
-            GrowingFloatArray.this.remove(--mIndex);
+            FloatList.this.remove(--mIndex);
         }
     }
 }
