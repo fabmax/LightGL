@@ -1,6 +1,8 @@
 /*
- * A phong fragment shader that supports a single light source and fixed vertex colors.
- * Inspired by http://www.opengl-tutorial.org/beginners-tutorials/tutorial-8-basic-shading/
+ * A phong fragment shader that supports a single light source with dynamic shadows.
+ * Inspired by http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
+ * However this shader uses a standard texture instead of a depth texture for shadow computation,
+ * because depth textures aren't supported on many devices (e.g. my Galaxy Nexus)
  *
  * @author fabmax
  */
@@ -18,44 +20,32 @@ varying vec3 vLightDirection_cameraspace;
 varying vec3 vNormal_cameraspace;
 varying vec4 vShadowCoord;
 
-float shadow2D(vec4 coord) {
-	float visibility = 0.0;
-	float depth = (vShadowCoord.z - 0.025) / vShadowCoord.w;
+float shadow2Dsmooth(vec4 coord) {
+	float visibility = 4.0;
+	float depth = (vShadowCoord.z - 0.01) / vShadowCoord.w;
 	
-	vec4 shadowValue = texture2D(uShadowSampler, coord.xy);
-	if ((shadowValue.r + shadowValue.g / 255.0) > depth) {
-		visibility += 1.0;
-	}
-	shadowValue = texture2D(uShadowSampler, vec2(coord.x + 0.002, coord.y + 0.002));
-	if ((shadowValue.r + shadowValue.g / 255.0) > depth) {
-		visibility += 1.0;
-	}
-	shadowValue = texture2D(uShadowSampler, vec2(coord.x + 0.002, coord.y - 0.002));
-	if ((shadowValue.r + shadowValue.g / 255.0) > depth) {
-		visibility += 1.0;
-	}
-	shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.002, coord.y - 0.002));
-	if ((shadowValue.r + shadowValue.g / 255.0) > depth) {
-		visibility += 1.0;
-	}
-	shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.002, coord.y + 0.002));
-	if ((shadowValue.r + shadowValue.g / 255.0) > depth) {
-		visibility += 1.0;
-	}
+	vec4 shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.003768, coord.y - 0.001596));
+	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
+	
+	shadowValue = texture2D(uShadowSampler, vec2(coord.x + 0.003782, coord.y - 0.003076));
+	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
+	
+	shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.000377, coord.y - 0.003718));
+	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
+	
+	shadowValue = texture2D(uShadowSampler, vec2(coord.x + 0.001380, coord.y + 0.001176));
+	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
 	
 	return clamp(visibility / 5.0, 0.2, 1.0);
 }
 
-float shadow2DSimple(vec4 coord) {
-	float visibility = 0.2;
-	float depth = (vShadowCoord.z - 0.025) / vShadowCoord.w;
+float shadow2D(vec4 coord) {
+	float visibility = 1.0;
+	float depth = (vShadowCoord.z - 0.005) / vShadowCoord.w;
 	
 	vec4 shadowValue = texture2D(uShadowSampler, coord.xy);
-	if ((shadowValue.r + shadowValue.g / 255.0) > depth) {
-		visibility = 1.0;
-	}
-	
-	return visibility;
+	float d = shadowValue.r + shadowValue.g / 255.0;
+	return 1.0 - clamp((depth - d) * 1000.0, 0.0, 0.8);
 }
 
 void main() {
@@ -65,9 +55,9 @@ void main() {
 	vec3 n = normalize(vNormal_cameraspace);
 
 	// high quality shadows but expensive
-	float visibility = shadow2D(vShadowCoord);
+	float visibility = shadow2Dsmooth(vShadowCoord);
 	// low quality shadows but faster
-	//float visibility = shadow2DSimple(vShadowCoord);
+	//float visibility = shadow2D(vShadowCoord);
 
 	// Cosine of angle between surface normal and light direction
 	float cosTheta = clamp(dot(n, l), 0.0, 1.0);

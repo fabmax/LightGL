@@ -66,7 +66,8 @@ public class ShadowPass implements RenderPass {
         glGenRenderbuffers(1, buffer, 0);
         mRenderbufferHandle = buffer[0];
 
-        // create the shadow map texture
+        // create the shadow map texture, a regular RGB texture is used instead of a depth texture
+        // because many devices don't support the necessary OES_depth_texture extension
         mDepthTexture = engine.getTextureManager().createTexture();
         TextureProperties props = new TextureProperties();
         props.magFilter = MagFilterMethod.LINEAR;
@@ -75,8 +76,8 @@ public class ShadowPass implements RenderPass {
         props.yWrapping = WrappingMethod.CLAMP;
         mDepthTexture.setTextureProperties(props);
         ByteBuffer texBuffer = BufferHelper.createByteBuffer(MAP_SIZE * MAP_SIZE * 4);
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGB, MAP_SIZE, MAP_SIZE, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_SHORT_5_6_5, texBuffer);
-
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGB, MAP_SIZE, MAP_SIZE, 0, GLES20.GL_RGB, GLES20.GL_UNSIGNED_BYTE, texBuffer);
+        
         // create the render buffer needed for depth testing
         glBindRenderbuffer(GL_RENDERBUFFER, mRenderbufferHandle);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, MAP_SIZE, MAP_SIZE);

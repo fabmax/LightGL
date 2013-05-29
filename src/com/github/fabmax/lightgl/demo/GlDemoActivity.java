@@ -37,7 +37,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     private int mFrames = 0;
     private float mFps = 0;
     
-    private BlockGenerator mBlocks;
+    private BlockAnimator mBlocks;
+    private long mStartTime = System.currentTimeMillis();
     
     /**
      * Called on App startup.
@@ -66,18 +67,25 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     @Override
     public void onRenderFrame(GfxEngine engine) {
+        long t = System.currentTimeMillis();
+        
         // spin the scene wildly
         //mScene.rotate(0.5f, 0.9f, 0.5f, 0.0f);
         
         // spin the scene around the Y-axis
-        //mScene.rotate(0.5f, 0, 1, 0);
+        mScene.rotate(0.5f, 0, 1, 0);
         
+        // slowly rotate camera
+        float a = (t - mStartTime) / 10000.0f;
+        float x = (float) Math.sin(a) * 12;
+        float z = (float) Math.cos(a) * 12;
+        engine.getCamera().setPosition(x, 20, z);
+
         // interpolate block heights
-        mBlocks.interpolateHeights();
+        mBlocks.interpolateHeights(engine.getState());
         
         // calculate frames per second and print them every second
         mFrames++;
-        long t = System.currentTimeMillis();
         if(t > mLastFpsOut + 1000) {
             mFps = mFrames / ((t - mLastFpsOut) / 1000.0f);
             mLastFpsOut = t;
@@ -102,7 +110,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     public void setCubeScene(GfxEngine engine) {
         // set camera position
-        engine.getState().setBackgroundColor(0, 0, 0);
+        engine.getState().setBackgroundColor(0.067f, 0.235f, 0.298f);
+        engine.getState().setBackgroundColor(0.8f, 0.8f, 0.8f);
         engine.getCamera().setPosition(0, 20, 12);
         
         // add a directional light
@@ -113,18 +122,16 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         
         // create scene
         mScene = new TransformGroup();
+        //mScene.translate(0, 0, -3);
         engine.setScene(mScene);
 
         // enable shadow rendering
         ShadowPass shadow = new ShadowPass(engine);
         engine.setPreRenderPass(shadow);
         
-        // add a mesh
-        mBlocks = new BlockGenerator(6, 6);
-        Mesh mesh = mBlocks.getMesh();
-        Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
-        mesh.setShader(new ShadowShader(engine.getShaderManager(), tex, shadow));
-        mScene.addChild(mesh);
+        // add block mesh to scene
+        mBlocks = new BlockAnimator(engine, shadow, 7, 7);
+        mScene.addChild(mBlocks.getMesh());
     }
     
     /**

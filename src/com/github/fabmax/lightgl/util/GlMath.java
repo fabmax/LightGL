@@ -66,7 +66,7 @@ public class GlMath {
         m[14] = -((2 * zNear * zFar) / frustumLen);
         m[15] = 0;
     }
-    
+
     /**
      * Returns the maximum value of the specified values.
      * 
@@ -78,10 +78,90 @@ public class GlMath {
     public static int max3(int a, int b, int c) {
         if (a > b && a > c) {
             return a;
-        } else if(b > a && b > c) {
+        } else if (b > a && b > c) {
             return b;
         } else {
             return c;
         }
+    }
+
+    /**
+     * Computes a packed int color from HSV color model values.
+     * 
+     * @param h
+     *            hue [0 .. 360]
+     * @param s
+     *            saturation [0 .. 1]
+     * @param v
+     *            value [0 .. 1]
+     * @param a
+     *            alpha [0 .. 1]
+     * @return packed int color
+     */
+    public static int packedHsvColor(float h, float s, float v, float a) {
+        int hi = (int) (h / 60.0f);
+        float f = h / 60.0f - hi;
+        float p = v * (1 - s);
+        float q = v * (1 - s * f);
+        float t = v * (1 - s * (1 - f));
+    
+        switch (hi) {
+        case 1:
+            return packedColor(q, v, p, a);
+        case 2:
+            return packedColor(p, v, t, a);
+        case 3:
+            return packedColor(p, q, v, a);
+        case 4:
+            return packedColor(t, p, v, a);
+        case 5:
+            return packedColor(v, p, q, a); 
+        default:
+            return packedColor(v, t, p, a);
+        }
+    }
+
+    /**
+     * Computes a packed int color with the specified color intensities. The packed format is ABGR.
+     * The specified values should be in the range from 0 to 1 and are clamped.
+     * 
+     * @param r
+     *            red [0 .. 1]
+     * @param g
+     *            green [0 .. 1]
+     * @param b
+     *            blue [0 .. 1]
+     * @param a
+     *            alpha [0 .. 1]
+     * @return packed ABGR int
+     */
+    public static int packedColor(float r, float g, float b, float a) {
+        int ir = (int) (r * 255.0f + 0.5f);
+        int ig = (int) (g * 255.0f + 0.5f);
+        int ib = (int) (b * 255.0f + 0.5f);
+        int ia = (int) (a * 255.0f + 0.5f);
+
+        if (ir > 255) {
+            ir = 255;
+        } else if (ir < 0) {
+            ir = 0;
+        }
+        if (ig > 255) {
+            ig = 255;
+        } else if (ig < 0) {
+            ig = 0;
+        }
+        if (ib > 255) {
+            ib = 255;
+        } else if (ib < 0) {
+            ib = 0;
+        }
+        if (ia > 255) {
+            ia = 255;
+        } else if (ia < 0) {
+            ia = 0;
+        }
+
+        return (ia << 24) | (ib << 16) | (ig << 8) | ir;
     }
 }

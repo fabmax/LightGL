@@ -1,5 +1,5 @@
 /*
- * A phong fragment shader that supports a single light source and fixed vertex colors.
+ * A phong fragment shader that supports a single light source and texture mapping.
  * Inspired by http://www.opengl-tutorial.org/beginners-tutorials/tutorial-8-basic-shading/
  *
  * @author fabmax

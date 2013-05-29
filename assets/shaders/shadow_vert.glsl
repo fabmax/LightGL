@@ -1,6 +1,6 @@
 /*
- * A phong vertex shader that supports a single light source and fixed vertex colors.
- * Inspired by http://www.opengl-tutorial.org/beginners-tutorials/tutorial-8-basic-shading/
+ * A phong vertex shader that supports a single light source with dynamic shadows.
+ * Inspired by http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-16-shadow-mapping/
  *
  * @author fabmax
  */
