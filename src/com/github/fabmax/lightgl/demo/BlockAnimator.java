@@ -59,7 +59,7 @@ public class BlockAnimator {
     private IntBuffer mTextureData;
     
     /**
-     * Creates a ClockAnimator with the specified grid size. If a ShadowRenderPass is given shadow mapping
+     * Creates a BlockAnimator with the specified grid size. If a ShadowRenderPass is given shadow mapping
      * is enabled.
      * 
      * @param engine

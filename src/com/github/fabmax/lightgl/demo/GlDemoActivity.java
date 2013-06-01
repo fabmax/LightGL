@@ -27,16 +27,15 @@ import com.github.fabmax.lightgl.util.ObjLoader;
  */
 public class GlDemoActivity extends Activity implements GfxEngineListener {
 
+    private GLSurfaceView mGlView;
     // main graphics engine object
     private GfxEngine mEngine;
     
     // the scene contains all objects that should be displayed
     private TransformGroup mScene;
     
-    // frame rate calculation
+    // frame rate log output
     private long mLastFpsOut = 0;
-    private int mFrames = 0;
-    private float mFps = 0;
     
     private BlockAnimator mBlocks;
     private long mStartTime = System.currentTimeMillis();
@@ -54,11 +53,25 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
 
         // set layout
         setContentView(R.layout.activity_gl_demo);
-        GLSurfaceView glView = (GLSurfaceView) findViewById(R.id.gl_view);
+        mGlView = (GLSurfaceView) findViewById(R.id.gl_view);
         // enable GLES 2.0
-        glView.setEGLContextClientVersion(2);
+        mGlView.setEGLContextClientVersion(2);
         // register graphics engine as GL renderer
-        glView.setRenderer(mEngine);
+        mGlView.setRenderer(mEngine);
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d("bla", "onPause");
+        super.onPause();
+        mGlView.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d("bla", "onResume");
+        super.onResume();
+        mGlView.onResume();
     }
 
     /**
@@ -88,12 +101,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         mBlocks.interpolateHeights(engine.getState());
         
         // calculate frames per second and print them every second
-        mFrames++;
         if(t > mLastFpsOut + 1000) {
-            mFps = mFrames / ((t - mLastFpsOut) / 1000.0f);
-            mLastFpsOut = t;
-            mFrames = 0;
-            Log.d("Activity", "Fps: " + mFps);
+            Log.d("Activity", "Fps: " + engine.getFps());
         }
     }
 

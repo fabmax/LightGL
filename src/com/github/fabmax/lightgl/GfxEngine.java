@@ -13,6 +13,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
+import android.util.Log;
 
 import com.github.fabmax.lightgl.scene.Node;
 
@@ -23,6 +24,8 @@ import com.github.fabmax.lightgl.scene.Node;
  * 
  */
 public class GfxEngine implements Renderer {
+    
+    private static final String TAG = "GfxEngine";
 
     private ShaderManager mShaderManager;
     private TextureManager mTextureManager;
@@ -38,6 +41,10 @@ public class GfxEngine implements Renderer {
     private GfxEngineListener mEngineListener;
     private RenderPass mPrePass;
     private RenderPass mMainPass;
+
+    private long mLastFrameTime = System.currentTimeMillis();
+    private long mMaxFrameInterval = 0;
+    private float mFps = 0;
 
     /**
      * Creates a new GfxEngine object.
@@ -67,6 +74,8 @@ public class GfxEngine implements Renderer {
      */
     @Override
     public void onDrawFrame(GL10 unused) {
+        doFpsStats();
+        
         mState.reset();
 
         if (mEngineListener != null) {
@@ -84,6 +93,38 @@ public class GfxEngine implements Renderer {
         if (mMainPass != null) {
             mMainPass.onRender(this);
         }
+    }
+    
+    /**
+     * Computes current frame rate and limits the frame rate if set.
+     */
+    private void doFpsStats() {
+        long t = System.currentTimeMillis();
+        long tLast = mLastFrameTime;
+        
+        if (mMaxFrameInterval > 0) {
+            long tDif = t - mLastFrameTime;
+            
+            // limit framerate
+            long s = mMaxFrameInterval - tDif;
+            
+            if(s > 0) {
+                try {
+                    Thread.sleep(s);
+                } catch (InterruptedException e) {
+                    // mmh whatever
+                }
+                mLastFrameTime += mMaxFrameInterval;
+            } else {
+                mLastFrameTime = t;
+            }
+        } else {
+            mLastFrameTime = t;
+        }
+
+        // update fps
+        float fps = 1000.0f / (float) (mLastFrameTime - tLast);
+        mFps = mFps * 0.95f + fps * 0.05f;
     }
 
     /**
@@ -112,6 +153,8 @@ public class GfxEngine implements Renderer {
      */
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+        Log.d(TAG, "onSurfaceCreated");
+        
         // setup GL stuff
         glClearColor(0, 0, 0, 1);
         glEnable(GL_CULL_FACE);
@@ -281,5 +324,43 @@ public class GfxEngine implements Renderer {
      */
     public int getViewportHeight() {
         return mViewportH;
+    }
+    
+    /**
+     * Returns the current frame rate. The frame rate is updated on every frame; however it is
+     * filtered to get more steady values.
+     * 
+     * @return the current frame rate
+     */
+    public float getFps() {
+        return mFps;
+    }
+    
+    /**
+     * Returns the currently set maximum frame rate. If no maximum frame rate is set 0 is returned.
+     * 
+     * @return the maximum frame rate
+     */
+    public float getMaximumFps() {
+        if (mMaxFrameInterval == 0) {
+            return 0.0f;
+        } else {
+            return 1000.0f / (float) mMaxFrameInterval;
+        }
+    }
+
+    /**
+     * Sets the maximum frame rate. fps = 0 disables the frame rate limit.
+     * 
+     * @param fps
+     *            the maximum frame rate
+     */
+    public void setMaximumFps(float fps) {
+        if (fps == 0.0f) {
+            mMaxFrameInterval = 0;
+        } else {
+            mMaxFrameInterval = Math.round(1000.0f / fps);
+        }
+        Log.d(TAG, "max interval:" + mMaxFrameInterval);
     }
 }
