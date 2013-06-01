@@ -23,7 +23,7 @@ public class TransformGroup extends Group {
      * Creates a new TransformGroup that applies no transformation at all.
      */
     public TransformGroup() {
-        Matrix.setIdentityM(mTransformationM, 0);
+        resetTransform();
     }
 
     /**
@@ -54,6 +54,13 @@ public class TransformGroup extends Group {
     public void applyTransformation(float[] transformation) {
         System.arraycopy(mTransformationM, 0, mTemp1, 0, 16);
         Matrix.multiplyMM(mTransformationM, 0, mTemp1, 0, transformation, 0);
+    }
+    
+    /**
+     * Resets the transformation matrix to an identity matrix.
+     */
+    public void resetTransform() {
+        Matrix.setIdentityM(mTransformationM, 0);
     }
 
     /**

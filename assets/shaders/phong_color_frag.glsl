@@ -29,11 +29,12 @@ void main() {
 	// Cosine of the angle between the eye vector and the reflect vector
 	float cosAlpha = clamp(dot(e, r), 0.0, 1.0);
 	
-	// Ambient color is the fragment color in dark
 	vec3 materialAmbientColor = vec3(0.2, 0.2, 0.2) * vFragmentColor;
+	vec3 materialDiffuseColor = vFragmentColor * uLightColor * cosTheta;
+	vec3 materialSpecularColor = uLightColor * pow(cosAlpha, uShininess);
 
 	// compute output color
 	gl_FragColor.rgb = materialAmbientColor +
-					   vFragmentColor * uLightColor * cosTheta +
-					   uLightColor * pow(cosAlpha, uShininess);
+					   materialDiffuseColor +
+					   materialSpecularColor;
 }

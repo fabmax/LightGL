@@ -14,6 +14,6 @@ public interface RenderPass {
      * @param engine
      *            the graphics engine
      */
-    public void doRenderPass(GfxEngine engine);
+    public void onRender(GfxEngine engine);
 
 }

@@ -7,7 +7,7 @@ import android.opengl.Matrix;
 
 /**
  * ShadowShader is a PhongShader that also supports dynamic shadows. To compute the necessary
- * shadow depth map a {@link ShadowPass} must be set as pre-render pass with
+ * shadow depth map a {@link ShadowRenderPass} must be set as pre-render pass with
  * {@link GfxEngine#setPreRenderPass(RenderPass)}.
  * 
  * @author fabmax
@@ -15,7 +15,7 @@ import android.opengl.Matrix;
  */
 public class ShadowShader extends PhongShader {
 
-    private ShadowPass mShadowPass;
+    private ShadowRenderPass mShadowPass;
 
     private int muShadowSamplerHandle;
     private int muShadowMvpMatrixHandle;
@@ -32,14 +32,18 @@ public class ShadowShader extends PhongShader {
      * @param texture
      *            the texture to map on drawn objects
      * @param shadowPass
-     *            the ShadowPass used to compute the depth texture
+     *            the ShadowRenderPass used to compute the depth texture
      */
-    public ShadowShader(ShaderManager shaderMgr, Texture texture, ShadowPass shadowPass) {
+    public ShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass) {
         super(shaderMgr, texture, "shadow");
 
         mShadowPass = shadowPass;
-        mShadowBiasMatrix = new float[] { 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
-                0.0f, 0.5f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, };
+        mShadowBiasMatrix = new float[] {
+                0.5f, 0.0f, 0.0f, 0.0f,
+                0.0f, 0.5f, 0.0f, 0.0f,
+                0.0f, 0.0f, 0.5f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f
+        };
 
         muShadowSamplerHandle = glGetUniformLocation(mShaderHandle, "uShadowSampler");
         muShadowMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uShadowMvpMatrix");

@@ -32,10 +32,13 @@ void main() {
 	
 	// Ambient color is the fragment color in dark
 	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
+	
 	vec3 materialAmbientColor = vec3(0.2, 0.2, 0.2) * fragmentColor;
+	vec3 materialDiffuseColor = fragmentColor * uLightColor * cosTheta;
+	vec3 materialSpecularColor = uLightColor * pow(cosAlpha, uShininess);
 
 	// compute output color
 	gl_FragColor.rgb = materialAmbientColor +
-					   fragmentColor * uLightColor * cosTheta +
-					   uLightColor * pow(cosAlpha, uShininess);
+					   materialDiffuseColor +
+					   materialSpecularColor;
 }

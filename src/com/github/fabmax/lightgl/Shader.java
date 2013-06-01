@@ -57,7 +57,8 @@ public abstract class Shader {
     public abstract void onMatrixUpdate(GfxState state);
     
     /**
-     * Enables the specified attribute for this shader.
+     * Enables the specified attribute for this shader. This method is called by concrete Shader
+     * implementations to set the vertex attributes used by the implementation.
      * 
      * @param attrib
      *            the attribute to enable

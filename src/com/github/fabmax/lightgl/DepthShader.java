@@ -61,5 +61,4 @@ public class DepthShader extends Shader {
         // pass current MVP matrix to shader
         glUniformMatrix4fv(muMvpMatrixHandle, 1, false, state.getMvpMatrix(), 0);
     }
-
 }

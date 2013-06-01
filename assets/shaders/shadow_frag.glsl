@@ -22,7 +22,7 @@ varying vec4 vShadowCoord;
 
 float shadow2Dsmooth(vec4 coord) {
 	float visibility = 4.0;
-	float depth = (vShadowCoord.z - 0.01) / vShadowCoord.w;
+	float depth = clamp((vShadowCoord.z - 0.01) / vShadowCoord.w, 0.0, 1.0);
 	
 	vec4 shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.003768, coord.y - 0.001596));
 	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
@@ -41,7 +41,7 @@ float shadow2Dsmooth(vec4 coord) {
 
 float shadow2D(vec4 coord) {
 	float visibility = 1.0;
-	float depth = (vShadowCoord.z - 0.005) / vShadowCoord.w;
+	float depth = clamp((vShadowCoord.z - 0.005) / vShadowCoord.w, 0.0, 1.0);
 	
 	vec4 shadowValue = texture2D(uShadowSampler, coord.xy);
 	float d = shadowValue.r + shadowValue.g / 255.0;
@@ -55,24 +55,24 @@ void main() {
 	vec3 n = normalize(vNormal_cameraspace);
 
 	// high quality shadows but expensive
-	float visibility = shadow2Dsmooth(vShadowCoord);
+	//float visibility = shadow2Dsmooth(vShadowCoord);
 	// low quality shadows but faster
-	//float visibility = shadow2D(vShadowCoord);
+	float visibility = shadow2D(vShadowCoord);
 
-	// Cosine of angle between surface normal and light direction
+	// for diffuse lighting: cosine of angle between surface normal and light direction
 	float cosTheta = clamp(dot(n, l), 0.0, 1.0);
 	
-	// Ambient color is the fragment color in dark
-	// useful for debugging: vec3 fragmentColor = texture2D(uShadowSampler, vShadowCoord.xy).rgb;
-	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
-	vec3 materialAmbientColor = vec3(0.2, 0.2, 0.2) * fragmentColor;
-	
-	vec3 materialDiffuseColor = fragmentColor * uLightColor * cosTheta;
-	
-	// Direction in which the light is reflected
+	// for specular lighting: direction in which the light is reflected
 	vec3 r = reflect(-l, n);
 	// Cosine of the angle between the eye vector and the reflect vector
 	float cosAlpha = clamp(dot(e, r), 0.0, 1.0);
+	
+	// useful for debugging: vec3 fragmentColor = texture2D(uShadowSampler, vShadowCoord.xy).rgb;
+	//vec3 fragmentColor = texture2D(uShadowSampler, vShadowCoord.xy).rgb;
+	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
+	
+	vec3 materialAmbientColor = vec3(0.2, 0.2, 0.2) * fragmentColor;
+	vec3 materialDiffuseColor = fragmentColor * uLightColor * cosTheta;
 	vec3 materialSpecularColor = uLightColor * pow(cosAlpha, uShininess);
 
 	// compute output color

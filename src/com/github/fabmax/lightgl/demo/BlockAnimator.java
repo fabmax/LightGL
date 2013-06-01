@@ -19,7 +19,7 @@ import com.github.fabmax.lightgl.GfxEngineListener;
 import com.github.fabmax.lightgl.GfxState;
 import com.github.fabmax.lightgl.PhongShader;
 import com.github.fabmax.lightgl.ShaderAttributeBinder;
-import com.github.fabmax.lightgl.ShadowPass;
+import com.github.fabmax.lightgl.ShadowRenderPass;
 import com.github.fabmax.lightgl.ShadowShader;
 import com.github.fabmax.lightgl.Texture;
 import com.github.fabmax.lightgl.TextureProperties;
@@ -59,7 +59,7 @@ public class BlockAnimator {
     private IntBuffer mTextureData;
     
     /**
-     * Creates a ClockAnimator with the specified grid size. If a ShadowPass is given shadow mapping
+     * Creates a ClockAnimator with the specified grid size. If a ShadowRenderPass is given shadow mapping
      * is enabled.
      * 
      * @param engine
@@ -71,7 +71,7 @@ public class BlockAnimator {
      * @param sizeZ
      *            grid size in z direction
      */
-    public BlockAnimator(GfxEngine engine, ShadowPass shadow, int sizeX, int sizeZ) {
+    public BlockAnimator(GfxEngine engine, ShadowRenderPass shadow, int sizeX, int sizeZ) {
         mSizeX = sizeX;
         mSizeZ = sizeZ;
         
@@ -218,9 +218,23 @@ public class BlockAnimator {
         int x = blockIdx % mSizeX;
         int z = blockIdx / mSizeX;
         int texIdx = z * MAX_SIZE_X + x;
-
-        float cNorm = (blockHeight - MIN_HEIGHT) / HEIGHT_RANGE;
-        
+        float normH = (blockHeight - MIN_HEIGHT) / HEIGHT_RANGE;
+        mTextureData.put(texIdx, getColorForHeight(normH));
+    }
+    
+    /**
+     * Calculates the color value for the specified block height. The height is given as normalized
+     * value in a range of (0 ..1 ).
+     * 
+     * @see GlMath#packedColor(float, float, float, float)
+     * @see GlMath#packedHsvColor(float, float, float, float)
+     * 
+     * @param normHeight
+     *            normalized block height (0 .. 1)
+     * 
+     * @return color corresponding to the height
+     */
+    protected int getColorForHeight(float normHeight) {
         //int m = ((x % 2) + (z % 2)) % 2;
         //float hue = 196.0f;
         //if(m == 1) {
@@ -230,11 +244,11 @@ public class BlockAnimator {
         //float val = cNorm * 0.4f + 0.49f;
         
         // colorful 
-        float hue = 300.0f * cNorm;
+        float hue = 300.0f * normHeight;
         float sat = 0.77f;
         float val = 0.89f;
         
-        mTextureData.put(texIdx, GlMath.packedHsvColor(hue, sat, val, 1));
+        return GlMath.packedHsvColor(hue, sat, val, 1);
     }
     
     /**

@@ -10,7 +10,8 @@ import com.github.fabmax.lightgl.GfxEngineListener;
 import com.github.fabmax.lightgl.GlException;
 import com.github.fabmax.lightgl.Light;
 import com.github.fabmax.lightgl.R;
-import com.github.fabmax.lightgl.ShadowPass;
+import com.github.fabmax.lightgl.ScaledScreenRenderPass;
+import com.github.fabmax.lightgl.ShadowRenderPass;
 import com.github.fabmax.lightgl.ShadowShader;
 import com.github.fabmax.lightgl.Texture;
 import com.github.fabmax.lightgl.TextureProperties;
@@ -68,17 +69,19 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     @Override
     public void onRenderFrame(GfxEngine engine) {
         long t = System.currentTimeMillis();
+        float s = (t - mStartTime) / 1e3f;
         
         // spin the scene wildly
         //mScene.rotate(0.5f, 0.9f, 0.5f, 0.0f);
         
         // spin the scene around the Y-axis
-        mScene.rotate(0.5f, 0, 1, 0);
+        float a = s * 10.0f;
+        mScene.resetTransform();
+        mScene.rotate(-a, 0, 1, 0);
         
         // slowly rotate camera
-        float a = (t - mStartTime) / 10000.0f;
-        float x = (float) Math.sin(a) * 12;
-        float z = (float) Math.cos(a) * 12;
+        float x = (float) Math.sin(a / 200) * 12;
+        float z = (float) Math.cos(a / 200) * 12;
         engine.getCamera().setPosition(x, 20, z);
 
         // interpolate block heights
@@ -109,6 +112,11 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      * Loads a demo scene with a simple color cube.
      */
     public void setCubeScene(GfxEngine engine) {
+        // use reduced render resolution
+        ScaledScreenRenderPass pass = new ScaledScreenRenderPass(engine);
+        pass.setViewportScale(0.5f);
+        engine.setMainRenderPass(pass);
+        
         // set camera position
         engine.getState().setBackgroundColor(0.067f, 0.235f, 0.298f);
         engine.getState().setBackgroundColor(0.8f, 0.8f, 0.8f);
@@ -126,11 +134,11 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         engine.setScene(mScene);
 
         // enable shadow rendering
-        ShadowPass shadow = new ShadowPass(engine);
+        ShadowRenderPass shadow = new ShadowRenderPass(engine);
         engine.setPreRenderPass(shadow);
         
         // add block mesh to scene
-        mBlocks = new BlockAnimator(engine, shadow, 7, 7);
+        mBlocks = new BlockAnimator(engine, shadow, 16, 16);
         mScene.addChild(mBlocks.getMesh());
     }
     
@@ -149,7 +157,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         engine.addLight(light);
 
         // enable shadow rendering
-        ShadowPass shadow = new ShadowPass(engine);
+        ShadowRenderPass shadow = new ShadowRenderPass(engine);
         engine.setPreRenderPass(shadow);
         
         try {

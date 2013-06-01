@@ -1,10 +1,7 @@
 package com.github.fabmax.lightgl;
 
-import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.GL_CULL_FACE;
-import static android.opengl.GLES20.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES20.GL_DEPTH_TEST;
-import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glViewport;
@@ -40,6 +37,7 @@ public class GfxEngine implements Renderer {
 
     private GfxEngineListener mEngineListener;
     private RenderPass mPrePass;
+    private RenderPass mMainPass;
 
     /**
      * Creates a new GfxEngine object.
@@ -55,8 +53,74 @@ public class GfxEngine implements Renderer {
         mTextureManager = new TextureManager(context);
         mState = new GfxState(this, mShaderManager, mTextureManager);
 
+        // by default the scene is directly rendered to the screen
+        mMainPass = new ScreenRenderPass();
+        
         // by default a standard perspective camera is used
         mCamera = new PerspectiveCamera();
+    }
+
+    /**
+     * Is called to render the scene.
+     * 
+     * @see Renderer#onDrawFrame(GL10)
+     */
+    @Override
+    public void onDrawFrame(GL10 unused) {
+        mState.reset();
+
+        if (mEngineListener != null) {
+            mEngineListener.onRenderFrame(this);
+        }
+        
+        if (mPrePass != null) {
+            mPrePass.onRender(this);
+        }
+
+        if (mCamera != null) {
+            mState.setCamera(mCamera);
+        }
+
+        if (mMainPass != null) {
+            mMainPass.onRender(this);
+        }
+    }
+
+    /**
+     * Is called on change of widget size.
+     * 
+     * @see Renderer#onSurfaceChanged(GL10, int, int)
+     */
+    @Override
+    public void onSurfaceChanged(GL10 unused, int width, int height) {
+        mViewportW = width;
+        mViewportH = height;
+
+        // update GL viewport size
+        glViewport(0, 0, width, height);
+
+        if (mCamera != null) {
+            // update camera matrix for new screen size
+            mCamera.setViewport(width, height);
+        }
+    }
+
+    /**
+     * Is called on startup and sets the default GL configuration.
+     * 
+     * @see Renderer#onSurfaceCreated(GL10, EGLConfig)
+     */
+    @Override
+    public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+        // setup GL stuff
+        glClearColor(0, 0, 0, 1);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+        
+        // notify registered listener that now is the right time to load scene data
+        if (mEngineListener != null) {
+            mEngineListener.onLoadScene(this);
+        }
     }
 
     /**
@@ -71,13 +135,37 @@ public class GfxEngine implements Renderer {
     }
 
     /**
-     * Sets the render pre pass callback. The pre pass is processed before the frame is rendered.
+     * Sets the pre-pass renderer. The pre-pass is processed before the main-pass.
      * 
      * @param prePass
-     *            the pre pass render callback to set
+     *            the pre-pass renderer to set
      */
     public void setPreRenderPass(RenderPass prePass) {
         mPrePass = prePass;
+    }
+    
+    /**
+     * Returns the pre-pass renderer
+     */
+    public RenderPass getPreRenderPass() {
+        return mPrePass;
+    }
+
+    /**
+     * Sets the main-pass renderer.
+     * 
+     * @param mainPass
+     *            the main-pass renderer to set
+     */
+    public void setMainRenderPass(RenderPass mainPass) {
+        mMainPass = mainPass;
+    }
+    
+    /**
+     * Returns the main-pass renderer
+     */
+    public RenderPass getMainRenderPass() {
+        return mMainPass;
     }
 
     /**
@@ -193,71 +281,5 @@ public class GfxEngine implements Renderer {
      */
     public int getViewportHeight() {
         return mViewportH;
-    }
-
-    /**
-     * Is called to render the scene.
-     * 
-     * @see Renderer#onDrawFrame(GL10)
-     */
-    @Override
-    public void onDrawFrame(GL10 unused) {
-        mState.reset();
-
-        // clear screen
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        if (mEngineListener != null) {
-            mEngineListener.onRenderFrame(this);
-        }
-        
-        if (mPrePass != null) {
-            mPrePass.doRenderPass(this);
-        }
-
-        if (mCamera != null) {
-            mState.setCamera(mCamera);
-        }
-
-        if (mScene != null) {
-            mScene.render(mState);
-        }
-    }
-
-    /**
-     * Is called on change of widget size.
-     * 
-     * @see Renderer#onSurfaceChanged(GL10, int, int)
-     */
-    @Override
-    public void onSurfaceChanged(GL10 unused, int width, int height) {
-        mViewportW = width;
-        mViewportH = height;
-
-        // update GL viewport size
-        glViewport(0, 0, width, height);
-
-        if (mCamera != null) {
-            // update camera matrix for new screen size
-            mCamera.setViewport(width, height);
-        }
-    }
-
-    /**
-     * Is called on startup and sets the default GL configuration.
-     * 
-     * @see Renderer#onSurfaceCreated(GL10, EGLConfig)
-     */
-    @Override
-    public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-        // setup GL stuff
-        glClearColor(0, 0, 0, 1);
-        glEnable(GL_CULL_FACE);
-        glEnable(GL_DEPTH_TEST);
-
-        // notify registered listener that now is the right time to load scene data
-        if (mEngineListener != null) {
-            mEngineListener.onLoadScene(this);
-        }
     }
 }
