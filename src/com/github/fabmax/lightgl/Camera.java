@@ -18,9 +18,9 @@ public abstract class Camera {
 
     /** Camera up direction */
     protected float mUpX = 0, mUpY = 1, mUpZ = 0;
-    
+
     /** Viewport dimensions */
-    protected float mViewportW, mViewportH, aspect;
+    protected float mViewportW, mViewportH, mAspect;
 
     /**
      * Sets the camera position.
@@ -48,18 +48,29 @@ public abstract class Camera {
         mUpY = y;
         mUpZ = z;
     }
-    
+
     /**
-     * Sets the viewport dimensions.
+     * Sets the viewport dimensions. Usually this method does not need to be called manually because
+     * it is called by {@link GfxEngine}.
      */
-    protected void setViewport(float width, float height) {
+    public void setViewport(float width, float height) {
         mViewportW = width;
         mViewportH = height;
         if (height > 0) {
-            aspect = width / height;
+            mAspect = width / height;
         } else {
-            aspect = 1;
+            mAspect = 1;
         }
+    }
+
+    /**
+     * Returns the aspect ratio of this camera. The aspect ratio is only valid after
+     * {@link Camera#setViewport(float, float)} has been called.
+     * 
+     * @return the aspect ratio of this camera
+     */
+    public float getAspectRatio() {
+        return mAspect;
     }
 
     /**
@@ -73,9 +84,10 @@ public abstract class Camera {
      */
     public void getViewMatrix(float[] viewMBuf) {
         // compute standard view matrix
-        Matrix.setLookAtM(viewMBuf, 0, mEyeX, mEyeY, mEyeZ, mLookAtX, mLookAtY, mLookAtZ, mUpX, mUpY, mUpZ);
+        Matrix.setLookAtM(viewMBuf, 0, mEyeX, mEyeY, mEyeZ, mLookAtX, mLookAtY, mLookAtZ, mUpX,
+                mUpY, mUpZ);
     }
-    
+
     /**
      * Computes the projection matrix for this camera. This method is called by GfxEngine for the
      * active camera every time before a frame is rendered.

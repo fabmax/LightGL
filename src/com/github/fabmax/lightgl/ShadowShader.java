@@ -63,7 +63,7 @@ public class ShadowShader extends PhongShader {
         // shadow depth map
         float[] shadowView = mShadowPass.getShadowViewMatrix();
         float[] shadowProj = mShadowPass.getShadowProjectionMatrix();
-        Matrix.multiplyMM(mTempMatrix, 0, shadowView, 0, mModelMatrix, 0);
+        Matrix.multiplyMM(mTempMatrix, 0, shadowView, 0, state.getModelMatrix(), 0);
         Matrix.multiplyMM(mShadowMvpMatrix, 0, shadowProj, 0, mTempMatrix, 0);
         Matrix.multiplyMM(mTempMatrix, 0, mShadowBiasMatrix, 0, mShadowMvpMatrix, 0);
 

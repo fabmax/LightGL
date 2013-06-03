@@ -38,9 +38,6 @@ public class PhongShader extends Shader {
     private float mShininess = 20.0f;
     // optional texture
     protected Texture mTexture;
-    
-    // buffer for current model matrix
-    protected float[] mModelMatrix = new float[16];
 
     /**
      * Creates a new PhongShader object. Rendered objects must provide vertex colors.
@@ -177,8 +174,7 @@ public class PhongShader extends Shader {
     @Override
     public void onMatrixUpdate(GfxState state) {
         // pass current transformation matrices to shader
-        state.getModelMatrix(mModelMatrix);
-        glUniformMatrix4fv(muModelMatrixHandle, 1, false, mModelMatrix, 0);
+        glUniformMatrix4fv(muModelMatrixHandle, 1, false, state.getModelMatrix(), 0);
         glUniformMatrix4fv(muViewMatrixHandle, 1, false, state.getViewMatrix(), 0);
         glUniformMatrix4fv(muMvpMatrixHandle, 1, false, state.getMvpMatrix(), 0);
     }

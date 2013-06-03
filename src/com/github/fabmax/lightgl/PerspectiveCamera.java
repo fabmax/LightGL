@@ -45,7 +45,7 @@ public class PerspectiveCamera extends Camera {
      */
     @Override
     public void getProjectionMatrix(float[] projMBuf) {
-        GlMath.perspectiveM(projMBuf, mFovy, aspect, mNear, mFar);
+        GlMath.perspectiveM(projMBuf, mFovy, mAspect, mNear, mFar);
     }
 
 }

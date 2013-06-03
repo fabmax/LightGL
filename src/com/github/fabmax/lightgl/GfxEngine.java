@@ -13,6 +13,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
+import android.opengl.GLU;
 import android.util.Log;
 
 import com.github.fabmax.lightgl.scene.Node;
@@ -35,8 +36,7 @@ public class GfxEngine implements Renderer {
     private Node mScene;
 
     private Camera mCamera;
-    private int mViewportW;
-    private int mViewportH;
+    private int[] mViewport = new int[4];
 
     private GfxEngineListener mEngineListener;
     private RenderPass mPrePass;
@@ -79,7 +79,7 @@ public class GfxEngine implements Renderer {
         mState.reset();
 
         if (mEngineListener != null) {
-            mEngineListener.onRenderFrame(this);
+            mEngineListener.onFrameInit(this);
         }
         
         if (mPrePass != null) {
@@ -91,6 +91,9 @@ public class GfxEngine implements Renderer {
         }
 
         if (mMainPass != null) {
+            if (mEngineListener != null) {
+                mEngineListener.onRenderMainPass(this);
+            }
             mMainPass.onRender(this);
         }
     }
@@ -134,8 +137,10 @@ public class GfxEngine implements Renderer {
      */
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
-        mViewportW = width;
-        mViewportH = height;
+        mViewport[0] = 0;
+        mViewport[1] = 0;
+        mViewport[2] = width;
+        mViewport[3] = height;
 
         // update GL viewport size
         glViewport(0, 0, width, height);
@@ -164,6 +169,32 @@ public class GfxEngine implements Renderer {
         if (mEngineListener != null) {
             mEngineListener.onLoadScene(this);
         }
+    }
+    
+    public void getPickRay(int x, int y, Ray result) {
+        int yInv = mViewport[3] - y;
+
+        float[] viewT = mState.getViewMatrix();
+        float[] projT = mState.getProjectionMatrix();
+        
+        GLU.gluUnProject(x, yInv, 0.0f, viewT, 0, projT, 0, mViewport, 0, result.mOrigin, 0);
+        GLU.gluUnProject(x, yInv, 1.0f, viewT, 0, projT, 0, mViewport, 0, result.mDirection, 0);
+        
+        // only took me a hour to figure out that the Android gluUnProject version does not divide
+        // the resulting coordinates by w...
+        result.mOrigin[0] /= result.mOrigin[3];
+        result.mOrigin[1] /= result.mOrigin[3];
+        result.mOrigin[2] /= result.mOrigin[3];
+        result.mOrigin[3] = 1.0f;
+        
+        result.mDirection[0] /= result.mDirection[3];
+        result.mDirection[1] /= result.mDirection[3];
+        result.mDirection[2] /= result.mDirection[3];
+        result.mDirection[3] = 0.0f;
+
+        result.mDirection[0] -= result.mOrigin[0];
+        result.mDirection[1] -= result.mOrigin[1];
+        result.mDirection[2] -= result.mOrigin[2];
     }
 
     /**
@@ -304,7 +335,7 @@ public class GfxEngine implements Renderer {
     public void setCamera(Camera cam) {
         mCamera = cam;
         if (cam != null) {
-            cam.setViewport(mViewportW, mViewportH);
+            cam.setViewport(mViewport[2], mViewport[3]);
         }
     }
     
@@ -314,7 +345,7 @@ public class GfxEngine implements Renderer {
      * @return the viewport width in pixels
      */
     public int getViewportWidth() {
-        return mViewportW;
+        return mViewport[2];
     }
 
     /**
@@ -323,7 +354,7 @@ public class GfxEngine implements Renderer {
      * @return the viewport height in pixels
      */
     public int getViewportHeight() {
-        return mViewportH;
+        return mViewport[3];
     }
     
     /**

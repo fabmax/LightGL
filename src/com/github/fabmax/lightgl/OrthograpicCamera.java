@@ -24,15 +24,15 @@ public class OrthograpicCamera extends Camera {
     }
 
     /**
-     * Updates left and right clip dimensions to keep the aspect ratio.
+     * Updates left and right clip dimensions to keep the mAspect ratio.
      * 
      * @see Camera#setViewport(float, float)
      */
     @Override
-    protected void setViewport(float width, float height) {
+    public void setViewport(float width, float height) {
         super.setViewport(width, height);
         float xCenter = mLeft + (mRight - mLeft) / 2.0f;
-        float newW = (mTop - mBottom) * aspect / 2.0f;
+        float newW = (mTop - mBottom) * mAspect / 2.0f;
         mLeft = xCenter - newW;
         mRight = xCenter + newW;
     }

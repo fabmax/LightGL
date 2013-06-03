@@ -1,8 +1,8 @@
 package com.github.fabmax.lightgl.scene;
 
-import com.github.fabmax.lightgl.GfxState;
-
 import android.opengl.Matrix;
+
+import com.github.fabmax.lightgl.GfxState;
 
 /**
  * A TransformGroup is a {@link Group} that applies a transformation to its children.
@@ -119,8 +119,7 @@ public class TransformGroup extends Group {
         state.pushModelMatrix();
         
         // apply transformation
-        state.getModelMatrix(mTemp1);
-        Matrix.multiplyMM(mTemp2, 0, mTemp1, 0, mTransformationM, 0);
+        Matrix.multiplyMM(mTemp2, 0, state.getModelMatrix(), 0, mTransformationM, 0);
         state.setModelMatrix(mTemp2);
         
         // render children

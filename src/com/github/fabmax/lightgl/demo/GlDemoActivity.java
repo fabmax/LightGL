@@ -75,12 +75,12 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     }
 
     /**
-     * Called before every time before a frame is rendered.
+     * Called before a frame is rendered.
      * 
-     * @see GfxEngineListener#onRenderFrame(GfxEngine)
+     * @see GfxEngineListener#onFrameInit(GfxEngine)
      */
     @Override
-    public void onRenderFrame(GfxEngine engine) {
+    public void onFrameInit(GfxEngine engine) {
         long t = System.currentTimeMillis();
         float s = (t - mStartTime) / 1e3f;
         
@@ -102,8 +102,20 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         
         // calculate frames per second and print them every second
         if(t > mLastFpsOut + 1000) {
+            mLastFpsOut = t;
             Log.d("Activity", "Fps: " + engine.getFps());
         }
+    }
+
+    /**
+     * Is called every time before the main-pass is rendered.
+     * 
+     * @param engine
+     *            the graphics engine
+     */
+    @Override
+    public void onRenderMainPass(GfxEngine engine) {
+        // nothing special to do here
     }
 
     /**

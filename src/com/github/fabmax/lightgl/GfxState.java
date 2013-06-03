@@ -18,12 +18,12 @@ public class GfxState {
     private final ShaderManager mShaderManager;
     private final TextureManager mTextureManager;
 
-    // projection matrix - holds field of view and aspect ratio of the camera
+    // projection matrix - holds field of view and mAspect ratio of the camera
     private final float[] mProjMatrix = new float[16];
     // view matrix - holds the camera position
     private final float[] mViewMatrix = new float[16];
     // model matrix stack - holds the geometry transformation
-    private final float[] mModelMatrix = new float[16 * MODEL_MATRIX_STACK_SIZE];
+    private final float[][] mModelMatrix = new float[MODEL_MATRIX_STACK_SIZE][16];
     private int mModelMatrixIdx = 0;
     // combined model view projection matrix
     private final float[] mMvpMatrix = new float[16];
@@ -44,7 +44,7 @@ public class GfxState {
 
         Matrix.setIdentityM(mProjMatrix, 0);
         Matrix.setIdentityM(mViewMatrix, 0);
-        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.setIdentityM(mModelMatrix[0], 0);
         Matrix.setIdentityM(mMvpMatrix, 0);
         
         mBackgroundColor = new float[] { 0.0f, 0.0f, 0.0f };
@@ -112,7 +112,7 @@ public class GfxState {
     public void reset() {
         // reset matrices
         mModelMatrixIdx = 0;
-        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.setIdentityM(mModelMatrix[0], 0);
         Matrix.setIdentityM(mViewMatrix, 0);
         Matrix.setIdentityM(mProjMatrix, 0);
         Matrix.setIdentityM(mMvpMatrix, 0);
@@ -153,13 +153,13 @@ public class GfxState {
      * Pushes the current model matrix to the matrix stack.
      */
     public void pushModelMatrix() {
-        if (mModelMatrixIdx / 16 >= MODEL_MATRIX_STACK_SIZE) {
+        if (mModelMatrixIdx >= MODEL_MATRIX_STACK_SIZE) {
             // model matrix stack size is exceeded
             throw new RuntimeException("Model matrix stack overflow");
         }
         // copy current model matrix to next index
-        System.arraycopy(mModelMatrix, mModelMatrixIdx, mModelMatrix, mModelMatrixIdx + 16, 16);
-        mModelMatrixIdx += 16;
+        System.arraycopy(mModelMatrix[mModelMatrixIdx], 0, mModelMatrix[mModelMatrixIdx + 1], 0, 16);
+        mModelMatrixIdx++;
     }
 
     /**
@@ -170,7 +170,7 @@ public class GfxState {
             // no previos matrix to pop
             throw new RuntimeException("Model matrix stack underflow");
         }
-        mModelMatrixIdx -= 16;
+        mModelMatrixIdx--;
         matrixUpdate();
     }
 
@@ -212,8 +212,8 @@ public class GfxState {
      * @param modelMBuf
      *            the buffer where the model matrix is copied into.
      */
-    public void getModelMatrix(float[] modelMBuf) {
-        System.arraycopy(mModelMatrix, mModelMatrixIdx, modelMBuf, 0, 16);
+    public float[] getModelMatrix() {
+        return mModelMatrix[mModelMatrixIdx];
     }
 
     /**
@@ -224,7 +224,7 @@ public class GfxState {
      *            the buffer to set as model matrix.
      */
     public void setModelMatrix(float[] modelMBuf) {
-        System.arraycopy(modelMBuf, 0, mModelMatrix, mModelMatrixIdx, 16);
+        System.arraycopy(modelMBuf, 0, mModelMatrix[mModelMatrixIdx], 0, 16);
         matrixUpdate();
     }
 
@@ -234,7 +234,7 @@ public class GfxState {
      */
     public void matrixUpdate() {
         // Combine projection, model and view matrices
-        Matrix.multiplyMM(mTempMatrix, 0, mViewMatrix, 0, mModelMatrix, mModelMatrixIdx);
+        Matrix.multiplyMM(mTempMatrix, 0, mViewMatrix, 0, mModelMatrix[mModelMatrixIdx], 0);
         Matrix.multiplyMM(mMvpMatrix, 0, mProjMatrix, 0, mTempMatrix, 0);
 
         // notify current shader about matrix update
