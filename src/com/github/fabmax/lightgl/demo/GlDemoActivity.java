@@ -146,7 +146,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         engine.setScene(mScene);
 
         // enable shadow rendering
-        BoundingBox bounds = new BoundingBox(-blocksX, blocksX, 0, 5, -blocksZ, blocksZ);
+        BoundingBox bounds = new BoundingBox(-blocksX, blocksX, 0, 6, -blocksZ, blocksZ);
         ShadowRenderPass shadow = new ShadowRenderPass(engine);
         shadow.setSceneBounds(bounds);
         engine.setPreRenderPass(shadow);

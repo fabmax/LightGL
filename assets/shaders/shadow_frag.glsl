@@ -55,9 +55,9 @@ void main() {
 	vec3 n = normalize(vNormal_cameraspace);
 
 	// high quality shadows but expensive
-	//float visibility = shadow2Dsmooth(vShadowCoord);
+	float visibility = shadow2Dsmooth(vShadowCoord);
 	// low quality shadows but faster
-	float visibility = shadow2D(vShadowCoord);
+	//float visibility = shadow2D(vShadowCoord);
 
 	// for diffuse lighting: cosine of angle between surface normal and light direction
 	float cosTheta = clamp(dot(n, l), 0.0, 1.0);
