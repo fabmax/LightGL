@@ -3,6 +3,7 @@ package com.github.fabmax.lightgl;
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TEXTURE1;
 import static android.opengl.GLES20.glClearColor;
+import android.opengl.Matrix;
 
 /**
  * RenderPass that computes a shadow map for dynamic shadows.
@@ -18,7 +19,10 @@ public class ShadowRenderPass implements RenderPass {
     private TextureRenderer mRenderer;
     private Shader mDepthShader;
     private int mTextureUnit = GL_TEXTURE1;
-    
+
+    private BoundingBox mSceneBounds = new BoundingBox(-10, 10, -10, 10, -10, 10);
+    private BoundingBox mClipSize = new BoundingBox(-10, 10, -10, 10, -10, 10);
+    private float[] mTmpVector = new float[8];
     private float[] mShadowViewMatrix = new float[16];    
     private float[] mShadowProjMatrix = new float[16];
 
@@ -55,11 +59,14 @@ public class ShadowRenderPass implements RenderPass {
         }
         Light l = engine.getLights().get(0);
 
-        // TODO: consider scene size and compute an appropriate camera position and clip size
+        // compute view matrix for current light direction
         mShadowCamera.setPosition(l.posX, l.posY, l.posZ);
-        mShadowCamera.setClipSize(-10, 10, -10, 10, -10, 10);
         mShadowCamera.setLookAt(0, 0, 0);
         mShadowCamera.getViewMatrix(mShadowViewMatrix);
+        
+        computeCamClipSize();
+        mShadowCamera.setClipSize(mClipSize.getMinX(), mClipSize.getMaxX(), mClipSize.getMinY(),
+                mClipSize.getMaxY(), mClipSize.getMinZ(), mClipSize.getMaxZ());
         mShadowCamera.getProjectionMatrix(mShadowProjMatrix);
 
         // setup engine state
@@ -78,6 +85,16 @@ public class ShadowRenderPass implements RenderPass {
         state.setLockShader(false);
         engine.getTextureManager().bindTexture(mRenderer.getTexture(), mTextureUnit);
         engine.getState().resetBackgroundColor();
+    }
+    
+    /**
+     * Sets the scene bounds. The specified volume will be covered by the schadow map renderer.
+     * 
+     * @param sceneBounds
+     *            Bounds of the scene to be covered
+     */
+    public void setSceneBounds(BoundingBox sceneBounds) {
+        mSceneBounds.set(sceneBounds);
     }
     
     /**
@@ -115,5 +132,53 @@ public class ShadowRenderPass implements RenderPass {
      */
     public float[] getShadowProjectionMatrix() {
         return mShadowProjMatrix;
+    }
+    
+    /**
+     * Computes the camera clip size for current mShadowViewMatrix and mSceneBounds.
+     */
+    private void computeCamClipSize() {
+        // compute clip size for camera to cover the complete scene
+        mTmpVector[3] = 1;
+        
+        // (minX, minY, minZ)
+        mSceneBounds.getMin(mTmpVector);
+        Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
+        mClipSize.reset(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
+
+        // (minX, minY, maxZ)
+        mTmpVector[2] = mSceneBounds.getMaxZ();
+        Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
+        mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
+
+        // (minX, maxY, maxZ)
+        mTmpVector[1] = mSceneBounds.getMaxY();
+        Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
+        mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
+
+        // (minX, maxY, minZ)
+        mTmpVector[2] = mSceneBounds.getMinZ();
+        Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
+        mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
+
+        // (maxX, maxY, minZ)
+        mTmpVector[0] = mSceneBounds.getMaxX();
+        Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
+        mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
+
+        // (maxX, maxY, maxZ)
+        mTmpVector[2] = mSceneBounds.getMaxZ();
+        Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
+        mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
+
+        // (maxX, minY, maxZ)
+        mTmpVector[1] = mSceneBounds.getMinY();
+        Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
+        mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
+
+        // (maxX, minY, minZ)
+        mTmpVector[2] = mSceneBounds.getMinZ();
+        Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
+        mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
     }
 }

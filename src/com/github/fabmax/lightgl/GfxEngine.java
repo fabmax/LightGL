@@ -15,6 +15,7 @@ import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.github.fabmax.lightgl.scene.Node;
 
@@ -171,30 +172,45 @@ public class GfxEngine implements Renderer {
         }
     }
     
+    /**
+     * Computes a {@link Ray} for the given screen coordinates. The Ray has the same origin and
+     * direction as the virtual camera ray at that pixel. E.g. (x, y) can come from a
+     * {@link MotionEvent} and the computed Ray can be used to pick scene objects. Notice that this
+     * function uses the projection and view matrices from {@link GfxState} so these must be valid
+     * in order for this function to work. Use {@link GfxState#setCamera(Camera)} to explicitly set
+     * the camera matrices.
+     * 
+     * @param x
+     *            X screen coordinate in pixels
+     * @param y
+     *            Y screen coordinate in pixels
+     * @param result
+     *            Ray representing the camera Ray at the specified pixel
+     */
     public void getPickRay(int x, int y, Ray result) {
         int yInv = mViewport[3] - y;
 
         float[] viewT = mState.getViewMatrix();
         float[] projT = mState.getProjectionMatrix();
         
-        GLU.gluUnProject(x, yInv, 0.0f, viewT, 0, projT, 0, mViewport, 0, result.mOrigin, 0);
-        GLU.gluUnProject(x, yInv, 1.0f, viewT, 0, projT, 0, mViewport, 0, result.mDirection, 0);
+        GLU.gluUnProject(x, yInv, 0.0f, viewT, 0, projT, 0, mViewport, 0, result.origin, 0);
+        GLU.gluUnProject(x, yInv, 1.0f, viewT, 0, projT, 0, mViewport, 0, result.direction, 0);
         
         // only took me a hour to figure out that the Android gluUnProject version does not divide
         // the resulting coordinates by w...
-        result.mOrigin[0] /= result.mOrigin[3];
-        result.mOrigin[1] /= result.mOrigin[3];
-        result.mOrigin[2] /= result.mOrigin[3];
-        result.mOrigin[3] = 1.0f;
+        result.origin[0] /= result.origin[3];
+        result.origin[1] /= result.origin[3];
+        result.origin[2] /= result.origin[3];
+        result.origin[3] = 1.0f;
         
-        result.mDirection[0] /= result.mDirection[3];
-        result.mDirection[1] /= result.mDirection[3];
-        result.mDirection[2] /= result.mDirection[3];
-        result.mDirection[3] = 0.0f;
+        result.direction[0] /= result.direction[3];
+        result.direction[1] /= result.direction[3];
+        result.direction[2] /= result.direction[3];
+        result.direction[3] = 0.0f;
 
-        result.mDirection[0] -= result.mOrigin[0];
-        result.mDirection[1] -= result.mOrigin[1];
-        result.mDirection[2] -= result.mOrigin[2];
+        result.direction[0] -= result.origin[0];
+        result.direction[1] -= result.origin[1];
+        result.direction[2] -= result.origin[2];
     }
 
     /**

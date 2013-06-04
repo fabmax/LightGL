@@ -5,6 +5,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.github.fabmax.lightgl.BoundingBox;
 import com.github.fabmax.lightgl.GfxEngine;
 import com.github.fabmax.lightgl.GfxEngineListener;
 import com.github.fabmax.lightgl.GlException;
@@ -60,20 +61,6 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         mGlView.setRenderer(mEngine);
     }
 
-    @Override
-    protected void onPause() {
-        Log.d("bla", "onPause");
-        super.onPause();
-        mGlView.onPause();
-    }
-
-    @Override
-    protected void onResume() {
-        Log.d("bla", "onResume");
-        super.onResume();
-        mGlView.onResume();
-    }
-
     /**
      * Called before a frame is rendered.
      * 
@@ -87,15 +74,16 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // spin the scene wildly
         //mScene.rotate(0.5f, 0.9f, 0.5f, 0.0f);
         
-        // spin the scene around the Y-axis
+        // rotate the camera
         float a = s * 10.0f;
-        mScene.resetTransform();
-        mScene.rotate(-a, 0, 1, 0);
-        
-        // slowly rotate camera
-        float x = (float) Math.sin(a / 200) * 12;
-        float z = (float) Math.cos(a / 200) * 12;
+        float x = (float) Math.sin(a / 100) * 12;
+        float z = (float) Math.cos(a / 100) * 12;
         engine.getCamera().setPosition(x, 20, z);
+        
+        // slowly rotate the light
+        Light light = engine.getLights().get(0);
+        light.posX = (float) Math.cos(a / 50);
+        light.posZ = (float) Math.sin(a / 50);
 
         // interpolate block heights
         mBlocks.interpolateHeights(engine.getState());
@@ -133,6 +121,9 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      * Loads a demo scene with a simple color cube.
      */
     public void setCubeScene(GfxEngine engine) {
+        int blocksX = 8;
+        int blocksZ = 8;
+        
         // use reduced render resolution
         ScaledScreenRenderPass pass = new ScaledScreenRenderPass(engine);
         pass.setViewportScale(0.5f);
@@ -146,7 +137,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // add a directional light
         Light light = new Light();
         light.colorR = 0.7f; light.colorG = 0.7f; light.colorB = 0.7f;
-        light.posX = 0.8f;      light.posY = 1;      light.posZ = 1;
+        light.posX = 0;      light.posY = 1;      light.posZ = 1;
         engine.addLight(light);
         
         // create scene
@@ -155,11 +146,13 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         engine.setScene(mScene);
 
         // enable shadow rendering
+        BoundingBox bounds = new BoundingBox(-blocksX, blocksX, 0, 5, -blocksZ, blocksZ);
         ShadowRenderPass shadow = new ShadowRenderPass(engine);
+        shadow.setSceneBounds(bounds);
         engine.setPreRenderPass(shadow);
         
         // add block mesh to scene
-        mBlocks = new BlockAnimator(engine, shadow, 16, 16);
+        mBlocks = new BlockAnimator(engine, shadow, blocksX, blocksZ);
         mScene.addChild(mBlocks.getMesh());
     }
     
@@ -197,5 +190,25 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         } catch (GlException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Called on App pause.
+     */
+    @Override
+    protected void onPause() {
+        Log.d("bla", "onPause");
+        super.onPause();
+        mGlView.onPause();
+    }
+
+    /**
+     * Called on App resume.
+     */
+    @Override
+    protected void onResume() {
+        Log.d("bla", "onResume");
+        super.onResume();
+        mGlView.onResume();
     }
 }

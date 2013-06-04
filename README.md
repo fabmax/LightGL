@@ -11,11 +11,15 @@ Features:
 * Model loading for .obj files
 * Simple scene graph supporting arbitrary object transformations
 * Various custom shaders
-* Dynamic shadow mapping without using any OpenGL extensions
+* Dynamic shadow mapping without usage of any OpenGL extensions
 
 The included demo Activity shows an animated scene illuminated by a single light source with dynamic shadows.
-Shadow mapping is experimental and it took some effort to get this to work on my Galaxy Nexus since it
-does not support depth textures. However it works quite well, albeit the depth rendering still needs some tweaking.
+Shadow mapping works pretty well now. Just set a ShadowRenderPass as pre-pass in the engine, use a ShadowShader
+to render your Mesh and set the scene bounds for the ShadowRenderPass with setSceneBounds(BoundingBox)... and BOOM
+dynamic shadows :)
+
+The depth rendering during the pre-pass uses a standard texture instead of the usual depth texture, because depth textures
+are not supported on many GL ES devices.
 
 Screenshots:
 
