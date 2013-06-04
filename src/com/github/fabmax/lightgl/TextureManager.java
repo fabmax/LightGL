@@ -40,6 +40,13 @@ public class TextureManager {
     }
     
     /**
+     * Is called by {@link GfxEngine} if the GL context was (re-)created. Drops all texture handles.
+     */
+    protected void newGlContext() {
+        mResourceMap.clear();
+    }
+    
+    /**
      * Binds the given texture to the specified texture unit. Use GL_TEXTURE_0 if you only need one
      * texture.
      * 

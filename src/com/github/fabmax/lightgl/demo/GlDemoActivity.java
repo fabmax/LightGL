@@ -84,10 +84,10 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     /**
      * Called before a frame is rendered.
      * 
-     * @see GfxEngineListener#onFrameInit(GfxEngine)
+     * @see GfxEngineListener#onRenderFrame(GfxEngine)
      */
     @Override
-    public void onFrameInit(GfxEngine engine) {
+    public void onRenderFrame(GfxEngine engine) {
         GfxState state = engine.getState();
         long t = System.currentTimeMillis();
         float s = (t - mStartTime) / 1e3f;

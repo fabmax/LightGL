@@ -91,8 +91,7 @@ public abstract class LiveWallpaperBase extends WallpaperService {
             mGlView.setEGLContextClientVersion(2);
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                // if the EGL context is not preserved the onPause() / onResume() for visibility changes
-                // does not work. However this API call is only available on honeycomb and above...
+                // if available preserve the GL context for faster visibility changes
                 mGlView.setPreserveEGLContextOnPause(true);
             }
             
@@ -138,9 +137,8 @@ public abstract class LiveWallpaperBase extends WallpaperService {
         
         @Override
         public void onDestroy() {
-            Log.d(TAG, "Engine: onDestroy()");
+            Log.d(TAG, "Engine: onDestroy");
             super.onDestroy();
-            // TODO: free GL resources
             
             if (mGlView != null) {
                 mGlView.onDestroy();

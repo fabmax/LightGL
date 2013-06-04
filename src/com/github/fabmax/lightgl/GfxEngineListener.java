@@ -23,7 +23,7 @@ public interface GfxEngineListener {
      * @param engine
      *            the graphics engine
      */
-    public void onFrameInit(GfxEngine engine);
+    public void onRenderFrame(GfxEngine engine);
 
     /**
      * Is called every time before the main-pass is rendered. That is after the camera matrices in

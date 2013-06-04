@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.SparseIntArray;
 
 /**
@@ -34,6 +35,7 @@ import android.util.SparseIntArray;
  * 
  */
 public class ShaderManager {
+    private static final String TAG = "ShaderManager";
 
     // context is needed to load assets
     private Context mContext;
@@ -51,6 +53,13 @@ public class ShaderManager {
      */
     protected ShaderManager(Context context) {
         mContext = context;
+    }
+
+    /**
+     * Is called by {@link GfxEngine} if the GL context was (re-)created. Drops all shader handles.
+     */
+    public void newGlContext() {
+        mShaderHandles.clear();
     }
 
     /**
@@ -106,7 +115,9 @@ public class ShaderManager {
             String fragShaderSrc = loadSource("shaders/" + name + "_frag.glsl", mContext);
 
             // load shader from sources
-            return loadShader(vertShaderSrc, fragShaderSrc);
+            int handle = loadShader(vertShaderSrc, fragShaderSrc);
+            Log.i(TAG, "Successfully loaded shader \"" + name + "\", handle: " + handle);
+            return handle;
 
         } catch (IOException e) {
             throw new GlException("Failed loading shader source", e);

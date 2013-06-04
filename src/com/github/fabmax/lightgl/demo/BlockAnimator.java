@@ -183,7 +183,7 @@ public class BlockAnimator {
     }
     
     /**
-     * Call this from {@link GfxEngineListener#onFrameInit(GfxEngine)} to animate the block grid.
+     * Call this from {@link GfxEngineListener#onRenderFrame(GfxEngine)} to animate the block grid.
      * 
      * @param state
      *            current graphics engine state

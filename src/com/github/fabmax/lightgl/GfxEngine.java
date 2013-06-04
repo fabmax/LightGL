@@ -4,6 +4,7 @@ import static android.opengl.GLES20.GL_CULL_FACE;
 import static android.opengl.GLES20.GL_DEPTH_TEST;
 import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glEnable;
+import static android.opengl.GLES20.glGetError;
 import static android.opengl.GLES20.glViewport;
 
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class GfxEngine implements Renderer {
         mState.reset();
 
         if (mEngineListener != null) {
-            mEngineListener.onFrameInit(this);
+            mEngineListener.onRenderFrame(this);
         }
         
         if (mPrePass != null) {
@@ -96,6 +97,11 @@ public class GfxEngine implements Renderer {
                 mEngineListener.onRenderMainPass(this);
             }
             mMainPass.onRender(this);
+        }
+        
+        int err = glGetError();
+        if (err != 0) {
+            Log.e(TAG, "glError " + err + ": " + GLU.gluErrorString(err));
         }
     }
     
@@ -138,6 +144,7 @@ public class GfxEngine implements Renderer {
      */
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
+        Log.d(TAG, "onSurfaceChanged: w:" + width + ", h:" + height);
         mViewport[0] = 0;
         mViewport[1] = 0;
         mViewport[2] = width;
@@ -160,6 +167,10 @@ public class GfxEngine implements Renderer {
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         Log.d(TAG, "onSurfaceCreated");
+        
+        // drop all existing texture and shader handles
+        mTextureManager.newGlContext();
+        mShaderManager.newGlContext();
         
         // setup GL stuff
         glClearColor(0, 0, 0, 1);
@@ -408,6 +419,6 @@ public class GfxEngine implements Renderer {
         } else {
             mMaxFrameInterval = Math.round(1000.0f / fps);
         }
-        Log.d(TAG, "max interval:" + mMaxFrameInterval);
+        Log.d(TAG, "set maximum framerate:" + fps);
     }
 }
