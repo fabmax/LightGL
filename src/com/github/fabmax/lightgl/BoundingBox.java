@@ -172,9 +172,9 @@ public class BoundingBox {
     
     /**
      * Computes the squared hit distance for the specified {@link Ray}. If the Ray does not
-     * intersect this BoundingBox {@link Float#MAX_VALUE} is returned. The method returns the
-     * squared distance because it's faster to compute. If you need the exact distance use
-     * {@link Math#sqrt(double)} with the result.
+     * intersect this BoundingBox {@link Float#MAX_VALUE} is returned. If the ray origin is inside
+     * the BoundingBox 0 is returned. The method returns the squared distance because it's faster to
+     * compute. If you need the exact distance use {@link Math#sqrt(double)} with the result.
      * 
      * @param r
      *            Ray to test
@@ -185,6 +185,10 @@ public class BoundingBox {
         float tmin, tmax, tymin, tymax, tzmin, tzmax, div;
         float[] ro = r.origin;
         float[] rd = r.direction;
+        
+        if (includes(ro[0], ro[1], ro[2])) {
+            return 0.0f;
+        }
 
         div = 1.0f / rd[0];
         if (div >= 0.0f) {
@@ -284,12 +288,32 @@ public class BoundingBox {
     }
 
     /**
+     * Sets the minimum X value included by this BoundingBox.
+     * 
+     * @param minX
+     *            minimum X value
+     */
+    public void setMinX(float minX) {
+        mMinX = minX;
+    }
+
+    /**
      * Returns the minimum Y value included by this BoundingBox.
      * 
      * @return the minimum Y value
      */
     public float getMinY() {
         return mMinY;
+    }
+
+    /**
+     * Sets the minimum Y value included by this BoundingBox.
+     * 
+     * @param minY
+     *            minimum Y value
+     */
+    public void setMinY(float minY) {
+        mMinY = minY;
     }
 
     /**
@@ -302,12 +326,32 @@ public class BoundingBox {
     }
 
     /**
+     * Sets the minimum Z value included by this BoundingBox.
+     * 
+     * @param minZ
+     *            minimum Z value
+     */
+    public void setMinZ(float minZ) {
+        mMinZ = minZ;
+    }
+
+    /**
      * Returns the maximum X value included by this BoundingBox.
      * 
      * @return the maximum X value
      */
     public float getMaxX() {
         return mMaxX;
+    }
+
+    /**
+     * Sets the maximum X value included by this BoundingBox.
+     * 
+     * @param maxX
+     *            maximum X value
+     */
+    public void setMaxX(float maxX) {
+        mMaxX = maxX;
     }
 
     /**
@@ -320,11 +364,31 @@ public class BoundingBox {
     }
 
     /**
+     * Sets the maximum X value included by this BoundingBox.
+     * 
+     * @param maxY
+     *            maximum Y value
+     */
+    public void setMaxY(float maxY) {
+        mMaxY = maxY;
+    }
+
+    /**
      * Returns the maximum Z value included by this BoundingBox.
      * 
      * @return the maximum Z value
      */
     public float getMaxZ() {
         return mMaxZ;
+    }
+
+    /**
+     * Sets the maximum Z value included by this BoundingBox.
+     * 
+     * @param maxZ
+     *            maximum Z value
+     */
+    public void setMaxZ(float maxZ) {
+        mMaxZ = maxZ;
     }
 }

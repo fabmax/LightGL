@@ -12,12 +12,12 @@ import static android.opengl.GLES20.glTexImage2D;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.Random;
 
 import com.github.fabmax.lightgl.GfxEngine;
 import com.github.fabmax.lightgl.GfxEngineListener;
 import com.github.fabmax.lightgl.GfxState;
 import com.github.fabmax.lightgl.PhongShader;
+import com.github.fabmax.lightgl.Ray;
 import com.github.fabmax.lightgl.ShaderAttributeBinder;
 import com.github.fabmax.lightgl.ShadowRenderPass;
 import com.github.fabmax.lightgl.ShadowShader;
@@ -40,20 +40,12 @@ import com.github.fabmax.lightgl.util.IntList;
 public class BlockAnimator {
     private static final int MAX_SIZE_X = 32;
     private static final int MAX_SIZE_Z = 32;
-    private static final int MAX_DURATION = 10000;
-    private static final float MIN_HEIGHT = 0.2f;
-    private static final float HEIGHT_RANGE = 5.0f;
 
     private int mSizeX;
     private int mSizeZ;
+    private Block[] mBlocks;
     private FloatBuffer mPositionBuffer;
     private Mesh mBlockMesh;
-
-    private Random mRandom = new Random();
-    private float[] mHeightMapStart;
-    private float[] mHeightMapEnd;
-    private int[] mHeightMapDuration;
-    private long[] mHeightMapStartT;
     
     private Texture mTexture;
     private IntBuffer mTextureData;
@@ -94,9 +86,6 @@ public class BlockAnimator {
         mTexture = engine.getTextureManager().createTexture();
         mTexture.setTextureProperties(props);
         mTextureData = BufferHelper.createIntBuffer(MAX_SIZE_X * MAX_SIZE_Z);
-
-        // init block animation arrays, also initializes texture data
-        initBlocks();
         updateTexture(engine.getState());
         
         // generate mesh data
@@ -134,6 +123,12 @@ public class BlockAnimator {
         } else {
             mBlockMesh.setShader(new PhongShader(engine.getShaderManager(), mTexture));
         }
+
+        // create block array
+        mBlocks = new Block[mSizeX * mSizeZ];
+        for (int i = 0; i < mBlocks.length; i++) {
+            mBlocks[i] = new Block(this, i * 60);
+        }
     }
     
     /**
@@ -146,6 +141,48 @@ public class BlockAnimator {
     }
     
     /**
+     * Returns the block at the specified index position.
+     * 
+     * @param x
+     *            x index of the block
+     * @param z
+     *            z index of the block
+     * @return the block at the specified index
+     */
+    public Block getBlockAt(int x, int z) {
+        return mBlocks[z * mSizeX + x];
+    }
+    
+    /**
+     * Returns the {@link Block} hit by the specified {@link Ray} or null if no Block is hit.
+     * 
+     * @param pickRay
+     *            Ray to test
+     * @return the hit block or null
+     */
+    public Block getHitBlock(Ray pickRay) {
+        Block hit = null;
+        float dist = Float.MAX_VALUE;
+        for (Block block : mBlocks) {
+            float d = block.computeHitDistanceSqr(pickRay);
+            if (d < dist) {
+                dist = d;
+                hit = block;
+            }
+        }
+        return hit;
+    }
+    
+    /**
+     * Returns the {@link FloatBuffer} that contains the vertex positions.
+     * 
+     * @return the {@link FloatBuffer} that contains the vertex positions
+     */
+    protected FloatBuffer getVertexBuffer() {
+        return mPositionBuffer;
+    }
+    
+    /**
      * Call this from {@link GfxEngineListener#onFrameInit(GfxEngine)} to animate the block grid.
      * 
      * @param state
@@ -153,102 +190,30 @@ public class BlockAnimator {
      */
     public void interpolateHeights(GfxState state) {
         long t = System.currentTimeMillis();
-        
-        for (int i = 0; i < mHeightMapStart.length; i++) {
-            float p = (float) (t - mHeightMapStartT[i]) / mHeightMapDuration[i];
-            if (p >= 1) {
-                // generate next animation
-                mHeightMapStart[i] = mHeightMapEnd[i];
-                mHeightMapEnd[i] = mRandom.nextFloat() * HEIGHT_RANGE + MIN_HEIGHT;
-                mHeightMapDuration[i] = MAX_DURATION / 2 + mRandom.nextInt(MAX_DURATION / 2);
-                mHeightMapStartT[i] = t;
-                p = 0;
-            }
-            float y = mHeightMapStart[i] * (1.0f - p) + mHeightMapEnd[i] * p;
-            float yt = mHeightMapStart[i] * (1.0f - p) + mHeightMapEnd[i] * p + 0.1f;
-            setBlockColor(i, y);
-            
-            int off = i * 60;
-            mPositionBuffer.put(off + 1, y);
-            mPositionBuffer.put(off + 10, y);
-            mPositionBuffer.put(off + 13, y);
-            mPositionBuffer.put(off + 22, y);
-            mPositionBuffer.put(off + 31, y);
-            mPositionBuffer.put(off + 34, y);
-            mPositionBuffer.put(off + 43, y);
-            mPositionBuffer.put(off + 46, y);
-            mPositionBuffer.put(off + 49, yt);
-            mPositionBuffer.put(off + 52, yt);
-            mPositionBuffer.put(off + 55, yt);
-            mPositionBuffer.put(off + 58, yt);
+
+        for (int i = 0; i < mBlocks.length; i++) {
+            setBlockColor(i, mBlocks[i].interpolateHeight(t));
         }
         // update block colors
         updateTexture(state);
     }
     
     /**
-     * Initializes the block heights and colors.
-     */
-    private void initBlocks() {
-        long t = System.currentTimeMillis();
-
-        mHeightMapStart = new float[mSizeX * mSizeZ];
-        mHeightMapEnd = new float[mSizeX * mSizeZ];
-        mHeightMapStartT = new long[mSizeX * mSizeZ];
-        mHeightMapDuration = new int[mSizeX * mSizeZ];
-        
-        for (int i = 0; i < mHeightMapStart.length; i++) {
-            mHeightMapStartT[i] = t;
-            mHeightMapDuration[i] = MAX_DURATION / 2 + mRandom.nextInt(MAX_DURATION / 2);
-            mHeightMapStart[i] = 0.9f;
-            mHeightMapEnd[i] = mRandom.nextFloat() * HEIGHT_RANGE + MIN_HEIGHT;
-            setBlockColor(i, mHeightMapStart[i]);
-        }
-    }
-    
-    /**
      * Sets the color of a block.
-     * 
-     * @param blockIdx
-     *            block index
-     * @param blockHeight
-     *            height of the block
-     */
-    private void setBlockColor(int blockIdx, float blockHeight) {
-        int x = blockIdx % mSizeX;
-        int z = blockIdx / mSizeX;
-        int texIdx = z * MAX_SIZE_X + x;
-        float normH = (blockHeight - MIN_HEIGHT) / HEIGHT_RANGE;
-        mTextureData.put(texIdx, getColorForHeight(normH));
-    }
-    
-    /**
-     * Calculates the color value for the specified block height. The height is given as normalized
-     * value in a range of (0 ..1 ).
      * 
      * @see GlMath#packedColor(float, float, float, float)
      * @see GlMath#packedHsvColor(float, float, float, float)
      * 
-     * @param normHeight
-     *            normalized block height (0 .. 1)
-     * 
-     * @return color corresponding to the height
+     * @param blockIdx
+     *            block index
+     * @param blockColor
+     *            color of the block
      */
-    protected int getColorForHeight(float normHeight) {
-        //int m = ((x % 2) + (z % 2)) % 2;
-        //float hue = 196.0f;
-        //if(m == 1) {
-        //    hue -= 180.0f;
-        //}
-        //float sat = cNorm * 0.77f;
-        //float val = cNorm * 0.4f + 0.49f;
-        
-        // colorful 
-        float hue = 300.0f * normHeight;
-        float sat = 0.77f;
-        float val = 0.89f;
-        
-        return GlMath.packedHsvColor(hue, sat, val, 1);
+    private void setBlockColor(int blockIdx, int blockColor) {
+        int x = blockIdx % mSizeX;
+        int z = blockIdx / mSizeX;
+        int texIdx = z * MAX_SIZE_X + x;
+        mTextureData.put(texIdx, blockColor);
     }
     
     /**

@@ -4,13 +4,17 @@ import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
 
 import com.github.fabmax.lightgl.BoundingBox;
 import com.github.fabmax.lightgl.GfxEngine;
 import com.github.fabmax.lightgl.GfxEngineListener;
+import com.github.fabmax.lightgl.GfxState;
 import com.github.fabmax.lightgl.GlException;
 import com.github.fabmax.lightgl.Light;
 import com.github.fabmax.lightgl.R;
+import com.github.fabmax.lightgl.Ray;
 import com.github.fabmax.lightgl.ScaledScreenRenderPass;
 import com.github.fabmax.lightgl.ShadowRenderPass;
 import com.github.fabmax.lightgl.ShadowShader;
@@ -31,15 +35,20 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     private GLSurfaceView mGlView;
     // main graphics engine object
     private GfxEngine mEngine;
-    
     // the scene contains all objects that should be displayed
     private TransformGroup mScene;
+    
+    private BlockAnimator mBlocks;
+    private long mStartTime = System.currentTimeMillis();
     
     // frame rate log output
     private long mLastFpsOut = 0;
     
-    private BlockAnimator mBlocks;
-    private long mStartTime = System.currentTimeMillis();
+    // touch response
+    private int mTouchX;
+    private int mTouchY;
+    private boolean mTouchEvent = false;
+    private Ray mTouchRay = new Ray();
     
     /**
      * Called on App startup.
@@ -59,6 +68,17 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         mGlView.setEGLContextClientVersion(2);
         // register graphics engine as GL renderer
         mGlView.setRenderer(mEngine);
+        
+        // register a touch listener for some simple touch response
+        mGlView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                mTouchX = (int) event.getX();
+                mTouchY = (int) event.getY();
+                mTouchEvent = true;
+                return true;
+            }
+        });
     }
 
     /**
@@ -68,11 +88,9 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     @Override
     public void onFrameInit(GfxEngine engine) {
+        GfxState state = engine.getState();
         long t = System.currentTimeMillis();
         float s = (t - mStartTime) / 1e3f;
-        
-        // spin the scene wildly
-        //mScene.rotate(0.5f, 0.9f, 0.5f, 0.0f);
         
         // rotate the camera
         float a = s * 10.0f;
@@ -84,9 +102,20 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         Light light = engine.getLights().get(0);
         light.posX = (float) Math.cos(a / 50);
         light.posZ = (float) Math.sin(a / 50);
+        
+        // handle touch events
+        if (mTouchEvent) {
+            mTouchEvent = false;
+            state.setCamera(engine.getCamera());
+            engine.getPickRay(mTouchX, mTouchY, mTouchRay);
+            Block block = mBlocks.getHitBlock(mTouchRay);
+            if (block != null) {
+                block.animateToHeight(Block.MIN_HEIGHT, 250);
+            }
+        }
 
         // interpolate block heights
-        mBlocks.interpolateHeights(engine.getState());
+        mBlocks.interpolateHeights(state);
         
         // calculate frames per second and print them every second
         if(t > mLastFpsOut + 1000) {
@@ -126,7 +155,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         
         // use reduced render resolution
         ScaledScreenRenderPass pass = new ScaledScreenRenderPass(engine);
-        pass.setViewportScale(0.5f);
+        pass.setViewportScale(0.75f);
         engine.setMainRenderPass(pass);
         
         // set camera position

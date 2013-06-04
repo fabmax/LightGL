@@ -37,7 +37,7 @@ public class ShadowRenderPass implements RenderPass {
         mRenderer = new TextureRenderer(engine);
         mRenderer.setTextureSize(MAP_SIZE, MAP_SIZE);
         
-        // initialize depth texture to maximum depth values
+        // initialize the depth texture with maximum depth value
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         mRenderer.renderToTexture(engine, null);
         engine.getState().resetBackgroundColor();
