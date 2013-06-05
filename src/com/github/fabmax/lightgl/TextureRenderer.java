@@ -120,7 +120,9 @@ public class TextureRenderer {
     }
 
     /**
-     * Renders the specified Node to the texture using the current engine state.
+     * Renders the specified Node to the texture using the current engine state. The image that is
+     * rendered into the texture will have the aspect ratio of the current viewport - not the aspect
+     * ratio of the texture itself.
      * 
      * @param engine
      *            graphics engine
@@ -128,22 +130,25 @@ public class TextureRenderer {
      *            node to be rendered to the texture
      */
     public void renderToTexture(GfxEngine engine, Node nodeToRender) {
+        GfxState state = engine.getState();
         bindFramebuffer(engine);
 
         // set viewport size to the size of our target texture
+        // do not use GfxState#setViewport for this as this would affect the camera
+        // aspect ratio which is typically not wanted
         glViewport(mBorder, mBorder, mWidth - mBorder * 2, mHeight - mBorder * 2);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // draw scene
         if (nodeToRender != null) {
-            GfxState state = engine.getState();
             nodeToRender.render(state);
         }
 
         // restore normal state
+        int[] vp = state.getViewport();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
-        glViewport(0, 0, engine.getViewportWidth(), engine.getViewportHeight());
+        glViewport(vp[0], vp[1], vp[2], vp[3]);
     }
 
     /**

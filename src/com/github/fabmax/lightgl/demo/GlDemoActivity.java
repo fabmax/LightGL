@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.github.fabmax.lightgl.BoundingBox;
+import com.github.fabmax.lightgl.Camera;
 import com.github.fabmax.lightgl.GfxEngine;
 import com.github.fabmax.lightgl.GfxEngineListener;
 import com.github.fabmax.lightgl.GfxState;
@@ -106,8 +107,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // handle touch events
         if (mTouchEvent) {
             mTouchEvent = false;
-            state.setCamera(engine.getCamera());
-            engine.getPickRay(mTouchX, mTouchY, mTouchRay);
+            Camera cam = engine.getCamera();
+            cam.getPickRay(state.getViewport(), mTouchX, mTouchY, mTouchRay);
             Block block = mBlocks.getHitBlock(mTouchRay);
             if (block != null) {
                 block.animateToHeight(Block.MIN_HEIGHT, 250);
@@ -226,7 +227,6 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     @Override
     protected void onPause() {
-        Log.d("bla", "onPause");
         super.onPause();
         mGlView.onPause();
     }
@@ -236,7 +236,6 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
      */
     @Override
     protected void onResume() {
-        Log.d("bla", "onResume");
         super.onResume();
         mGlView.onResume();
     }

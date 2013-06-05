@@ -10,10 +10,12 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 /**
- * Base class for implementing live wallpapers.
+ * Base class for implementing live wallpapers. To implement a live wallpaper you have to extend
+ * this class and return an implementation of {@link WallpaperEngineListener} to handle all
+ * important wallpaper and rendering callbacks.
  * 
  * @author fabmax
- *
+ * 
  */
 public abstract class LiveWallpaperBase extends WallpaperService {
     
@@ -120,6 +122,9 @@ public abstract class LiveWallpaperBase extends WallpaperService {
             mEngineListener.onTouchEvent(event);
         }
 
+        /**
+         * Called if the visibility of the wallpaper changes. Pauses / resumes the rendering thread.
+         */
         @Override
         public void onVisibilityChanged(boolean visible) {
             super.onVisibilityChanged(visible);
@@ -134,7 +139,10 @@ public abstract class LiveWallpaperBase extends WallpaperService {
                 }
             }
         }
-        
+
+        /**
+         * Forwards the onDestroy event to the internal GLSurfaceView.
+         */
         @Override
         public void onDestroy() {
             Log.d(TAG, "Engine: onDestroy");
@@ -145,6 +153,9 @@ public abstract class LiveWallpaperBase extends WallpaperService {
             }
         }
 
+        /**
+         * Forwards the onSurfaceChanged event to the internal GLSurfaceView.
+         */
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
@@ -155,6 +166,9 @@ public abstract class LiveWallpaperBase extends WallpaperService {
             }
         }
 
+        /**
+         * Forwards the onSurfaceCreated event to the internal GLSurfaceView.
+         */
         @Override
         public void onSurfaceCreated(SurfaceHolder holder) {
             super.onSurfaceCreated(holder);
@@ -165,6 +179,9 @@ public abstract class LiveWallpaperBase extends WallpaperService {
             }
         }
 
+        /**
+         * Forwards the onSurfaceDestroyed event to the internal GLSurfaceView.
+         */
         @Override
         public void onSurfaceDestroyed(SurfaceHolder holder) {
             super.onSurfaceDestroyed(holder);
@@ -191,6 +208,7 @@ public abstract class LiveWallpaperBase extends WallpaperService {
             }
             
             public void onDestroy() {
+                // GLSurfaceView has no onDestroy() method, this is what comes closest 
                 onDetachedFromWindow();
             }
         }

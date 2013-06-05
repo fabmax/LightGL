@@ -2,6 +2,13 @@ package com.github.fabmax.lightgl;
 
 import android.opengl.Matrix;
 
+/**
+ * A standard orthographic camera. This is basically just a wrapper around
+ * {@link Matrix#orthoM(float[], int, float, float, float, float, float, float)}
+ * 
+ * @author fabmax
+ * 
+ */
 public class OrthograpicCamera extends Camera {
 
     private float mLeft = 0f;
@@ -21,29 +28,17 @@ public class OrthograpicCamera extends Camera {
         mTop = top;
         mNear = near;
         mFar = far;
-    }
-
-    /**
-     * Updates left and right clip dimensions to keep the mAspect ratio.
-     * 
-     * @see Camera#setViewport(float, float)
-     */
-    @Override
-    public void setViewport(float width, float height) {
-        super.setViewport(width, height);
-        float xCenter = mLeft + (mRight - mLeft) / 2.0f;
-        float newW = (mTop - mBottom) * mAspect / 2.0f;
-        mLeft = xCenter - newW;
-        mRight = xCenter + newW;
+        // recompute camera matrices on next setup()
+        setDirty();
     }
 
     /**
      * Computes an orthographic projection matrix.
      * 
-     * @see Camera#getProjectionMatrix(float[])
+     * @see Camera#computeProjectionMatrix(float[])
      */
     @Override
-    public void getProjectionMatrix(float[] projMBuf) {
+    public void computeProjectionMatrix(float[] projMBuf) {
         Matrix.orthoM(projMBuf, 0, mLeft, mRight, mBottom, mTop, mNear, mFar);
     }
 

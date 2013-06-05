@@ -1,6 +1,8 @@
 package com.github.fabmax.lightgl;
 
+import android.opengl.GLU;
 import android.opengl.Matrix;
+import android.view.MotionEvent;
 
 /**
  * Base class for arbitrary camera implementations.
@@ -18,9 +20,13 @@ public abstract class Camera {
 
     /** Camera up direction */
     protected float mUpX = 0, mUpY = 1, mUpZ = 0;
+    
+    /** Matrix recalculation flag */
+    protected boolean mDirty = true;
 
-    /** Viewport dimensions */
-    protected float mViewportW, mViewportH, mAspect;
+    /** Camera transformation matrices */
+    protected float[] mViewMatrix = new float[16];
+    protected float[] mProjMatrix = new float[16];
 
     /**
      * Sets the camera position.
@@ -29,6 +35,7 @@ public abstract class Camera {
         mEyeX = x;
         mEyeY = y;
         mEyeZ = z;
+        mDirty = true;
     }
 
     /**
@@ -38,6 +45,7 @@ public abstract class Camera {
         mLookAtX = x;
         mLookAtY = y;
         mLookAtZ = z;
+        mDirty = true;
     }
 
     /**
@@ -47,30 +55,79 @@ public abstract class Camera {
         mUpX = x;
         mUpY = y;
         mUpZ = z;
+        mDirty = true;
     }
-
+    
     /**
-     * Sets the viewport dimensions. Usually this method does not need to be called manually because
-     * it is called by {@link GfxEngine}.
+     * Sets the dirty flag so that the camera matrices are recomputed on next call of setup().
      */
-    public void setViewport(float width, float height) {
-        mViewportW = width;
-        mViewportH = height;
-        if (height > 0) {
-            mAspect = width / height;
-        } else {
-            mAspect = 1;
+    protected void setDirty() {
+        mDirty = true;
+    }
+    
+    /**
+     * Sets the view and projection matrices of the {@link GfxState} according to the current camera
+     * settings.
+     * 
+     * @param state the GfxState to set up
+     */
+    public void setup(GfxState state) {
+        checkMatrices();
+        System.arraycopy(mProjMatrix, 0, state.getProjectionMatrix(), 0, 16);
+        System.arraycopy(mViewMatrix, 0, state.getViewMatrix(), 0, 16);
+        state.matrixUpdate();
+    }
+    
+    /**
+     * Recomputes view and projection matrices if needed.
+     */
+    private void checkMatrices() {
+        if (mDirty) {
+            mDirty = false;
+            computeProjectionMatrix(mProjMatrix);
+            computeViewMatrix(mViewMatrix);
         }
     }
-
+    
     /**
-     * Returns the aspect ratio of this camera. The aspect ratio is only valid after
-     * {@link Camera#setViewport(float, float)} has been called.
+     * Computes a {@link Ray} for the given screen coordinates. The Ray has the same origin and
+     * direction as the virtual camera ray at that pixel. E.g. (x, y) can come from a
+     * {@link MotionEvent} and the computed Ray can be used to pick scene objects. Notice that this
+     * function uses the projection and view matrices from {@link GfxState} so these must be valid
+     * in order for this function to work. Use {@link GfxState#setCamera(Camera)} to explicitly set
+     * the camera matrices.
      * 
-     * @return the aspect ratio of this camera
+     * @see GfxState#getViewport()
+     * 
+     * @param viewport
+     *            Viewport dimensions
+     * @param x
+     *            X screen coordinate in pixels
+     * @param y
+     *            Y screen coordinate in pixels
+     * @param result
+     *            Ray representing the camera Ray at the specified pixel
      */
-    public float getAspectRatio() {
-        return mAspect;
+    public void getPickRay(int[] viewport, int x, int y, Ray result) {
+        int yInv = viewport[3] - y;
+        GLU.gluUnProject(x, yInv, 0.0f, mViewMatrix, 0, mProjMatrix, 0, viewport, 0, result.origin, 0);
+        GLU.gluUnProject(x, yInv, 1.0f, mViewMatrix, 0, mProjMatrix, 0, viewport, 0, result.direction, 0);
+        
+        // only took me a hour to figure out that the Android gluUnProject version does not divide
+        // the resulting coordinates by w...
+        result.origin[0] /= result.origin[3];
+        result.origin[1] /= result.origin[3];
+        result.origin[2] /= result.origin[3];
+        result.origin[3] = 1.0f;
+        
+        result.direction[0] /= result.direction[3];
+        result.direction[1] /= result.direction[3];
+        result.direction[2] /= result.direction[3];
+        result.direction[3] = 0.0f;
+
+        result.direction[0] -= result.origin[0];
+        result.direction[1] -= result.origin[1];
+        result.direction[2] -= result.origin[2];
     }
 
     /**
@@ -82,8 +139,7 @@ public abstract class Camera {
      * @param viewMBuf
      *            16 element array where the view matrix is stored in
      */
-    public void getViewMatrix(float[] viewMBuf) {
-        // compute standard view matrix
+    public void computeViewMatrix(float[] viewMBuf) {
         Matrix.setLookAtM(viewMBuf, 0, mEyeX, mEyeY, mEyeZ, mLookAtX, mLookAtY, mLookAtZ, mUpX,
                 mUpY, mUpZ);
     }
@@ -95,5 +151,5 @@ public abstract class Camera {
      * @param projMBuf
      *            16 element array where the projection matrix is stored in
      */
-    public abstract void getProjectionMatrix(float[] projMBuf);
+    public abstract void computeProjectionMatrix(float[] projMBuf);
 }

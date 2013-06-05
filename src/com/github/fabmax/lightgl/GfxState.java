@@ -2,6 +2,7 @@ package com.github.fabmax.lightgl;
 
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glViewport;
 import android.opengl.Matrix;
 
 /**
@@ -18,6 +19,8 @@ public class GfxState {
     private final ShaderManager mShaderManager;
     private final TextureManager mTextureManager;
 
+    // viewport dimensions (x, y, width, height)
+    private int[] mViewport = new int[4];
     // projection matrix - holds field of view and mAspect ratio of the camera
     private final float[] mProjMatrix = new float[16];
     // view matrix - holds the camera position
@@ -136,17 +139,43 @@ public class GfxState {
     }
 
     /**
-     * Sets the view and projection matrices for the specified camera.
+     * Returns the aspect ratio of the current viewport.
      * 
-     * @param camera
-     *            the active camera used to compute the camera matrices.
+     * @return the aspect ratio of this camera
      */
-    public void setCamera(Camera camera) {
-    	// update camera matrices
-        camera.getProjectionMatrix(mProjMatrix);
-        camera.getViewMatrix(mViewMatrix);
-
-        matrixUpdate();
+    public float getAspectRatio() {
+        if (mViewport[2] > 0) {
+            return (float) mViewport[2] / mViewport[3];
+        } else {
+            return 1;
+        }
+    }
+    
+    /**
+     * Returns the current viewport dimensions. The dimensions are returned in a 4-element int array
+     * with the format ( x, y, width, height ).
+     * 
+     * @return the current viewport dimensions 
+     */
+    public int[] getViewport() {
+        return mViewport;
+    }
+    
+    /**
+     * Sets the viewport dimensions. This is called automatically by
+     * {@link GfxEngine#onSurfaceChanged(javax.microedition.khronos.opengles.GL10, int, int)}
+     * 
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     */
+    public void setViewport(int x, int y, int width, int height) {
+        mViewport[0] = x;
+        mViewport[1] = y;
+        mViewport[2] = width;
+        mViewport[3] = height;
+        glViewport(x, y, width, height);
     }
 
     /**

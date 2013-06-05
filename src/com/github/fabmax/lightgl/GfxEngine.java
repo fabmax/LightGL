@@ -5,7 +5,6 @@ import static android.opengl.GLES20.GL_DEPTH_TEST;
 import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glGetError;
-import static android.opengl.GLES20.glViewport;
 
 import java.util.ArrayList;
 
@@ -16,7 +15,6 @@ import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 import android.util.Log;
-import android.view.MotionEvent;
 
 import com.github.fabmax.lightgl.scene.Node;
 
@@ -38,7 +36,6 @@ public class GfxEngine implements Renderer {
     private Node mScene;
 
     private Camera mCamera;
-    private int[] mViewport = new int[4];
 
     private GfxEngineListener mEngineListener;
     private RenderPass mPrePass;
@@ -88,11 +85,11 @@ public class GfxEngine implements Renderer {
             mPrePass.onRender(this);
         }
 
-        if (mCamera != null) {
-            mState.setCamera(mCamera);
-        }
-
         if (mMainPass != null) {
+            if (mCamera != null) {
+                mCamera.setup(mState);
+            }
+            
             if (mEngineListener != null) {
                 mEngineListener.onRenderMainPass(this);
             }
@@ -145,18 +142,9 @@ public class GfxEngine implements Renderer {
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         Log.d(TAG, "onSurfaceChanged: w:" + width + ", h:" + height);
-        mViewport[0] = 0;
-        mViewport[1] = 0;
-        mViewport[2] = width;
-        mViewport[3] = height;
 
         // update GL viewport size
-        glViewport(0, 0, width, height);
-
-        if (mCamera != null) {
-            // update camera matrix for new screen size
-            mCamera.setViewport(width, height);
-        }
+        mState.setViewport(0, 0, width, height);
     }
 
     /**
@@ -181,47 +169,6 @@ public class GfxEngine implements Renderer {
         if (mEngineListener != null) {
             mEngineListener.onLoadScene(this);
         }
-    }
-    
-    /**
-     * Computes a {@link Ray} for the given screen coordinates. The Ray has the same origin and
-     * direction as the virtual camera ray at that pixel. E.g. (x, y) can come from a
-     * {@link MotionEvent} and the computed Ray can be used to pick scene objects. Notice that this
-     * function uses the projection and view matrices from {@link GfxState} so these must be valid
-     * in order for this function to work. Use {@link GfxState#setCamera(Camera)} to explicitly set
-     * the camera matrices.
-     * 
-     * @param x
-     *            X screen coordinate in pixels
-     * @param y
-     *            Y screen coordinate in pixels
-     * @param result
-     *            Ray representing the camera Ray at the specified pixel
-     */
-    public void getPickRay(int x, int y, Ray result) {
-        int yInv = mViewport[3] - y;
-
-        float[] viewT = mState.getViewMatrix();
-        float[] projT = mState.getProjectionMatrix();
-        
-        GLU.gluUnProject(x, yInv, 0.0f, viewT, 0, projT, 0, mViewport, 0, result.origin, 0);
-        GLU.gluUnProject(x, yInv, 1.0f, viewT, 0, projT, 0, mViewport, 0, result.direction, 0);
-        
-        // only took me a hour to figure out that the Android gluUnProject version does not divide
-        // the resulting coordinates by w...
-        result.origin[0] /= result.origin[3];
-        result.origin[1] /= result.origin[3];
-        result.origin[2] /= result.origin[3];
-        result.origin[3] = 1.0f;
-        
-        result.direction[0] /= result.direction[3];
-        result.direction[1] /= result.direction[3];
-        result.direction[2] /= result.direction[3];
-        result.direction[3] = 0.0f;
-
-        result.direction[0] -= result.origin[0];
-        result.direction[1] -= result.origin[1];
-        result.direction[2] -= result.origin[2];
     }
 
     /**
@@ -361,27 +308,6 @@ public class GfxEngine implements Renderer {
      */
     public void setCamera(Camera cam) {
         mCamera = cam;
-        if (cam != null) {
-            cam.setViewport(mViewport[2], mViewport[3]);
-        }
-    }
-    
-    /**
-     * Returns the viewport width in pixels.
-     * 
-     * @return the viewport width in pixels
-     */
-    public int getViewportWidth() {
-        return mViewport[2];
-    }
-
-    /**
-     * Returns the viewport height in pixels.
-     * 
-     * @return the viewport height in pixels
-     */
-    public int getViewportHeight() {
-        return mViewport[3];
     }
     
     /**

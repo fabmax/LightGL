@@ -43,8 +43,9 @@ public class ScaledScreenRenderPass implements RenderPass {
     public void onRender(GfxEngine engine) {
         // update texture size if a fixed viewport scale is set
         if (mViewportScale > 0) {
-            int width = (int) (engine.getViewportWidth() * mViewportScale);
-            int height = (int) (engine.getViewportHeight() * mViewportScale);
+            int[] vp = engine.getState().getViewport();
+            int width = (int) (vp[2] * mViewportScale);
+            int height = (int) (vp[3] * mViewportScale);
             
             // resizes texture if the size changed, does nothing if the size is the same
             mRenderer.setTextureSize(width, height);

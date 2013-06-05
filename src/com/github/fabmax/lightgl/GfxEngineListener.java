@@ -9,8 +9,10 @@ package com.github.fabmax.lightgl;
 public interface GfxEngineListener {
 
     /**
-     * Is called on Engine initialization. When this is called the GL context is created and it is
-     * safe to call call kinds of GL functions, load shaders, textures, etc.
+     * Is called on Engine initialization. This method is called from the GLThread after the GL
+     * context is (re-)created. Because of the possibility of GL context recreation this callback
+     * might be called more than once, so be sure to drop all your GL related objects and reload
+     * them if this method is called another time.
      * 
      * @param engine
      *            the graphics engine

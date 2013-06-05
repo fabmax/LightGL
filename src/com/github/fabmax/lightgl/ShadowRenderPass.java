@@ -62,18 +62,18 @@ public class ShadowRenderPass implements RenderPass {
         // compute view matrix for current light direction
         mShadowCamera.setPosition(l.posX, l.posY, l.posZ);
         mShadowCamera.setLookAt(0, 0, 0);
-        mShadowCamera.getViewMatrix(mShadowViewMatrix);
+        mShadowCamera.computeViewMatrix(mShadowViewMatrix);
         
         computeCamClipSize();
         mShadowCamera.setClipSize(mClipSize.getMinX(), mClipSize.getMaxX(), mClipSize.getMinY(),
                 mClipSize.getMaxY(), mClipSize.getMinZ(), mClipSize.getMaxZ());
-        mShadowCamera.getProjectionMatrix(mShadowProjMatrix);
+        mShadowCamera.computeProjectionMatrix(mShadowProjMatrix);
 
         // setup engine state
         GfxState state = engine.getState();
         state.bindShader(mDepthShader);
         state.setLockShader(true);
-        state.setCamera(mShadowCamera);
+        mShadowCamera.setup(state);
         
         // set the depth texture clear color values to maximum depth
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);

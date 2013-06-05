@@ -17,7 +17,6 @@ public class TransformGroup extends Group {
 
     // temp matrices needed for matrix computations
     private float[] mTemp1 = new float[16];
-    private float[] mTemp2 = new float[16];
 
     /**
      * Creates a new TransformGroup that applies no transformation at all.
@@ -119,8 +118,8 @@ public class TransformGroup extends Group {
         state.pushModelMatrix();
         
         // apply transformation
-        Matrix.multiplyMM(mTemp2, 0, state.getModelMatrix(), 0, mTransformationM, 0);
-        state.setModelMatrix(mTemp2);
+        Matrix.multiplyMM(mTemp1, 0, state.getModelMatrix(), 0, mTransformationM, 0);
+        state.setModelMatrix(mTemp1);
         
         // render children
         super.render(state);
