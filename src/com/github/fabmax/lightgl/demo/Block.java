@@ -114,7 +114,7 @@ public class Block {
         // update block bounds for new height
         mBlockBounds.setMaxY(mHeight);
         
-        return getColorForHeight();
+        return getColor();
     }
 
     /**
@@ -125,14 +125,19 @@ public class Block {
      * 
      * @return color corresponding to the height
      */
-    private int getColorForHeight() {
+    private int getColor() {
         float normH = (mHeight - MIN_HEIGHT) / HEIGHT_RANGE;
         
         // colorful 
-        float hue = 300.0f * normH;
-        float sat = 0.77f;
-        float val = 0.89f;
-        return GlMath.packedHsvColor(hue, sat, val, 1);
+//        float hue = 300.0f * normH;
+//        float sat = 0.77f;
+//        float val = 0.89f;
+//        return GlMath.packedHsvColor(hue, sat, val, 1);
+        
+      float hue = 196;
+      float sat = 0.77f;
+      float val = 0.89f * (normH / 2 + 0.5f);
+      return GlMath.packedHsvColor(hue, sat, val, 1);
     }
 
 }

@@ -6,7 +6,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 
 /**
@@ -24,22 +23,61 @@ public abstract class LiveWallpaperBase extends WallpaperService {
      */
     @Override
     public Engine onCreateEngine() {
-        // return Wallpaper Engine implementation
-        return new WallpaperEngine();
+        // return wallpaper engine implementation
+        return getEngine();
     }
     
     /**
      * Must be implemented by concrete implementations to handle GfxEngine and Wallpaper callbacks.
      * 
-     * @return WallpaperEngineListener that handles the wallpaper logic
+     * @return {@link GlWallpaperEngine} that handles the wallpaper content
      */
-    public abstract WallpaperEngineListener getEngineListener();
-    
+    public abstract GlWallpaperEngine getEngine();
+
     /**
-     * WallpaperEngineListener defines all methods that must be implemented by live wallpapers.
+     * Base class for OpenGL ES 2.0 enabled live wallpaper engine.
      */
-    public interface WallpaperEngineListener extends GfxEngineListener {
+    public abstract class GlWallpaperEngine extends Engine implements GfxEngineListener {
+        private static final String TAG = "LiveWallpaperBase.WallpaperEngine";
+
+        private final GfxEngine mGfxEngine;
+        private WallpaperGlSurfaceView mGlView;
+        private boolean mCreated = false;
+
+        /**
+         * The constructor initializes the {@link GfxEngine}; however OpenGL methods can only be
+         * called after the Surface is created.
+         */
+        public GlWallpaperEngine() {
+            mGfxEngine = new GfxEngine(LiveWallpaperBase.this);
+            mGfxEngine.setEngineListener(this);
+        }
         
+        /**
+         * Called on Engine initialization.
+         */
+        @Override
+        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+        public void onCreate(SurfaceHolder surfaceHolder) {
+            super.onCreate(surfaceHolder);
+
+            // create the fake GLView that handles the GL context and enable GLES 2.0
+            mGlView = new WallpaperGlSurfaceView(LiveWallpaperBase.this);
+            mGlView.setEGLContextClientVersion(2);
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                // if available preserve the GL context for faster visibility changes
+                mGlView.setPreserveEGLContextOnPause(true);
+            }
+            
+            // register graphics engine as GL renderer
+            mGlView.setRenderer(mGfxEngine);
+            mCreated = true;
+
+            // enable homescreen touch feedback
+            setTouchEventsEnabled(true);
+        }
+
         /**
          * Is called if the user changes the homescreen.
          * 
@@ -54,72 +92,10 @@ public abstract class LiveWallpaperBase extends WallpaperService {
          * @param xPixelOffset
          * @param yPixelOffset
          */
-        public void onOffsetsChanged(float xOffset, float yOffset, float xOffsetStep,
-                float yOffsetStep, int xPixelOffset, int yPixelOffset);
-        
-        /**
-         * Is called when the user touches the homescreen.
-         * 
-         * @param event the MotionEvent
-         */
-        public void onTouchEvent(MotionEvent event);
-    }
-
-    /**
-     * Implementation of a Live Wallpaper Engine.
-     */
-    private class WallpaperEngine extends Engine {
-        private static final String TAG = "LiveWallpaperBase.WallpaperEngine";
-
-        private WallpaperEngine.WallpaperGlSurfaceView mGlView;
-        private boolean mCreated = false;
-        private WallpaperEngineListener mEngineListener;
-        private GfxEngine mGfxEngine;
-
-        /**
-         * Called on Engine initialization.
-         */
-        @Override
-        @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-        public void onCreate(SurfaceHolder surfaceHolder) {
-            super.onCreate(surfaceHolder);
-
-            mEngineListener = getEngineListener();
-            mGfxEngine = new GfxEngine(LiveWallpaperBase.this);
-            mGfxEngine.setEngineListener(mEngineListener);
-
-            mGlView = new WallpaperGlSurfaceView(LiveWallpaperBase.this);
-            // enable GLES 2.0
-            mGlView.setEGLContextClientVersion(2);
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                // if available preserve the GL context for faster visibility changes
-                mGlView.setPreserveEGLContextOnPause(true);
-            }
-            
-            // register graphics engine as GL renderer
-            mGlView.setRenderer(mGfxEngine);
-            mCreated = true;
-
-            setTouchEventsEnabled(true);
-        }
-
-        /**
-         * Called when the user changes the homescreen.
-         */
         @Override
         public void onOffsetsChanged(float xOffset, float yOffset, float xOffsetStep,
                 float yOffsetStep, int xPixelOffset, int yPixelOffset) {
-            mEngineListener.onOffsetsChanged(xOffset, yOffset, xOffsetStep, yOffsetStep,
-                    xPixelOffset, yPixelOffset);
-        }
-
-        /**
-         * Called when the user touches the homescreen.
-         */
-        @Override
-        public void onTouchEvent(MotionEvent event) {
-            mEngineListener.onTouchEvent(event);
+            // the default implementation does nothing
         }
 
         /**
@@ -203,7 +179,7 @@ public abstract class LiveWallpaperBase extends WallpaperService {
 
             @Override
             public SurfaceHolder getHolder() {
-                // this returns the Engine's SurfaceHolder instead of the standard one
+                // this returns the wallpaper engine's SurfaceHolder instead of the standard one
                 return getSurfaceHolder();
             }
             
@@ -211,6 +187,15 @@ public abstract class LiveWallpaperBase extends WallpaperService {
                 // GLSurfaceView has no onDestroy() method, this is what comes closest 
                 onDetachedFromWindow();
             }
+        }
+        
+        /**
+         * Returns the used {@link GfxEngine}.
+         * 
+         * @return the used {@link GfxEngine}
+         */
+        public GfxEngine getGfxEngine() {
+            return mGfxEngine;
         }
     }
     

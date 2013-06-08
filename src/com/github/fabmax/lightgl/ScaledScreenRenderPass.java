@@ -1,6 +1,9 @@
 package com.github.fabmax.lightgl;
 
+import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES20.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES20.GL_DEPTH_TEST;
+import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glDisable;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glGetUniformLocation;
@@ -8,6 +11,7 @@ import static android.opengl.GLES20.glUniform1i;
 import android.util.Log;
 
 import com.github.fabmax.lightgl.scene.Mesh;
+import com.github.fabmax.lightgl.scene.Node;
 import com.github.fabmax.lightgl.util.MeshFactory;
 
 public class ScaledScreenRenderPass implements RenderPass {
@@ -16,6 +20,8 @@ public class ScaledScreenRenderPass implements RenderPass {
 
     private float mViewportScale = 0;
     private TextureRenderer mRenderer;
+    private int mTexWidth = 0;
+    private int mTexHeight = 0;
     private Mesh mTexMesh;
 
     public ScaledScreenRenderPass(GfxEngine engine) {
@@ -24,6 +30,8 @@ public class ScaledScreenRenderPass implements RenderPass {
     }
 
     public void setFixedSize(int width, int height) {
+        mTexWidth = width;
+        mTexHeight = height;
         mRenderer.setTextureSize(width, height);
         mViewportScale = 0;
     }
@@ -41,23 +49,34 @@ public class ScaledScreenRenderPass implements RenderPass {
      */
     @Override
     public void onRender(GfxEngine engine) {
+        int[] vp = engine.getState().getViewport();
+        
         // update texture size if a fixed viewport scale is set
         if (mViewportScale > 0) {
-            int[] vp = engine.getState().getViewport();
-            int width = (int) (vp[2] * mViewportScale);
-            int height = (int) (vp[3] * mViewportScale);
+            mTexWidth = (int) (vp[2] * mViewportScale + 0.5f);
+            mTexHeight = (int) (vp[3] * mViewportScale + 0.5f);
             
             // resizes texture if the size changed, does nothing if the size is the same
-            mRenderer.setTextureSize(width, height);
+            mRenderer.setTextureSize(mTexWidth, mTexHeight);
         }
         
-        mRenderer.renderToTexture(engine, engine.getScene());
-        
-        // draw texture to the screen
-        glDisable(GL_DEPTH_TEST);
-        engine.getState().bindTexture(mRenderer.getTexture());
-        mTexMesh.render(engine.getState());
-        glEnable(GL_DEPTH_TEST);
+        if (mTexWidth != vp[2] || mTexHeight != vp[3]) {
+            // render scene to texture
+            mRenderer.renderToTexture(engine, engine.getScene());
+            // draw texture to the screen
+            glDisable(GL_DEPTH_TEST);
+            engine.getState().bindTexture(mRenderer.getTexture());
+            mTexMesh.render(engine.getState());
+            glEnable(GL_DEPTH_TEST);
+            
+        } else {
+            // render scene directly to screen
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            Node scene = engine.getScene();
+            if(scene != null) {
+                scene.render(engine.getState());
+            }
+        }
     }
 
     /**

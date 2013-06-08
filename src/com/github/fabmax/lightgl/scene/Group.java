@@ -42,6 +42,13 @@ public class Group extends Node {
     }
 
     /**
+     * Removes all children from this group.
+     */
+    public void removeAllChildren() {
+        mChildren.clear();
+    }
+
+    /**
      * Returns a list with all children in this group.
      * 
      * @return the list with all children in this group

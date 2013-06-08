@@ -16,6 +16,18 @@ public class GlMath {
     public static float PI = 3.14159265f;
 
     /**
+     * Scales the specified vector to unit length.
+     * 
+     * @param vec3 the vector to scale
+     */
+    public static void makeUnit(float[] vec3) {
+        float s = 1 / (float) Math.sqrt(vec3[0] * vec3[0] + vec3[1] * vec3[1] + vec3[2] * vec3[2]);
+        vec3[0] *= s;
+        vec3[1] *= s;
+        vec3[2] *= s;
+    }
+    
+    /**
      * Converts an angle from degrees to radians.
      * 
      * @param deg

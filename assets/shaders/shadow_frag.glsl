@@ -54,6 +54,8 @@ void main() {
 	vec3 l = normalize(vLightDirection_cameraspace);
 	vec3 n = normalize(vNormal_cameraspace);
 
+	// no shadows
+	//float visibility = 1.0;
 	// high quality shadows but expensive
 	float visibility = shadow2Dsmooth(vShadowCoord);
 	// low quality shadows but faster
@@ -69,6 +71,7 @@ void main() {
 	
 	// useful for debugging: vec3 fragmentColor = texture2D(uShadowSampler, vShadowCoord.xy).rgb;
 	//vec3 fragmentColor = texture2D(uShadowSampler, vShadowCoord.xy).rgb;
+	//fragmentColor.b = clamp((vShadowCoord.z - 0.005) / vShadowCoord.w, 0.0, 1.0);
 	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
 	
 	vec3 materialAmbientColor = vec3(0.2, 0.2, 0.2) * fragmentColor;

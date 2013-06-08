@@ -108,21 +108,23 @@ public abstract class Camera {
      * @param result
      *            Ray representing the camera Ray at the specified pixel
      */
-    public void getPickRay(int[] viewport, int x, int y, Ray result) {
-        int yInv = viewport[3] - y;
+    public void getPickRay(int[] viewport, float x, float y, Ray result) {
+        float yInv = viewport[3] - y;
         GLU.gluUnProject(x, yInv, 0.0f, mViewMatrix, 0, mProjMatrix, 0, viewport, 0, result.origin, 0);
         GLU.gluUnProject(x, yInv, 1.0f, mViewMatrix, 0, mProjMatrix, 0, viewport, 0, result.direction, 0);
         
         // only took me a hour to figure out that the Android gluUnProject version does not divide
         // the resulting coordinates by w...
-        result.origin[0] /= result.origin[3];
-        result.origin[1] /= result.origin[3];
-        result.origin[2] /= result.origin[3];
+        float s = 1.0f / result.origin[3];
+        result.origin[0] *= s;
+        result.origin[1] *= s;
+        result.origin[2] *= s;
         result.origin[3] = 1.0f;
         
-        result.direction[0] /= result.direction[3];
-        result.direction[1] /= result.direction[3];
-        result.direction[2] /= result.direction[3];
+        s = 1.0f / result.direction[3];
+        result.direction[0] *= s;
+        result.direction[1] *= s;
+        result.direction[2] *= s;
         result.direction[3] = 0.0f;
 
         result.direction[0] -= result.origin[0];

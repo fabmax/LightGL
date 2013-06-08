@@ -1,19 +1,19 @@
 package com.github.fabmax.lightgl;
 
 /**
- * A standard light. It can be a point light (posW = 1) or a directional light (posW = 0) and has
- * a position and a color. Notice that the used shader must support lights.
+ * A standard light. It can be a point light (position[3] = 1) or a directional light (position[3] =
+ * 0) and has a position and a color. Notice that the used shader must support lights.
  * 
  * @author fabmax
  * 
  */
 public class Light {
 
-    /** Light position */
-    public float posX = 0, posY = 0, posZ = 0, posW = 1;
+    /** Light position ( X, Y, Z, W ) */
+    public float[] position = new float[4];
 
-    /** Light color */
-    public float colorR = 1, colorG = 1, colorB = 1, colorA = 1;
+    /** Light color ( R, G, B, A ) */
+    public float[] color = new float[4];
     
     /**
      * Creates a point light with the specified position and color.
@@ -22,8 +22,8 @@ public class Light {
      */
     public static Light createPointLight(float posX, float posY, float posZ, float r, float g, float b) {
         Light l = new Light();
-        l.posX = posX;     l.posY = posY;     l.posZ = posZ;     l.posW = 1;
-        l.colorR = r;      l.colorG = g;      l.colorB = b;      l.colorA = 1;
+        l.position[0] = posX;  l.position[1] = posY;  l.position[2] = posZ;  l.position[3] = 1;
+        l.color[0] = r;        l.color[1] = g;        l.color[2] = b;        l.color[3] = 1;
         return l;
     }
 
@@ -34,8 +34,8 @@ public class Light {
      */
     public static Light createDirectionalLight(float dirX, float dirY, float dirZ, float r, float g, float b) {
         Light l = new Light();
-        l.posX = dirX;     l.posY = dirY;     l.posZ = dirZ;     l.posW = 0;
-        l.colorR = r;      l.colorG = g;      l.colorB = b;      l.colorA = 1;
+        l.position[0] = dirX;  l.position[1] = dirY;  l.position[2] = dirZ;  l.position[3] = 0;
+        l.color[0] = r;        l.color[1] = g;        l.color[2] = b;        l.color[3] = 1;
         return l;
     }
 }

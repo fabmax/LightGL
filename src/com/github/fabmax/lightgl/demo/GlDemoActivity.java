@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
 
 import com.github.fabmax.lightgl.BoundingBox;
 import com.github.fabmax.lightgl.Camera;
@@ -23,6 +21,8 @@ import com.github.fabmax.lightgl.Texture;
 import com.github.fabmax.lightgl.TextureProperties;
 import com.github.fabmax.lightgl.scene.Mesh;
 import com.github.fabmax.lightgl.scene.TransformGroup;
+import com.github.fabmax.lightgl.util.BufferedTouchListener;
+import com.github.fabmax.lightgl.util.BufferedTouchListener.Pointer;
 import com.github.fabmax.lightgl.util.ObjLoader;
 
 /**
@@ -32,6 +32,8 @@ import com.github.fabmax.lightgl.util.ObjLoader;
  *
  */
 public class GlDemoActivity extends Activity implements GfxEngineListener {
+    
+    private static final String TAG = "GlDemoActivity";
 
     private GLSurfaceView mGlView;
     // main graphics engine object
@@ -46,9 +48,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     private long mLastFpsOut = 0;
     
     // touch response
-    private int mTouchX;
-    private int mTouchY;
-    private boolean mTouchEvent = false;
+    private BufferedTouchListener mTouchHandler = new BufferedTouchListener();
     private Ray mTouchRay = new Ray();
     
     /**
@@ -71,15 +71,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         mGlView.setRenderer(mEngine);
         
         // register a touch listener for some simple touch response
-        mGlView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                mTouchX = (int) event.getX();
-                mTouchY = (int) event.getY();
-                mTouchEvent = true;
-                return true;
-            }
-        });
+        mGlView.setOnTouchListener(mTouchHandler);
     }
 
     /**
@@ -94,24 +86,25 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         float s = (t - mStartTime) / 1e3f;
         
         // rotate the camera
-        float a = s * 10.0f;
-        float x = (float) Math.sin(a / 100) * 12;
-        float z = (float) Math.cos(a / 100) * 12;
+        float x = (float) Math.sin(s / 10) * 12;
+        float z = (float) Math.cos(s / 10) * 12;
         engine.getCamera().setPosition(x, 20, z);
         
         // slowly rotate the light
         Light light = engine.getLights().get(0);
-        light.posX = (float) Math.cos(a / 50);
-        light.posZ = (float) Math.sin(a / 50);
+        light.position[0] = (float) Math.cos(s / 5);
+        light.position[1] = 1.0f;
+        light.position[2] = (float) Math.sin(s / 5);
         
         // handle touch events
-        if (mTouchEvent) {
-            mTouchEvent = false;
-            Camera cam = engine.getCamera();
-            cam.getPickRay(state.getViewport(), mTouchX, mTouchY, mTouchRay);
-            Block block = mBlocks.getHitBlock(mTouchRay);
-            if (block != null) {
-                block.animateToHeight(Block.MIN_HEIGHT, 250);
+        Camera cam = engine.getCamera();
+        for (Pointer pt : mTouchHandler.getPointers()) {
+            if (pt.isActive()) {
+                cam.getPickRay(state.getViewport(), pt.getX(), pt.getY(), mTouchRay);
+                Block block = mBlocks.getHitBlock(mTouchRay);
+                if (block != null) {
+                    block.animateToHeight(Block.MIN_HEIGHT, 250);
+                }
             }
         }
 
@@ -121,7 +114,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // calculate frames per second and print them every second
         if(t > mLastFpsOut + 1000) {
             mLastFpsOut = t;
-            Log.d("Activity", "Fps: " + engine.getFps());
+            Log.d(TAG, "Fps: " + engine.getFps());
         }
     }
 
@@ -165,9 +158,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         engine.getCamera().setPosition(0, 20, 12);
         
         // add a directional light
-        Light light = new Light();
-        light.colorR = 0.7f; light.colorG = 0.7f; light.colorB = 0.7f;
-        light.posX = 0;      light.posY = 1;      light.posZ = 1;
+        Light light = Light.createDirectionalLight(0, 1, 1, 0.7f, 0.7f, 0.7f);
         engine.addLight(light);
         
         // create scene
@@ -195,9 +186,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         engine.getCamera().setPosition(0, 12, 18);
         
         // add a directional light
-        Light light = new Light();
-        light.colorR = 0.7f; light.colorG = 0.7f; light.colorB = 0.7f;
-        light.posX = 1.0f;   light.posY = 1.0f;   light.posZ = 1.0f;
+        Light light = Light.createDirectionalLight(1, 1, 1, 0.7f, 0.7f, 0.7f);
         engine.addLight(light);
 
         // enable shadow rendering
