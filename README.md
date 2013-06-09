@@ -3,8 +3,8 @@ LightGL
 
 A very light-weight pure-Java Android OpenGL framework.
 
-The main purpose of this is for me to learn OpenGL ES 2.0, but I aim for a graphics engine that is actually usable.
-However there's a long way to go.
+I made this mainly to play a little with OpenGL ES 2.0 on Android, but I aim for a graphics engine
+that is actually usable. However there's a long way to go.
 
 Features:
 * Arbitrary triangle meshes with texture mapping or vertex colors

@@ -9,22 +9,22 @@ import com.github.fabmax.lightgl.util.GlMath;
 
 public class Block {
     private static final Random RAND = new Random();
-    
+
     public static final int MAX_DURATION = 10000;
     public static final float MIN_HEIGHT = 0.4f;
     public static final float HEIGHT_RANGE = 5.0f;
-    
-    //private BlockAnimator mGrid;
+
+    // private BlockAnimator mGrid;
     private FloatBuffer mVerts;
     private int mBufferOffset;
     private BoundingBox mBlockBounds;
-    
+
     private float mHeight = MIN_HEIGHT;
     private float mHeightStart = MIN_HEIGHT;
     private float mHeightEnd = MIN_HEIGHT;
     private long mAnimStart = 0;
     private long mAnimDuration = 0;
-    
+
     /**
      * Creates a block for the specified grid.
      * 
@@ -34,10 +34,10 @@ public class Block {
      *            offset in the grid's vertex buffer
      */
     protected Block(BlockAnimator grid, int bufferOffset) {
-        //mGrid = grid;
+        // mGrid = grid;
         mBufferOffset = bufferOffset;
         mVerts = grid.getVertexBuffer();
-        
+
         // compute BoundingBox for this block
         mBlockBounds = new BoundingBox(mVerts.get(bufferOffset + 0), mVerts.get(bufferOffset + 1),
                 mVerts.get(bufferOffset + 2));
@@ -45,7 +45,7 @@ public class Block {
             mBlockBounds.addPoint(mVerts.get(i + 0), mVerts.get(i + 1), mVerts.get(i + 2));
         }
     }
-    
+
     /**
      * Animate the height of this block to the specified value in the specified time.
      * 
@@ -63,7 +63,7 @@ public class Block {
         mHeightStart = mHeight;
         mHeightEnd = height;
     }
-    
+
     /**
      * Computes the square distance from the {@link Ray} origin to this Block.
      * 
@@ -76,7 +76,7 @@ public class Block {
     public float computeHitDistanceSqr(Ray r) {
         return mBlockBounds.computeHitDistanceSqr(r);
     }
-    
+
     /**
      * Interpolates the height of this block for the specified timestamp and returns the
      * corresponding color.
@@ -91,12 +91,12 @@ public class Block {
             mHeightStart = mHeightEnd;
             mHeightEnd = RAND.nextFloat() * HEIGHT_RANGE + MIN_HEIGHT;
             mHeight = mHeightStart;
-            
+
         } else {
             float p = (float) (t - mAnimStart) / mAnimDuration;
-            mHeight = mHeightStart * (1.0f - p) + mHeightEnd * p; 
+            mHeight = mHeightStart * (1.0f - p) + mHeightEnd * p;
         }
-        
+
         float yl = mHeight - 0.1f;
         mVerts.put(mBufferOffset + 1, yl);
         mVerts.put(mBufferOffset + 10, yl);
@@ -110,10 +110,10 @@ public class Block {
         mVerts.put(mBufferOffset + 52, mHeight);
         mVerts.put(mBufferOffset + 55, mHeight);
         mVerts.put(mBufferOffset + 58, mHeight);
-        
+
         // update block bounds for new height
         mBlockBounds.setMaxY(mHeight);
-        
+
         return getColor();
     }
 
@@ -127,17 +127,17 @@ public class Block {
      */
     private int getColor() {
         float normH = (mHeight - MIN_HEIGHT) / HEIGHT_RANGE;
-        
-        // colorful 
-//        float hue = 300.0f * normH;
-//        float sat = 0.77f;
-//        float val = 0.89f;
-//        return GlMath.packedHsvColor(hue, sat, val, 1);
-        
-      float hue = 196;
-      float sat = 0.77f;
-      float val = 0.89f * (normH / 2 + 0.5f);
-      return GlMath.packedHsvColor(hue, sat, val, 1);
+
+        // colorful
+        float hue = 300.0f * normH;
+        float sat = 0.77f;
+        float val = 0.89f;
+        return GlMath.packedHsvColor(hue, sat, val, 1);
+
+        // float hue = 196;
+        // float sat = 0.77f;
+        // float val = 0.89f * (normH / 2 + 0.5f);
+        // return GlMath.packedHsvColor(hue, sat, val, 1);
     }
 
 }

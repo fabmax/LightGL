@@ -6,9 +6,10 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 
 /**
- * BufferedTouchListener implements an {@link OnTouchListener} that buffers all pointer positions of received
- * {@link MotionEvent}. The buffer is not synchronized, hence pointer positions retrieved via
- * {@link #getPointers()} may change if a new {@link MotionEvent} is received.
+ * BufferedTouchListener implements an {@link OnTouchListener} that buffers all (multi-touch)
+ * pointer positions of received {@link MotionEvent}. The buffer is not synchronized, hence pointer
+ * positions retrieved via {@link #getPointers()} may change if a new {@link MotionEvent} is
+ * received.
  * 
  * @author fabmax
  * 
@@ -47,6 +48,8 @@ public class BufferedTouchListener implements OnTouchListener {
      */
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        long t = System.currentTimeMillis();
+        
         for (Pointer pt : mPointers) {
             pt.mUpdated = false;
         }
@@ -61,20 +64,29 @@ public class BufferedTouchListener implements OnTouchListener {
             if (pt != null) {
                 // update pointer
                 pt.mUpdated = true;
+                pt.mCurrentTime = t;
                 pt.swapCoords();
                 event.getPointerCoords(i, pt.mCoords);
                 if (pt.mId != id) {
                     // this is a new pointer, swap again for getDX() and getDY() to return 0
                     pt.swapCoords();
                     pt.mId = id;
+                    pt.mDownTime = t;
                 }
             }
         }
 
-        // mark pointers as unused that where not updated
-        for (Pointer pt : mPointers) {
-            if (!pt.mUpdated) {
+        if (pointerCnt == 1 && event.getActionMasked() == MotionEvent.ACTION_UP) {
+            // the last finger was lifted, all Pointers are invalid now
+            for (Pointer pt : mPointers) {
                 pt.mId = POINTER_ID_UNUSED;
+            }
+        } else {
+            // mark pointers as unused that where not updated
+            for (Pointer pt : mPointers) {
+                if (!pt.mUpdated) {
+                    pt.mId = POINTER_ID_UNUSED;
+                }
             }
         }
 
@@ -108,10 +120,14 @@ public class BufferedTouchListener implements OnTouchListener {
      * @author fabmax
      * 
      */
-    public class Pointer {
+    public static class Pointer {
         private int mId = POINTER_ID_UNUSED;
         private boolean mUpdated;
 
+        private long mDownTime;
+        private long mLastTime;
+        private long mCurrentTime;
+        
         private PointerCoords mCoords = new PointerCoords();
         private PointerCoords mLastCoords = new PointerCoords();
 
@@ -159,6 +175,24 @@ public class BufferedTouchListener implements OnTouchListener {
         public float getDY() {
             return mCoords.y - mLastCoords.y;
         }
+        
+        /**
+         * Returns the time between the last and the current position update.
+         * 
+         * @return the time between the last and the current position update
+         */
+        public int getDT() {
+            return (int) (mCurrentTime - mLastTime);
+        }
+        
+        /**
+         * Returns the time between the first and the current position update.
+         * 
+         * @return the time between the first and the current position update
+         */
+        public int getActiveTime() {
+            return (int) (mCurrentTime - mDownTime);
+        }
 
         /**
          * Returns the {@link PointerCoords} of the current position.
@@ -182,6 +216,8 @@ public class BufferedTouchListener implements OnTouchListener {
          * Copies the current to the last position.
          */
         private void swapCoords() {
+            mLastTime = mCurrentTime;
+            
             mLastCoords.orientation = mCoords.orientation;
             mLastCoords.pressure = mCoords.pressure;
             mLastCoords.size = mCoords.size;

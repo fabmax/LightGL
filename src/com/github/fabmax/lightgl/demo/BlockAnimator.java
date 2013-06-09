@@ -12,6 +12,7 @@ import static android.opengl.GLES20.glTexImage2D;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 import com.github.fabmax.lightgl.GfxEngine;
 import com.github.fabmax.lightgl.GfxEngineListener;
@@ -116,8 +117,15 @@ public class BlockAnimator {
         ShaderAttributeBinder uvBinder = ShaderAttributeBinder.createVboBufferBinder(buf[0], 2, 20);
         uvBinder.setOffset(3);
         
+        // create index buffer as a ShortBuffer
+        ShortBuffer idxBuf = BufferHelper.createShortBuffer(indices.size());
+        for (int i = 0; i < indices.size(); i++) {
+            idxBuf.put((short) indices.get(i));
+        }
+        idxBuf.rewind();
+        
         // create Mesh
-        mBlockMesh = new Mesh(indices.asBuffer(), posBinder, normalBinder, uvBinder, null);
+        mBlockMesh = new Mesh(idxBuf, posBinder, normalBinder, uvBinder, null);
         if(shadow != null) {
             mBlockMesh.setShader(new ShadowShader(engine.getShaderManager(), mTexture, shadow));
         } else {
