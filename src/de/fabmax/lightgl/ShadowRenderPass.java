@@ -143,71 +143,47 @@ public class ShadowRenderPass implements RenderPass {
     private void computeCamClipSize() {
         // compute clip size for camera to cover the complete scene
         mTmpVector[3] = 1;
-//        Log.d("srp", "los");
-//
-//        Log.d("srp", "[" + mShadowViewMatrix[0] + ", " + mShadowViewMatrix[1] + ", " + mShadowViewMatrix[2] + ", " + mShadowViewMatrix[3] + "]");
-//        Log.d("srp", "[" + mShadowViewMatrix[4] + ", " + mShadowViewMatrix[5] + ", " + mShadowViewMatrix[6] + ", " + mShadowViewMatrix[7] + "]");
-//        Log.d("srp", "[" + mShadowViewMatrix[8] + ", " + mShadowViewMatrix[9] + ", " + mShadowViewMatrix[10] + ", " + mShadowViewMatrix[11] + "]");
-//        Log.d("srp", "[" + mShadowViewMatrix[12] + ", " + mShadowViewMatrix[13] + ", " + mShadowViewMatrix[14] + ", " + mShadowViewMatrix[15] + "]");
         
         // (minX, minY, minZ)
         mSceneBounds.getMin(mTmpVector);
         Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
         mClipSize.reset(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
-//        Log.d("srp", "in  x: " + mTmpVector[0] + ", y: " + mTmpVector[1] + ", z: " + mTmpVector[2] + ", w: " + mTmpVector[3]);
-//        Log.d("srp", "out x: " + mTmpVector[4] + ", y: " + mTmpVector[5] + ", z: " + mTmpVector[6] + ", w: " + mTmpVector[7]);
 
         // (minX, minY, maxZ)
         mTmpVector[2] = mSceneBounds.getMaxZ();
         Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
         mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
-//        Log.d("srp", "in  x: " + mTmpVector[0] + ", y: " + mTmpVector[1] + ", z: " + mTmpVector[2] + ", w: " + mTmpVector[3]);
-//        Log.d("srp", "out x: " + mTmpVector[4] + ", y: " + mTmpVector[5] + ", z: " + mTmpVector[6] + ", w: " + mTmpVector[7]);
 
         // (minX, maxY, maxZ)
         mTmpVector[1] = mSceneBounds.getMaxY();
         Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
         mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
-//        Log.d("srp", "in  x: " + mTmpVector[0] + ", y: " + mTmpVector[1] + ", z: " + mTmpVector[2] + ", w: " + mTmpVector[3]);
-//        Log.d("srp", "out x: " + mTmpVector[4] + ", y: " + mTmpVector[5] + ", z: " + mTmpVector[6] + ", w: " + mTmpVector[7]);
 
         // (minX, maxY, minZ)
         mTmpVector[2] = mSceneBounds.getMinZ();
         Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
         mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
-//        Log.d("srp", "in  x: " + mTmpVector[0] + ", y: " + mTmpVector[1] + ", z: " + mTmpVector[2] + ", w: " + mTmpVector[3]);
-//        Log.d("srp", "out x: " + mTmpVector[4] + ", y: " + mTmpVector[5] + ", z: " + mTmpVector[6] + ", w: " + mTmpVector[7]);
 
         // (maxX, maxY, minZ)
         mTmpVector[0] = mSceneBounds.getMaxX();
         Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
         mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
-//        Log.d("srp", "in  x: " + mTmpVector[0] + ", y: " + mTmpVector[1] + ", z: " + mTmpVector[2] + ", w: " + mTmpVector[3]);
-//        Log.d("srp", "out x: " + mTmpVector[4] + ", y: " + mTmpVector[5] + ", z: " + mTmpVector[6] + ", w: " + mTmpVector[7]);
 
         // (maxX, maxY, maxZ)
         mTmpVector[2] = mSceneBounds.getMaxZ();
         Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
         mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
-//        Log.d("srp", "in  x: " + mTmpVector[0] + ", y: " + mTmpVector[1] + ", z: " + mTmpVector[2] + ", w: " + mTmpVector[3]);
-//        Log.d("srp", "out x: " + mTmpVector[4] + ", y: " + mTmpVector[5] + ", z: " + mTmpVector[6] + ", w: " + mTmpVector[7]);
 
         // (maxX, minY, maxZ)
         mTmpVector[1] = mSceneBounds.getMinY();
         Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
         mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
-//        Log.d("srp", "in  x: " + mTmpVector[0] + ", y: " + mTmpVector[1] + ", z: " + mTmpVector[2] + ", w: " + mTmpVector[3]);
-//        Log.d("srp", "out x: " + mTmpVector[4] + ", y: " + mTmpVector[5] + ", z: " + mTmpVector[6] + ", w: " + mTmpVector[7]);
 
         // (maxX, minY, minZ)
         mTmpVector[2] = mSceneBounds.getMinZ();
         Matrix.multiplyMV(mTmpVector, 4, mShadowViewMatrix, 0, mTmpVector, 0);
         mClipSize.addPoint(mTmpVector[4], mTmpVector[5], mTmpVector[6]);
-//        Log.d("srp", "in  x: " + mTmpVector[0] + ", y: " + mTmpVector[1] + ", z: " + mTmpVector[2] + ", w: " + mTmpVector[3]);
-//        Log.d("srp", "out x: " + mTmpVector[4] + ", y: " + mTmpVector[5] + ", z: " + mTmpVector[6] + ", w: " + mTmpVector[7]);
 
-//        Log.d("srp", "min x: " + mClipSize.getMinX() + ", y: " + mClipSize.getMinY() + ", z: " + mClipSize.getMinZ());
-//        Log.d("srp", "max x: " + mClipSize.getMaxX() + ", y: " + mClipSize.getMaxY() + ", z: " + mClipSize.getMaxZ());
         mClipSize.setMinX(mClipSize.getMinX() - 5f);
         mClipSize.setMinY(mClipSize.getMinY() - 5f);
         mClipSize.setMinZ(mClipSize.getMinZ() - 5f);
