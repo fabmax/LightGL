@@ -6,6 +6,9 @@ A very light-weight pure-Java Android OpenGL framework.
 I made this mainly to play a little with OpenGL ES 2.0 on Android, but I aim for a graphics engine
 that is actually usable. However there's a long way to go.
 
+I built a cool live wallpaper with this, 
+[available on Google Play](http://github.github.com/github-flavored-markdown/sample_content.html)!
+
 Features:
 * Arbitrary triangle meshes with texture mapping or vertex colors
 * Model loading for .obj files
@@ -36,7 +39,7 @@ Copyright 2013 Max Thiele
    you may not use this file except in compliance with the License.
    You may obtain a copy of the License at
 
-       http://www.apache.org/licenses/LICENSE-2.0
+      http://www.apache.org/licenses/LICENSE-2.0
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
