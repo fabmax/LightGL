@@ -1,5 +1,6 @@
 package de.fabmax.lightgl;
 
+import de.fabmax.lightgl.util.GlConfiguration;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -42,13 +43,25 @@ public abstract class LiveWallpaperBase extends WallpaperService {
 
         private final GfxEngine mGfxEngine;
         private WallpaperGlSurfaceView mGlView;
+        private GlConfiguration mConfigChooser;
         private boolean mCreated = false;
 
         /**
-         * The constructor initializes the {@link GfxEngine}; however OpenGL methods can only be
-         * called after the Surface is created.
+         * The default constructor initializes the {@link GfxEngine}; however OpenGL methods can
+         * only be called after the Surface is created.
          */
         public GlWallpaperEngine() {
+            this(null);
+        }
+
+        /**
+         * The constructor initializes the {@link GfxEngine} and sets a {@link GlConfiguration} as
+         * desired OpenGL configuration.
+         * 
+         * @param configChooser the desired OpenGL configuration
+         */
+        public GlWallpaperEngine(GlConfiguration configChooser) {
+            mConfigChooser = configChooser;
             mGfxEngine = new GfxEngine(LiveWallpaperBase.this);
             mGfxEngine.setEngineListener(this);
         }
@@ -64,6 +77,9 @@ public abstract class LiveWallpaperBase extends WallpaperService {
             // create the fake GLView that handles the GL context and enable GLES 2.0
             mGlView = new WallpaperGlSurfaceView(LiveWallpaperBase.this);
             mGlView.setEGLContextClientVersion(2);
+            if (mConfigChooser != null) {
+                mGlView.setEGLConfigChooser(mConfigChooser);
+            }
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
                 // if available preserve the GL context for faster visibility changes

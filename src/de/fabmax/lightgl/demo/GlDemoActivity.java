@@ -23,6 +23,7 @@ import de.fabmax.lightgl.TextureProperties;
 import de.fabmax.lightgl.scene.Mesh;
 import de.fabmax.lightgl.scene.TransformGroup;
 import de.fabmax.lightgl.util.BufferedTouchListener;
+import de.fabmax.lightgl.util.GlConfiguration;
 import de.fabmax.lightgl.util.ObjLoader;
 import de.fabmax.lightgl.util.BufferedTouchListener.Pointer;
 
@@ -68,6 +69,9 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         mGlView = (GLSurfaceView) findViewById(R.id.gl_view);
         // enable GLES 2.0
         mGlView.setEGLContextClientVersion(2);
+        GlConfiguration config = new GlConfiguration();
+        config.setNumSamples(0);
+        mGlView.setEGLConfigChooser(config);
         // register graphics engine as GL renderer
         mGlView.setRenderer(mEngine);
         
