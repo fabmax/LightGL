@@ -13,8 +13,6 @@ import android.opengl.Matrix;
  */
 public class ShadowRenderPass implements RenderPass {
 
-    private static final int MAP_SIZE = 512;
-
     private OrthograpicCamera mShadowCamera = new OrthograpicCamera();
     private TextureRenderer mRenderer;
     private Shader mDepthShader;
@@ -26,25 +24,7 @@ public class ShadowRenderPass implements RenderPass {
     private float[] mShadowViewMatrix = new float[16];    
     private float[] mShadowProjMatrix = new float[16];
 
-    /**
-     * Creates a new ShadowRenderPass. Must be called from the GL thread.
-     * 
-     * @param engine
-     *            the graphics engine
-     */
-    public ShadowRenderPass(GfxEngine engine) {
-        mDepthShader = new DepthShader(engine.getShaderManager());
-        mRenderer = new TextureRenderer(engine);
-        mRenderer.setTextureSize(MAP_SIZE, MAP_SIZE);
-        
-        // initialize the depth texture with maximum depth value
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        mRenderer.renderToTexture(engine, null);
-        engine.getState().resetBackgroundColor();
-        
-        // set texture renderer border to 1 to reduce artifacts
-        mRenderer.setBorder(1);
-    }
+    private int mShadowMapSz = 512;
 
     /**
      * Renders a shadow map for a single light.
@@ -53,6 +33,8 @@ public class ShadowRenderPass implements RenderPass {
      */
     @Override
     public void onRender(GfxEngine engine) {
+        checkCreateGlObjects(engine);
+        
         if (engine.getLights().size() == 0) {
             // there is no light to cast a shadow
             return;
@@ -88,6 +70,49 @@ public class ShadowRenderPass implements RenderPass {
         state.setLockShader(false);
         engine.getTextureManager().bindTexture(mRenderer.getTexture(), mTextureUnit);
         engine.getState().resetBackgroundColor();
+    }
+    
+    /**
+     * Checks if the GL objects (texture renderer, shader, etc.) are created and if not creates them.
+     */
+    private void checkCreateGlObjects(GfxEngine engine) {
+        if (mDepthShader == null || mRenderer == null) {
+            mDepthShader = new DepthShader(engine.getShaderManager());
+            mRenderer = new TextureRenderer(engine);
+            mRenderer.setTextureSize(mShadowMapSz, mShadowMapSz);
+            
+            // initialize the depth texture with maximum depth value
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            mRenderer.renderToTexture(engine, null);
+            engine.getState().resetBackgroundColor();
+            
+            // set texture renderer border to 1 to reduce artifacts
+            mRenderer.setBorder(1);
+        }
+    }
+    
+    /**
+     * Sets the size of the shadow map texture. The actual texture size is sz x sz. Maximum texture
+     * size depends on the hardware. Moreover texture size has a heavy impact on performance.
+     * Default size is 512 x 512.
+     * 
+     * @param sz
+     *            the shadow map size to use
+     */
+    public void setShadowMapSize(int sz) {
+        mShadowMapSz = sz;
+        if(mRenderer != null) {
+            mRenderer.setTextureSize(mShadowMapSz, mShadowMapSz);
+        }
+    }
+    
+    /**
+     * Returns the size of the shadow map.
+     * 
+     * @return the size of the shadow map
+     */
+    public int getShadowMapSize() {
+        return mShadowMapSz;
     }
     
     /**

@@ -129,7 +129,7 @@ public class BlockAnimator {
         if(shadow != null) {
             mBlockMesh.setShader(new ShadowShader(engine.getShaderManager(), mTexture, shadow));
         } else {
-            mBlockMesh.setShader(new PhongShader(engine.getShaderManager(), mTexture));
+            mBlockMesh.setShader(PhongShader.createTexturePhongShader(engine.getShaderManager(), mTexture));
         }
 
         // create block array

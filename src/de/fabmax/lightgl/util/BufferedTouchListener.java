@@ -32,7 +32,7 @@ public class BufferedTouchListener implements OnTouchListener {
 
     /**
      * Returns the {@link Pointer} buffer. Notice that the buffer has always a size of
-     * {@link #MAX_POINTERS}. Only Pointers that return true on {@link Pointer#isActive()} contain
+     * {@link #MAX_POINTERS}. Only Pointers that return true on {@link Pointer#isValid()} contain
      * valid Pointer coordinates. The buffer returned by this method is used directly by the
      * {@link OnTouchListener} and is not synchronized. Hence the {@link Pointer} may change at any
      * time.
@@ -49,11 +49,12 @@ public class BufferedTouchListener implements OnTouchListener {
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         long t = System.currentTimeMillis();
-        
+
+        // clear update flag on all pointers
         for (Pointer pt : mPointers) {
             pt.mUpdated = false;
         }
-
+        
         // update all pointers
         int pointerCnt = event.getPointerCount();
         for (int i = 0; i < pointerCnt && i < MAX_POINTERS; i++) {
@@ -63,30 +64,32 @@ public class BufferedTouchListener implements OnTouchListener {
             Pointer pt = getPointerById(id);
             if (pt != null) {
                 // update pointer
-                pt.mUpdated = true;
+                pt.mId = id;
                 pt.mCurrentTime = t;
                 pt.swapCoords();
                 event.getPointerCoords(i, pt.mCoords);
-                if (pt.mId != id) {
-                    // this is a new pointer, swap again for getDX() and getDY() to return 0
+                if (!pt.mDown) {
+                    // this pointer was not down before, swap again for getDX() and getDY() to return 0
                     pt.swapCoords();
                     pt.mId = id;
                     pt.mDownTime = t;
                 }
+                pt.mDown = true;
+                pt.mUpdated = true;
             }
         }
 
         if (pointerCnt == 1 && event.getActionMasked() == MotionEvent.ACTION_UP) {
-            // the last finger was lifted, all Pointers are invalid now
+            // the last finger was lifted, all Pointers are up now
             for (Pointer pt : mPointers) {
-                pt.mId = POINTER_ID_UNUSED;
+                pt.mDown = false;
             }
-        } else {
-            // mark pointers as unused that where not updated
-            for (Pointer pt : mPointers) {
-                if (!pt.mUpdated) {
-                    pt.mId = POINTER_ID_UNUSED;
-                }
+        }
+
+        for (Pointer pt : mPointers) {
+            // pointers that where not updated are not down anymore
+            if (!pt.mUpdated) {
+                pt.mDown = false;
             }
         }
 
@@ -114,7 +117,7 @@ public class BufferedTouchListener implements OnTouchListener {
     }
 
     /**
-     * A Pointer represents a detected finger or tool on the screen. If {@link #isActive()} returns
+     * A Pointer represents a detected finger or tool on the screen. If {@link #isValid()} returns
      * false the Pointer is not valid.
      * 
      * @author fabmax
@@ -122,6 +125,7 @@ public class BufferedTouchListener implements OnTouchListener {
      */
     public static class Pointer {
         private int mId = POINTER_ID_UNUSED;
+        private boolean mDown;
         private boolean mUpdated;
 
         private long mDownTime;
@@ -130,14 +134,39 @@ public class BufferedTouchListener implements OnTouchListener {
         
         private PointerCoords mCoords = new PointerCoords();
         private PointerCoords mLastCoords = new PointerCoords();
+        
+        /**
+         * Recycles this Pointer. You should call this method after evaluating this Pointer.
+         */
+        public void recycle() {
+            if (!mDown) {
+                mId = POINTER_ID_UNUSED;
+            }
+        }
+        
+        /**
+         * Returns the ID of this pointer. The ID will remain the same while the pointer isDown().
+         */
+        public int getId() {
+            return mId;
+        }
 
         /**
          * Returns true if this Pointer holds a valid finger screen position.
          * 
          * @return true if this Pointer holds a valid finger screen position
          */
-        public boolean isActive() {
+        public boolean isValid() {
             return mId != POINTER_ID_UNUSED;
+        }
+
+        /**
+         * Returns true if this Pointer holds a valid finger screen position.
+         * 
+         * @return true if this Pointer holds a valid finger screen position
+         */
+        public boolean isDown() {
+            return mDown;
         }
 
         /**
@@ -190,7 +219,7 @@ public class BufferedTouchListener implements OnTouchListener {
          * 
          * @return the time between the first and the current position update
          */
-        public int getActiveTime() {
+        public int getDownTime() {
             return (int) (mCurrentTime - mDownTime);
         }
 

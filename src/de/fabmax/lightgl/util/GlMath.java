@@ -1,5 +1,7 @@
 package de.fabmax.lightgl.util;
 
+import de.fabmax.lightgl.Ray;
+import android.opengl.GLU;
 import android.opengl.Matrix;
 
 /**
@@ -20,11 +22,11 @@ public class GlMath {
      * 
      * @param vec3 the vector to scale
      */
-    public static void makeUnit(float[] vec3) {
-        float s = 1 / (float) Math.sqrt(vec3[0] * vec3[0] + vec3[1] * vec3[1] + vec3[2] * vec3[2]);
-        vec3[0] *= s;
-        vec3[1] *= s;
-        vec3[2] *= s;
+    public static void normalize(float[] vec3, int off) {
+        float s = 1 / (float) Math.sqrt(vec3[off+0] * vec3[off+0] + vec3[off+1] * vec3[off+1] + vec3[off+2] * vec3[off+2]);
+        vec3[off+0] *= s;
+        vec3[off+1] *= s;
+        vec3[off+2] *= s;
     }
     
     /**
@@ -77,6 +79,31 @@ public class GlMath {
         m[11] = -1;
         m[14] = -((2 * zNear * zFar) / frustumLen);
         m[15] = 0;
+    }
+    
+    public static void computePickRay(int[] viewport, float[] viewMatrix, int viewMatrixOff,
+            float[] projMatrix, int projMatrixOff, float x, float y, Ray result) {
+        float yInv = viewport[3] - y;
+        GLU.gluUnProject(x, yInv, 0.0f, viewMatrix, viewMatrixOff, projMatrix, projMatrixOff, viewport, 0, result.origin, 0);
+        GLU.gluUnProject(x, yInv, 1.0f, viewMatrix, viewMatrixOff, projMatrix, projMatrixOff, viewport, 0, result.direction, 0);
+        
+        // only took me a hour to figure out that the Android gluUnProject version does not divide
+        // the resulting coordinates by w...
+        float s = 1.0f / result.origin[3];
+        result.origin[0] *= s;
+        result.origin[1] *= s;
+        result.origin[2] *= s;
+        result.origin[3] = 1.0f;
+        
+        s = 1.0f / result.direction[3];
+        result.direction[0] *= s;
+        result.direction[1] *= s;
+        result.direction[2] *= s;
+        result.direction[3] = 0.0f;
+
+        result.direction[0] -= result.origin[0];
+        result.direction[1] -= result.origin[1];
+        result.direction[2] -= result.origin[2];
     }
 
     /**

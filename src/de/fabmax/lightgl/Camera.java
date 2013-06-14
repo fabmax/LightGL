@@ -1,8 +1,8 @@
 package de.fabmax.lightgl;
 
-import android.opengl.GLU;
 import android.opengl.Matrix;
 import android.view.MotionEvent;
+import de.fabmax.lightgl.util.GlMath;
 
 /**
  * Base class for arbitrary camera implementations.
@@ -39,12 +39,25 @@ public abstract class Camera {
     }
 
     /**
-     * Sets the position the camera looks at.
+     * Sets the position the camera looks at. This is an alternative way to set the camera's llok
+     * direction.
+     * 
+     * @see #setLookDirection(float, float, float)
      */
     public void setLookAt(float x, float y, float z) {
         mLookAtX = x;
         mLookAtY = y;
         mLookAtZ = z;
+        mDirty = true;
+    }
+
+    /**
+     * Sets the look direction of the camera.
+     */
+    public void setLookDirection(float x, float y, float z) {
+        mLookAtX = mEyeX + x;
+        mLookAtY = mEyeY + y;
+        mLookAtZ = mEyeZ + z;
         mDirty = true;
     }
 
@@ -109,27 +122,7 @@ public abstract class Camera {
      *            Ray representing the camera Ray at the specified pixel
      */
     public void getPickRay(int[] viewport, float x, float y, Ray result) {
-        float yInv = viewport[3] - y;
-        GLU.gluUnProject(x, yInv, 0.0f, mViewMatrix, 0, mProjMatrix, 0, viewport, 0, result.origin, 0);
-        GLU.gluUnProject(x, yInv, 1.0f, mViewMatrix, 0, mProjMatrix, 0, viewport, 0, result.direction, 0);
-        
-        // only took me a hour to figure out that the Android gluUnProject version does not divide
-        // the resulting coordinates by w...
-        float s = 1.0f / result.origin[3];
-        result.origin[0] *= s;
-        result.origin[1] *= s;
-        result.origin[2] *= s;
-        result.origin[3] = 1.0f;
-        
-        s = 1.0f / result.direction[3];
-        result.direction[0] *= s;
-        result.direction[1] *= s;
-        result.direction[2] *= s;
-        result.direction[3] = 0.0f;
-
-        result.direction[0] -= result.origin[0];
-        result.direction[1] -= result.origin[1];
-        result.direction[2] -= result.origin[2];
+        GlMath.computePickRay(viewport, mViewMatrix, 0, mProjMatrix, 0, x, y, result);
     }
 
     /**

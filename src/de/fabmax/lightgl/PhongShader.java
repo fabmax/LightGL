@@ -44,22 +44,27 @@ public class PhongShader extends Shader {
      * 
      * @param shaderMgr
      *            ShaderManager used to load the shader code
+     * 
+     * @return a PhongShader that uses vertex colors
      */
-    public PhongShader(ShaderManager shaderMgr) {
-        this(shaderMgr, null);
+    public static PhongShader createColorPhongShader(ShaderManager shaderMgr) {
+        return new PhongShader(shaderMgr, false, "phong_color");
     }
     
     /**
-     * Creates a new PhongShader object. If a texture is specified, this texture will be mapped onto
-     * the shaded object. Otherwise its vertex color information will be used.
+     * Creates a new PhongShader that uses a texture.
      * 
      * @param shaderMgr
      *            ShaderManager used to load the shader code
      * @param texture
-     *            Optional texture that is mapped onto the shaded object
+     *            Texture that is mapped onto the shaded object
+     * 
+     * @return a PhongShader that uses a texture
      */
-    public PhongShader(ShaderManager shaderMgr, Texture texture) {
-        this(shaderMgr, texture, texture != null ? "phong_texture" : "phong_color");
+    public static PhongShader createTexturePhongShader(ShaderManager shaderMgr, Texture texture) {
+        PhongShader shader = new PhongShader(shaderMgr, true, "phong_texture");
+        shader.setTexture(texture);
+        return shader;
     }
 
     /**
@@ -74,7 +79,7 @@ public class PhongShader extends Shader {
      * @param shaderFile
      *            shader file name to load
      */
-    protected PhongShader(ShaderManager shaderMgr, Texture texture, String shaderFile) {
+    protected PhongShader(ShaderManager shaderMgr, boolean useTexture, String shaderFile) {
         // load color shader code
         try {
             // load shader with texture mapping
@@ -82,8 +87,6 @@ public class PhongShader extends Shader {
         } catch (GlException e) {
             Log.e(TAG, e.getMessage());
         }
-        
-        mTexture = texture;
 
         // get uniform locations
         muMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uMvpMatrix");
@@ -93,7 +96,7 @@ public class PhongShader extends Shader {
         muShininessHandle = glGetUniformLocation(mShaderHandle, "uShininess");
         muLightColorHandle = glGetUniformLocation(mShaderHandle, "uLightColor");
 
-        if (texture != null) {
+        if (useTexture) {
             // enable texture mapping
             muTextureSamplerHandle = glGetUniformLocation(mShaderHandle, "uTextureSampler");
             enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
@@ -105,6 +108,25 @@ public class PhongShader extends Shader {
         // enable attributes
         enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
         enableAttribute(ATTRIBUTE_NORMALS, "aVertexNormal_modelspace");
+    }
+    
+    /**
+     * Returns the texture used by this shader.
+     * 
+     * @return the texture used by this shader
+     */
+    public Texture getTexture() {
+        return mTexture;
+    }
+    
+    /**
+     * Sets the texture to be used by this shader.
+     * 
+     * @param texture
+     *            the texture to be used by this shader
+     */
+    public void setTexture(Texture texture) {
+        mTexture = texture;
     }
 
     /**

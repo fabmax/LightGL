@@ -13,6 +13,7 @@ uniform sampler2D uTextureSampler;
 uniform float uShininess;
 uniform vec3 uLightColor;
 uniform sampler2D uShadowSampler;
+uniform float uMapScale;
 
 varying vec2 vTexCoord;
 varying vec3 vEyeDirection_cameraspace;
@@ -23,17 +24,17 @@ varying vec4 vShadowCoord;
 float shadow2Dsmooth(vec4 coord) {
 	float visibility = 4.0;
 	float depth = clamp((vShadowCoord.z - 0.01) / vShadowCoord.w, 0.0, 1.0);
-	
-	vec4 shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.003768, coord.y - 0.001596));
+
+	vec4 shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.9420 * uMapScale, coord.y - 0.3990 * uMapScale));
+	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
+
+	shadowValue = texture2D(uShadowSampler, vec2(coord.x + 0.9456 * uMapScale, coord.y - 0.7689 * uMapScale));
 	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
 	
-	shadowValue = texture2D(uShadowSampler, vec2(coord.x + 0.003782, coord.y - 0.003076));
+	shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.0942 * uMapScale, coord.y - 0.9294 * uMapScale));
 	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
 	
-	shadowValue = texture2D(uShadowSampler, vec2(coord.x - 0.000377, coord.y - 0.003718));
-	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
-	
-	shadowValue = texture2D(uShadowSampler, vec2(coord.x + 0.001380, coord.y + 0.001176));
+	shadowValue = texture2D(uShadowSampler, vec2(coord.x + 0.3450 * uMapScale, coord.y + 0.2939 * uMapScale));
 	visibility -= clamp((depth - (shadowValue.r + shadowValue.g / 255.0)) * 1000.0, 0.0, 1.0);
 	
 	return clamp(visibility / 5.0, 0.2, 1.0);

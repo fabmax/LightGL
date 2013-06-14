@@ -1,6 +1,7 @@
 package de.fabmax.lightgl;
 
 import static android.opengl.GLES20.glGetUniformLocation;
+import static android.opengl.GLES20.glUniform1f;
 import static android.opengl.GLES20.glUniform1i;
 import static android.opengl.GLES20.glUniformMatrix4fv;
 import android.opengl.Matrix;
@@ -19,7 +20,8 @@ public class ShadowShader extends PhongShader {
 
     private int muShadowSamplerHandle;
     private int muShadowMvpMatrixHandle;
-
+    private int muMapScaleHandle;
+    
     private float[] mTempMatrix = new float[16];
     private float[] mShadowMvpMatrix = new float[16];
     private float[] mShadowBiasMatrix;
@@ -35,7 +37,8 @@ public class ShadowShader extends PhongShader {
      *            the ShadowRenderPass used to compute the depth texture
      */
     public ShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass) {
-        super(shaderMgr, texture, "shadow");
+        super(shaderMgr, true, "shadow");
+        setTexture(texture);
 
         mShadowPass = shadowPass;
         mShadowBiasMatrix = new float[] {
@@ -47,6 +50,7 @@ public class ShadowShader extends PhongShader {
 
         muShadowSamplerHandle = glGetUniformLocation(mShaderHandle, "uShadowSampler");
         muShadowMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uShadowMvpMatrix");
+        muMapScaleHandle = glGetUniformLocation(mShaderHandle, "uMapScale");
     }
 
     /**
@@ -80,5 +84,6 @@ public class ShadowShader extends PhongShader {
         super.onBind(state);
 
         glUniform1i(muShadowSamplerHandle, mShadowPass.getTextureUnit());
+        glUniform1f(muMapScaleHandle, 1.4142f / mShadowPass.getShadowMapSize());
     }
 }

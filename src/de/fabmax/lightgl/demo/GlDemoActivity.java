@@ -4,9 +4,6 @@ import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
-
-import de.fabmax.lightgl.R;
-
 import de.fabmax.lightgl.BoundingBox;
 import de.fabmax.lightgl.Camera;
 import de.fabmax.lightgl.GfxEngine;
@@ -14,6 +11,7 @@ import de.fabmax.lightgl.GfxEngineListener;
 import de.fabmax.lightgl.GfxState;
 import de.fabmax.lightgl.GlException;
 import de.fabmax.lightgl.Light;
+import de.fabmax.lightgl.R;
 import de.fabmax.lightgl.Ray;
 import de.fabmax.lightgl.ScaledScreenRenderPass;
 import de.fabmax.lightgl.ShadowRenderPass;
@@ -23,9 +21,9 @@ import de.fabmax.lightgl.TextureProperties;
 import de.fabmax.lightgl.scene.Mesh;
 import de.fabmax.lightgl.scene.TransformGroup;
 import de.fabmax.lightgl.util.BufferedTouchListener;
+import de.fabmax.lightgl.util.BufferedTouchListener.Pointer;
 import de.fabmax.lightgl.util.GlConfiguration;
 import de.fabmax.lightgl.util.ObjLoader;
-import de.fabmax.lightgl.util.BufferedTouchListener.Pointer;
 
 /**
  * A demo Activity that shows a spinning color cube with Phong lighting.
@@ -104,12 +102,13 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // handle touch events
         Camera cam = engine.getCamera();
         for (Pointer pt : mTouchHandler.getPointers()) {
-            if (pt.isActive()) {
+            if (pt.isValid()) {
                 cam.getPickRay(state.getViewport(), pt.getX(), pt.getY(), mTouchRay);
                 Block block = mBlocks.getHitBlock(mTouchRay);
                 if (block != null) {
                     block.animateToHeight(Block.MIN_HEIGHT, 250);
                 }
+                pt.recycle();
             }
         }
 
@@ -173,7 +172,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
 
         // enable shadow rendering
         BoundingBox bounds = new BoundingBox(-blocksX, blocksX, 0, 6, -blocksZ, blocksZ);
-        ShadowRenderPass shadow = new ShadowRenderPass(engine);
+        ShadowRenderPass shadow = new ShadowRenderPass();
         shadow.setSceneBounds(bounds);
         engine.setPreRenderPass(shadow);
         
@@ -195,7 +194,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         engine.addLight(light);
 
         // enable shadow rendering
-        ShadowRenderPass shadow = new ShadowRenderPass(engine);
+        ShadowRenderPass shadow = new ShadowRenderPass();
         engine.setPreRenderPass(shadow);
         
         try {
