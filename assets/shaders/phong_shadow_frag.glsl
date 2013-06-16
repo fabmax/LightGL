@@ -75,7 +75,7 @@ void main() {
 	//fragmentColor.b = clamp((vShadowCoord.z - 0.005) / vShadowCoord.w, 0.0, 1.0);
 	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
 	
-	vec3 materialAmbientColor = vec3(0.2, 0.2, 0.2) * fragmentColor;
+	vec3 materialAmbientColor = fragmentColor * vec3(0.2, 0.2, 0.2);
 	vec3 materialDiffuseColor = fragmentColor * uLightColor * cosTheta;
 	vec3 materialSpecularColor = uLightColor * pow(cosAlpha, uShininess);
 

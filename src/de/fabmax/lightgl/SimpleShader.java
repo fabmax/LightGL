@@ -11,16 +11,17 @@ import java.util.ArrayList;
 import android.util.Log;
 
 /**
- * A basic Phong shader. Supports a single directional light source if the list returned by
- * {@link GfxEngine#getLights()} contains multiple lights only the first one is considered. Meshes
- * rendered with this shader must have defined normal and color attributes.
+ * A standard shader for a single directional light source. If the list returned by
+ * {@link GfxEngine#getLights()} contains multiple lights only the first one is considered. Phong
+ * and Gouraud light models are available. Phong lighting offers better quality but is slower than
+ * Gouraud lighting. Meshes rendered with this shader must define normal attributes.
  * 
  * @author fabmax
  * 
  */
-public class PhongShader extends Shader {
+public class SimpleShader extends Shader {
 
-    private static final String TAG = "PhongShader";
+    private static final String TAG = "SimpleShader";
 
     // shader handle
     protected int mShaderHandle = 0;
@@ -40,36 +41,52 @@ public class PhongShader extends Shader {
     protected Texture mTexture;
 
     /**
-     * Creates a new PhongShader object. Rendered objects must provide vertex colors.
-     * 
-     * @param shaderMgr
-     *            ShaderManager used to load the shader code
-     * 
-     * @return a PhongShader that uses vertex colors
-     */
-    public static PhongShader createColorPhongShader(ShaderManager shaderMgr) {
-        return new PhongShader(shaderMgr, false, "phong_color");
-    }
-    
-    /**
-     * Creates a new PhongShader that uses a texture.
+     * Creates a new SimpleShader that uses gouraud lighting and a texture.
      * 
      * @param shaderMgr
      *            ShaderManager used to load the shader code
      * @param texture
      *            Texture that is mapped onto the shaded object
      * 
-     * @return a PhongShader that uses a texture
+     * @return a SimpleShader that uses a texture
      */
-    public static PhongShader createTexturePhongShader(ShaderManager shaderMgr, Texture texture) {
-        PhongShader shader = new PhongShader(shaderMgr, true, "phong_texture");
+    public static SimpleShader createGouraudTextureShader(ShaderManager shaderMgr, Texture texture) {
+        SimpleShader shader = new SimpleShader(shaderMgr, true, "gouraud_texture");
+        shader.setTexture(texture);
+        return shader;
+    }
+    
+    /**
+     * Creates a new SimpleShader that uses phong lighting and a texture.
+     * 
+     * @param shaderMgr
+     *            ShaderManager used to load the shader code
+     * @param texture
+     *            Texture that is mapped onto the shaded object
+     * 
+     * @return a SimpleShader that uses a texture
+     */
+    public static SimpleShader createPhongTextureShader(ShaderManager shaderMgr, Texture texture) {
+        SimpleShader shader = new SimpleShader(shaderMgr, true, "phong_texture");
         shader.setTexture(texture);
         return shader;
     }
 
     /**
-     * Creates a new PhongShader object with the specified shader file name. Shader implementations
-     * can subclass PhongShader, modify the shader source and use this constructor to load the
+     * Creates a new SimpleShader that uses phong lighting and vertex colors.
+     * 
+     * @param shaderMgr
+     *            ShaderManager used to load the shader code
+     * 
+     * @return a SimpleShader that uses vertex colors
+     */
+    public static SimpleShader createPhongColorShader(ShaderManager shaderMgr) {
+        return new SimpleShader(shaderMgr, false, "phong_color");
+    }
+
+    /**
+     * Creates a new SimpleShader object with the specified shader file name. Shader implementations
+     * can subclass SimpleShader, modify the shader source and use this constructor to load the
      * modified shader version.
      * 
      * @param shaderMgr
@@ -79,7 +96,7 @@ public class PhongShader extends Shader {
      * @param shaderFile
      *            shader file name to load
      */
-    protected PhongShader(ShaderManager shaderMgr, boolean useTexture, String shaderFile) {
+    protected SimpleShader(ShaderManager shaderMgr, boolean useTexture, String shaderFile) {
         // load color shader code
         try {
             // load shader with texture mapping

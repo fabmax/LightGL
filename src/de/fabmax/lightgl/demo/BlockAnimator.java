@@ -17,7 +17,7 @@ import java.nio.ShortBuffer;
 import de.fabmax.lightgl.GfxEngine;
 import de.fabmax.lightgl.GfxEngineListener;
 import de.fabmax.lightgl.GfxState;
-import de.fabmax.lightgl.PhongShader;
+import de.fabmax.lightgl.SimpleShader;
 import de.fabmax.lightgl.Ray;
 import de.fabmax.lightgl.ShaderAttributeBinder;
 import de.fabmax.lightgl.ShadowRenderPass;
@@ -127,9 +127,11 @@ public class BlockAnimator {
         // create Mesh
         mBlockMesh = new Mesh(idxBuf, posBinder, normalBinder, uvBinder, null);
         if(shadow != null) {
-            mBlockMesh.setShader(new ShadowShader(engine.getShaderManager(), mTexture, shadow));
+            mBlockMesh.setShader(ShadowShader.createPhongShadowShader(engine.getShaderManager(), mTexture, shadow));
+            //mBlockMesh.setShader(ShadowShader.createGouraudShadowShader(engine.getShaderManager(), mTexture, shadow));
         } else {
-            mBlockMesh.setShader(PhongShader.createTexturePhongShader(engine.getShaderManager(), mTexture));
+            //mBlockMesh.setShader(SimpleShader.createPhongTextureShader(engine.getShaderManager(), mTexture));
+            mBlockMesh.setShader(SimpleShader.createGouraudTextureShader(engine.getShaderManager(), mTexture));
         }
 
         // create block array

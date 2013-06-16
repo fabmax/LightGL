@@ -7,14 +7,14 @@ import static android.opengl.GLES20.glUniformMatrix4fv;
 import android.opengl.Matrix;
 
 /**
- * ShadowShader is a PhongShader that also supports dynamic shadows. To compute the necessary
+ * ShadowShader is a SimpleShader that supports dynamic shadows. To compute the necessary
  * shadow depth map a {@link ShadowRenderPass} must be set as pre-render pass with
  * {@link GfxEngine#setPreRenderPass(RenderPass)}.
  * 
  * @author fabmax
  * 
  */
-public class ShadowShader extends PhongShader {
+public class ShadowShader extends SimpleShader {
 
     private ShadowRenderPass mShadowPass;
 
@@ -27,7 +27,8 @@ public class ShadowShader extends PhongShader {
     private float[] mShadowBiasMatrix;
 
     /**
-     * Creates a ShadowShader.
+     * Creates a ShadowShader with Gouraud model. Gouraud shading is faster than Phong shading but
+     * not as accurate.
      * 
      * @param shaderMgr
      *            the shader manager
@@ -36,8 +37,39 @@ public class ShadowShader extends PhongShader {
      * @param shadowPass
      *            the ShadowRenderPass used to compute the depth texture
      */
-    public ShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass) {
-        super(shaderMgr, true, "shadow");
+    public static ShadowShader createGouraudShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass) {
+        return new ShadowShader(shaderMgr, texture, shadowPass, "gouraud_shadow");
+    }
+
+    /**
+     * Creates a ShadowShader with Phong model. Phong shading offers a higher quality than Gouraud
+     * shading but is slower.
+     * 
+     * @param shaderMgr
+     *            the shader manager
+     * @param texture
+     *            the texture to map on drawn objects
+     * @param shadowPass
+     *            the ShadowRenderPass used to compute the depth texture
+     */
+    public static ShadowShader createPhongShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass) {
+        return new ShadowShader(shaderMgr, texture, shadowPass, "phong_shadow");
+    }
+    
+    /**
+     * Creates a ShadowShader with gouraud or phong light model.
+     * 
+     * @param shaderMgr
+     *            the shader manager
+     * @param texture
+     *            the texture to map on drawn objects
+     * @param shadowPass
+     *            the ShadowRenderPass used to compute the depth texture
+     * @param shaderFile
+     *            the shader filename to load
+     */
+    private ShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass, String shaderFile) {
+        super(shaderMgr, true, shaderFile);
         setTexture(texture);
 
         mShadowPass = shadowPass;
@@ -77,7 +109,7 @@ public class ShadowShader extends PhongShader {
     /**
      * Is called if this shader is bound.
      * 
-     * @see PhongShader#onBind(GfxState)
+     * @see SimpleShader#onBind(GfxState)
      */
     @Override
     public void onBind(GfxState state) {

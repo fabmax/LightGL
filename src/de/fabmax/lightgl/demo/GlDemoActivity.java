@@ -154,7 +154,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // use reduced render resolution
         ScaledScreenRenderPass pass = new ScaledScreenRenderPass(engine);
         pass.setViewportScale(0.75f);
-        engine.setMainRenderPass(pass);
+        //engine.setMainRenderPass(pass);
         
         // set camera position
         engine.getState().setBackgroundColor(0.067f, 0.235f, 0.298f);
@@ -178,6 +178,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         
         // add block mesh to scene
         mBlocks = new BlockAnimator(engine, shadow, blocksX, blocksZ);
+//        mBlocks = new BlockAnimator(engine, null, blocksX, blocksZ);
         mScene.addChild(mBlocks.getMesh());
     }
     
@@ -209,7 +210,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
             // set model material
             //Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
             Texture tex = engine.getTextureManager().loadTexture(R.drawable.stone_wall, new TextureProperties());
-            scene.setShader(new ShadowShader(engine.getShaderManager(), tex, shadow));
+            scene.setShader(ShadowShader.createGouraudShadowShader(engine.getShaderManager(), tex, shadow));
         } catch (GlException e) {
             e.printStackTrace();
         }

@@ -119,6 +119,8 @@ public class GfxState {
         Matrix.setIdentityM(mViewMatrix, 0);
         Matrix.setIdentityM(mProjMatrix, 0);
         Matrix.setIdentityM(mMvpMatrix, 0);
+        
+        mShaderManager.bindShader(this, null);
     }
 
     /**

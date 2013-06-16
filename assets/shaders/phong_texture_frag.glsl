@@ -30,10 +30,11 @@ void main() {
 	// Cosine of the angle between the eye vector and the reflect vector
 	float cosAlpha = clamp(dot(e, r), 0.0, 1.0);
 	
-	// Ambient color is the fragment color in dark
+	// Get base fragment color from texture
 	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
 	
-	vec3 materialAmbientColor = vec3(0.2, 0.2, 0.2) * fragmentColor;
+	// Ambient color is the fragment color in dark
+	vec3 materialAmbientColor = fragmentColor * vec3(0.2, 0.2, 0.2);
 	vec3 materialDiffuseColor = fragmentColor * uLightColor * cosTheta;
 	vec3 materialSpecularColor = uLightColor * pow(cosAlpha, uShininess);
 
