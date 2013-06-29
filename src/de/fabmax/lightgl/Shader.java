@@ -2,7 +2,6 @@ package de.fabmax.lightgl;
 
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
-
 import de.fabmax.lightgl.scene.Mesh;
 
 /**
@@ -11,33 +10,40 @@ import de.fabmax.lightgl.scene.Mesh;
  * @author fabmax
  * 
  */
-public abstract class Shader {
+public abstract class Shader extends GlObject {
 
     public static final int ATTRIBUTE_POSITIONS = 0;
     public static final int ATTRIBUTE_NORMALS = 1;
     public static final int ATTRIBUTE_TEXTURE_COORDS = 2;
     public static final int ATTRIBUTE_COLORS = 3;
 
+    private final ShaderManager mShaderMgr;
+    
     /** Shader attribute pointers */
     protected int[] mVertexAttributes;
     
     /**
      * Initializes the shader attributes.
      */
-    public Shader() {
+    public Shader(ShaderManager shaderMgr) {
+        mShaderMgr = shaderMgr;
+        mShaderMgr.registerShader(this);
+        
         mVertexAttributes = new int[4];
         for (int i = 0; i < mVertexAttributes.length; i++) {
             mVertexAttributes[i] = -1;
         }
     }
-    
+
     /**
-     * Returns the GL shader handle of this shader.
+     * Call this to load the shader program. Is called automatically when the shader is bound for
+     * the first time and it is not already loaded.
      * 
-     * @return the GL shader handle of this shader
+     * @param shaderMgr
+     *            the shader manager
      */
-    public abstract int getShaderHandle();
-    
+    public abstract void loadShader(ShaderManager shaderMgr);
+
     /**
      * Is called if the shader is bound. Implementations should update all their shader uniforms
      * here.
@@ -45,7 +51,7 @@ public abstract class Shader {
      * @param state
      *            Current graphics engine state
      */
-    public abstract void onBind(GfxState state);
+    protected abstract void onBind(GfxState state);
     
     /**
      * Is called if the MVP matrix has changed. Implementations should update their transform matrix
@@ -70,8 +76,23 @@ public abstract class Shader {
             throw new IllegalArgumentException("Illegal vertex attribute specified");
         }
         
-        int handle = getShaderHandle();
+        int handle = getGlHandle();
         mVertexAttributes[attrib] = glGetAttribLocation(handle, attribName);
+    }
+
+    /**
+     * Disables the specified attribute for this shader. This method is called by concrete Shader
+     * implementations to set the vertex attributes used by the implementation.
+     * 
+     * @param attrib
+     *            the attribute to disable
+     */
+    protected void disableAttribute(int attrib) {
+        if(attrib < 0 || attrib > mVertexAttributes.length) {
+            throw new IllegalArgumentException("Illegal vertex attribute specified");
+        }
+        
+        mVertexAttributes[attrib] = -1;
     }
 
     /**
@@ -110,5 +131,13 @@ public abstract class Shader {
                 glEnableVertexAttribArray(ptr);
             }
         }
+    }
+
+    /**
+     * Deletes the shader program in GPU memory.
+     */
+    @Override
+    public void delete() {
+        mShaderMgr.deleteShader(this);
     }
 }

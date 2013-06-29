@@ -11,6 +11,8 @@ import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.glBindFramebuffer;
 import static android.opengl.GLES20.glBindRenderbuffer;
 import static android.opengl.GLES20.glClear;
+import static android.opengl.GLES20.glDeleteFramebuffers;
+import static android.opengl.GLES20.glDeleteRenderbuffers;
 import static android.opengl.GLES20.glFramebufferRenderbuffer;
 import static android.opengl.GLES20.glFramebufferTexture2D;
 import static android.opengl.GLES20.glGenFramebuffers;
@@ -31,7 +33,7 @@ import de.fabmax.lightgl.scene.Node;
  * 
  */
 public class TextureRenderer {
-
+    
     private int mWidth = 0;
     private int mNewWidth = 512;
     private int mHeight = 0;
@@ -40,32 +42,8 @@ public class TextureRenderer {
 
     private Texture mTargetTex;
 
-    private int mFramebufferHandle;
-    private int mRenderbufferHandle;
-
-    /**
-     * Creates a new TextureRenderer. Must be called from the GL thread.
-     * 
-     * @param engine
-     *            graphics engine
-     */
-    public TextureRenderer(GfxEngine engine) {
-        // generate the framebuffer that will hold the shadow map
-        int[] buffer = new int[1];
-        glGenFramebuffers(1, buffer, 0);
-        mFramebufferHandle = buffer[0];
-        glGenRenderbuffers(1, buffer, 0);
-        mRenderbufferHandle = buffer[0];
-
-        // create the target texture
-        mTargetTex = engine.getTextureManager().createTexture();
-        TextureProperties props = new TextureProperties();
-        props.magFilter = MagFilterMethod.LINEAR;
-        props.minFilter = MinFilterMethod.LINEAR;
-        props.xWrapping = WrappingMethod.CLAMP;
-        props.yWrapping = WrappingMethod.CLAMP;
-        mTargetTex.setTextureProperties(props);
-    }
+    private int mFramebufferHandle = 0;
+    private int mRenderbufferHandle = 0;
 
     /**
      * Returns the texture this TextureRenderer renders to.
@@ -118,6 +96,29 @@ public class TextureRenderer {
     public void setBorder(int border) {
         mBorder = border;
     }
+    
+    /**
+     * Deletes the associated {@link Texture} and the underlying Framebuffer and Renderbuffer.
+     */
+    public void delete() {
+        if (mTargetTex != null) {
+            mTargetTex.delete();
+            mTargetTex = null;
+        }
+        
+        if (mFramebufferHandle != 0) {
+            int[] buf = { mFramebufferHandle };
+            glDeleteFramebuffers(1, buf, 0);
+            mFramebufferHandle = 0;
+            
+            buf[0] = mRenderbufferHandle;
+            glDeleteRenderbuffers(1, buf, 0);
+            mRenderbufferHandle = 0;
+            
+            mWidth = 0;
+            mHeight = 0;
+        }
+    }
 
     /**
      * Renders the specified Node to the texture using the current engine state. The image that is
@@ -158,6 +159,14 @@ public class TextureRenderer {
      *            graphics engine
      */
     private void bindFramebuffer(GfxEngine engine) {
+        if (mTargetTex == null || !mTargetTex.isValid()) {
+            createTexture(engine);
+        }
+        
+        if (mFramebufferHandle == 0) {
+            createBuffers();
+        }
+        
         glBindFramebuffer(GL_FRAMEBUFFER, mFramebufferHandle);
         glBindRenderbuffer(GL_RENDERBUFFER, mRenderbufferHandle);
 
@@ -174,11 +183,38 @@ public class TextureRenderer {
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, mWidth, mHeight);
 
             // setup the framebuffer
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                    mTargetTex.getTextureHandle(), 0);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
-                    mRenderbufferHandle);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTargetTex.getGlHandle(), 0);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, mRenderbufferHandle);
         }
+    }
+    
+    /**
+     * Creates the needed Framebuiffer and Renderbuffer.
+     */
+    private void createBuffers() {
+        // generate the framebuffer that will hold the shadow map
+        int[] buffer = new int[1];
+        glGenFramebuffers(1, buffer, 0);
+        mFramebufferHandle = buffer[0];
+        glGenRenderbuffers(1, buffer, 0);
+        mRenderbufferHandle = buffer[0];
+        
+        mWidth = 0;
+        mHeight = 0;
+    }
+    
+    /**
+     * Creates the target texture.
+     */
+    private void createTexture(GfxEngine engine) {
+        // create the target texture
+        mTargetTex = engine.getTextureManager().createEmptyTexture();
+        TextureProperties props = new TextureProperties();
+        props.magFilter = MagFilterMethod.LINEAR;
+        props.minFilter = MinFilterMethod.LINEAR;
+        props.xWrapping = WrappingMethod.CLAMP;
+        props.yWrapping = WrappingMethod.CLAMP;
+        mTargetTex.setTextureProperties(props);
     }
 
 }

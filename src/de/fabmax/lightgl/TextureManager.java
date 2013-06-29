@@ -4,12 +4,15 @@ import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glBindTexture;
-import static android.opengl.GLES20.glGenTextures;
+
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLUtils;
-import android.util.SparseIntArray;
+import android.util.Log;
+import android.util.SparseArray;
 
 /**
  * The TextureManager handles loading and binding of textures.
@@ -18,14 +21,19 @@ import android.util.SparseIntArray;
  * 
  */
 public class TextureManager {
+    private static final String TAG = "TextureManager";
+    // Default texture properties
+    private static final TextureProperties DEFAULT_PROPERTIES = new TextureProperties();
 
-    // context is needed to load assets
+    // Context is needed to load textures from resources
     private Context mContext;
 
-    // Map of loaded bitmaps / textures
-    private SparseIntArray mResourceMap = new SparseIntArray();
-    // Currently bound texture
-    private Texture mBoundTexture;
+    // List of all loaded textures
+    private ArrayList<Texture> mLoadedTextures = new ArrayList<Texture>();
+    // Map of loaded texture resources
+    private SparseArray<Texture> mResourceMap = new SparseArray<Texture>();
+    // Currently bound texture handle
+    private int mBoundTextureHandle;
     // Active texture unit
     private int mActiveTextureUnit;
 
@@ -38,14 +46,33 @@ public class TextureManager {
     protected TextureManager(Context context) {
         mContext = context;
     }
-    
+
     /**
      * Is called by {@link GfxEngine} if the GL context was (re-)created. Drops all texture handles.
      */
     protected void newGlContext() {
+        // invalidate all old texture
+        for (Texture t : mLoadedTextures) {
+            t.setGlHandle(0);
+        }
+        // clear all old texture references
+        mLoadedTextures.clear();
         mResourceMap.clear();
     }
     
+    /**
+     * Removes the specified {@link Texture} from the list of loaded textures.
+     * 
+     * @param tex 
+     */
+    protected void removeTexture(Texture tex) {
+        if (tex.isValid()) {
+            Log.w(TAG, "removeTexture called with undeleted Texture");
+            tex.delete();
+        }
+        mLoadedTextures.remove(tex);
+    }
+
     /**
      * Binds the given texture to the specified texture unit. Use GL_TEXTURE_0 if you only need one
      * texture.
@@ -56,59 +83,64 @@ public class TextureManager {
      *            texture unit to be used.
      */
     public void bindTexture(Texture texture, int texUnit) {
-        if(mActiveTextureUnit != texUnit) {
+        // check used texture unit
+        if (mActiveTextureUnit != texUnit) {
             glActiveTexture(texUnit);
             mActiveTextureUnit = texUnit;
         }
-        
-        if (texture != mBoundTexture) {
-            mBoundTexture = texture;
-            
-            if(texture != null) {
-                // bind texture
-                glBindTexture(GL_TEXTURE_2D, texture.getTextureHandle());
-            } else {
-                // clear bound texture
-                glBindTexture(GL_TEXTURE_2D, 0);
-            }
+
+        // get texture handle to bind, 0 handle will clear bound texture
+        int handle = texture != null ? texture.getGlHandle() : 0;
+        if (handle != mBoundTextureHandle) {
+            // bind texture
+            glBindTexture(GL_TEXTURE_2D, texture.getGlHandle());
+            mBoundTextureHandle = handle;
         }
     }
 
     /**
-     * Generates an OpenGL texture object and binds it.
+     * Loads the specified bitmap resource as a texture. If the specified resource was loaded before
+     * the corresponding Texture is returned instead of a new one.
      * 
-     * @return handle to the generated texture
+     * @param resource
+     *            bitmap resource to load
+     * @return the loaded texture
      */
-    private int genTextureHandle() {
-        int[] handle = new int[1];
-        glGenTextures(1, handle, 0);
-        glBindTexture(GL_TEXTURE_2D, handle[0]);
-        return handle[0];
+    public Texture createTextureFromResource(int resource) {
+        return createTextureFromResource(resource, DEFAULT_PROPERTIES);
     }
 
     /**
-     * Loads the specified bitmap resource as a texture.
+     * Loads the specified bitmap resource as a texture. If the specified resource was loaded before
+     * the corresponding Texture is returned instead of a new one. Notice that in this case the
+     * specified {@link TextureProperties} are ignored.
      * 
      * @param resource
      *            bitmap resource to load
      * @param texProps
-     *            OpenGL texture properties
+     *            {@link TextureProperties} to set
      * @return the loaded texture
      */
-    public Texture loadTexture(int resource, TextureProperties texProps) {
-        int handle = mResourceMap.get(resource);
-        if (handle != 0) {
-            // this resource was already loaded, return the texture handle
-            return new Texture(handle);
+    public Texture createTextureFromResource(int resource, TextureProperties props) {
+        Texture tex = mResourceMap.get(resource);
+        if (tex != null) {
+            // this resource was already loaded, return the corresponding Texture
+            return tex;
         }
+        
         // load bitmap from resources
         Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), resource);
-        
-        // create texture from bitmap
-        Texture tex = createTexture();
-        GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
-        tex.setTextureProperties(texProps);
 
+        // create texture from bitmap
+        tex = createEmptyTexture();
+        
+        // load texture data
+        bindTexture(tex, GL_TEXTURE0);
+        GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
+        tex.setTextureProperties(props);
+        
+        // put Texture to resource map
+        mResourceMap.put(resource, tex);
         return tex;
     }
 
@@ -117,10 +149,7 @@ public class TextureManager {
      * 
      * @return the created texture
      */
-    public Texture createTexture() {
-        // generate texture
-        Texture tex = new Texture(genTextureHandle());
-        bindTexture(tex, GL_TEXTURE0);
-        return tex;
+    public Texture createEmptyTexture() {
+        return new Texture(this);
     }
 }

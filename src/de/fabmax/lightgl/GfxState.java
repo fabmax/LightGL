@@ -84,6 +84,14 @@ public class GfxState {
         mTextureManager.bindTexture(texture, texUnit);
     }
     
+    /**
+     * Locks the currently bound shader. If the shader is locked calls to
+     * {@link #bindShader(Shader)} will be ignored. This is useful for special render passes such as
+     * the depth render pass for shadow mapping.
+     * 
+     * @param enabled
+     *            if true succeeding calls to {@link #bindShader(Shader)} will be ignored.
+     */
     public void setLockShader(boolean enabled) {
         mLockShader = enabled;
     }

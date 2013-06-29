@@ -81,10 +81,10 @@ public class BlockAnimator {
         }
         
         // create texture
+        mTexture = engine.getTextureManager().createEmptyTexture();
         TextureProperties props = new TextureProperties();
         props.magFilter = MagFilterMethod.NEAREST;
         props.minFilter = MinFilterMethod.NEAREST;
-        mTexture = engine.getTextureManager().createTexture();
         mTexture.setTextureProperties(props);
         mTextureData = BufferHelper.createIntBuffer(MAX_SIZE_X * MAX_SIZE_Z);
         updateTexture(engine.getState());
@@ -128,10 +128,10 @@ public class BlockAnimator {
         mBlockMesh = new Mesh(idxBuf, posBinder, normalBinder, uvBinder, null);
         if(shadow != null) {
             mBlockMesh.setShader(ShadowShader.createPhongShadowShader(engine.getShaderManager(), mTexture, shadow));
-            //mBlockMesh.setShader(ShadowShader.createGouraudShadowShader(engine.getShaderManager(), mTexture, shadow));
+            //mBlockMesh.setShader(ShadowShader.createGouraudShadowShader(mengine.getShaderManager(), Texture, shadow));
         } else {
-            //mBlockMesh.setShader(SimpleShader.createPhongTextureShader(engine.getShaderManager(), mTexture));
-            mBlockMesh.setShader(SimpleShader.createGouraudTextureShader(engine.getShaderManager(), mTexture));
+            mBlockMesh.setShader(SimpleShader.createPhongTextureShader(engine.getShaderManager(), mTexture));
+            //mBlockMesh.setShader(SimpleShader.createGouraudTextureShader(engine.getShaderManager(), mTexture));
         }
 
         // create block array
@@ -139,6 +139,10 @@ public class BlockAnimator {
         for (int i = 0; i < mBlocks.length; i++) {
             mBlocks[i] = new Block(this, i * 60);
         }
+    }
+    
+    public Texture getTexture() {
+        return mTexture;
     }
     
     /**

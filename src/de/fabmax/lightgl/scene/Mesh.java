@@ -7,6 +7,7 @@ import static android.opengl.GLES20.GL_UNSIGNED_INT;
 import static android.opengl.GLES20.GL_UNSIGNED_SHORT;
 import static android.opengl.GLES20.glBindBuffer;
 import static android.opengl.GLES20.glBufferData;
+import static android.opengl.GLES20.glDeleteBuffers;
 import static android.opengl.GLES20.glDrawElements;
 import static android.opengl.GLES20.glGenBuffers;
 
@@ -105,6 +106,33 @@ public class Mesh extends Node {
         // copy buffer data
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBufferHandle);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, indexBuffer, GL_STATIC_DRAW);
+    }
+    
+    /**
+     * Deletes all buffers associated with this mesh.
+     */
+    public void delete() {
+        if (mPositionBinder != null) {
+            mPositionBinder.delete();
+            mPositionBinder = null;
+        }
+        if (mNormalBinder != null) {
+            mNormalBinder.delete();
+            mNormalBinder = null;
+        }
+        if (mTexCoordBinder!= null) {
+            mTexCoordBinder.delete();
+            mTexCoordBinder = null;
+        }
+        if (mColorBinder != null) {
+            mColorBinder.delete();
+            mColorBinder = null;
+        }
+        int[] buf = new int[] { mIndexBufferHandle };
+        glDeleteBuffers(1, buf, 0);
+        mIndexBufferHandle = 0;
+        mIndexBufferSize = 0;
+        mIndexBufferType = 0;
     }
 
     /**

@@ -23,9 +23,9 @@ public class SimpleShader extends Shader {
 
     private static final String TAG = "SimpleShader";
 
-    // shader handle
-    protected int mShaderHandle = 0;
-
+    private final String mShaderName;
+    private final boolean mUseTexture;
+    
     // uniform handles
     private int muMvpMatrixHandle = 0;
     private int muModelMatrixHandle = 0;
@@ -93,38 +93,53 @@ public class SimpleShader extends Shader {
      *            ShaderManager used to load the shader code
      * @param texture
      *            Optional texture that is mapped onto the shaded object
-     * @param shaderFile
-     *            shader file name to load
+     * @param shaderName
+     *            name of the shader to load
      */
-    protected SimpleShader(ShaderManager shaderMgr, boolean useTexture, String shaderFile) {
-        // load color shader code
+    protected SimpleShader(ShaderManager shaderMgr, boolean useTexture, String shaderName) {
+        super(shaderMgr);
+        mUseTexture = useTexture;
+        mShaderName = shaderName;
+    }
+    
+    /**
+     * Loads the color shader program. Is called automatically when this shader is
+     * bound for the first time and was not called manually before.
+     * 
+     * @param shaderMgr
+     *            ShaderManager used to load the shader code
+     */
+    @Override
+    public void loadShader(ShaderManager shaderMgr) {
         try {
-            // load shader with texture mapping
-            mShaderHandle = shaderMgr.loadShader(shaderFile);
+            // load shader
+            int handle = shaderMgr.loadShader(mShaderName);
+            setGlHandle(handle);
+
+            // get uniform locations
+            muMvpMatrixHandle = glGetUniformLocation(handle, "uMvpMatrix");
+            muModelMatrixHandle = glGetUniformLocation(handle, "uModelMatrix");
+            muViewMatrixHandle = glGetUniformLocation(handle, "uViewMatrix");
+            muLightDirectionHandle = glGetUniformLocation(handle, "uLightDirection_worldspace");
+            muShininessHandle = glGetUniformLocation(handle, "uShininess");
+            muLightColorHandle = glGetUniformLocation(handle, "uLightColor");
+    
+            if (mUseTexture) {
+                // enable texture mapping
+                muTextureSamplerHandle = glGetUniformLocation(handle, "uTextureSampler");
+                enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
+            } else {
+                // enable vertex colors
+                enableAttribute(ATTRIBUTE_COLORS, "aVertexColor");
+            }
+            
+            // enable attributes
+            enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
+            enableAttribute(ATTRIBUTE_NORMALS, "aVertexNormal_modelspace");
+
         } catch (GlException e) {
             Log.e(TAG, e.getMessage());
         }
-
-        // get uniform locations
-        muMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uMvpMatrix");
-        muModelMatrixHandle = glGetUniformLocation(mShaderHandle, "uModelMatrix");
-        muViewMatrixHandle = glGetUniformLocation(mShaderHandle, "uViewMatrix");
-        muLightDirectionHandle = glGetUniformLocation(mShaderHandle, "uLightDirection_worldspace");
-        muShininessHandle = glGetUniformLocation(mShaderHandle, "uShininess");
-        muLightColorHandle = glGetUniformLocation(mShaderHandle, "uLightColor");
-
-        if (useTexture) {
-            // enable texture mapping
-            muTextureSamplerHandle = glGetUniformLocation(mShaderHandle, "uTextureSampler");
-            enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
-        } else {
-            // enable vertex colors
-            enableAttribute(ATTRIBUTE_COLORS, "aVertexColor");
-        }
-        
-        // enable attributes
-        enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
-        enableAttribute(ATTRIBUTE_NORMALS, "aVertexNormal_modelspace");
     }
     
     /**
@@ -163,14 +178,6 @@ public class SimpleShader extends Shader {
      */
     public void setShininess(float shininess) {
         mShininess = shininess;
-    }
-
-    /**
-     * @see Shader#getShaderHandle()
-     */
-    @Override
-    public int getShaderHandle() {
-        return mShaderHandle;
     }
 
     /**

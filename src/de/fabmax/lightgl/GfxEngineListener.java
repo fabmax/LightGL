@@ -20,6 +20,14 @@ public interface GfxEngineListener {
     public void onLoadScene(GfxEngine engine);
     
     /**
+     * Is called when the GL viewport changes its size.
+     * 
+     * @param width new viewport width in pixels
+     * @param height new viewport height in pixels
+     */
+    public void onViewportChange(int width, int height);
+    
+    /**
      * Is called every time before a new frame is rendered.
      * 
      * @param engine

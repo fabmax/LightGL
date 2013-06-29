@@ -79,10 +79,22 @@ public class ShadowShader extends SimpleShader {
                 0.0f, 0.0f, 0.5f, 0.0f,
                 0.5f, 0.5f, 0.5f, 1.0f
         };
+    }
 
-        muShadowSamplerHandle = glGetUniformLocation(mShaderHandle, "uShadowSampler");
-        muShadowMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uShadowMvpMatrix");
-        muMapScaleHandle = glGetUniformLocation(mShaderHandle, "uMapScale");
+    /**
+     * Loads the color shader program. Is called automatically when this shader is
+     * bound for the first time and was not called manually before.
+     * 
+     * @param shaderMgr
+     *            ShaderManager used to load the shader code
+     */
+    @Override
+    public void loadShader(ShaderManager shaderMgr) {
+        super.loadShader(shaderMgr);
+        
+        muShadowSamplerHandle = glGetUniformLocation(mHandle[0], "uShadowSampler");
+        muShadowMvpMatrixHandle = glGetUniformLocation(mHandle[0], "uShadowMvpMatrix");
+        muMapScaleHandle = glGetUniformLocation(mHandle[0], "uMapScale");
     }
 
     /**

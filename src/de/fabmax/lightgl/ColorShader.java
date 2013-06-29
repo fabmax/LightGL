@@ -14,37 +14,40 @@ public class ColorShader extends Shader {
 
     private static final String TAG = "ColorShader";
     
-    private int mShaderHandle = 0;
     private int muMvpMatrixHandle = 0;
+
+    /**
+     * Creates a new ColorShader.
+     * 
+     * @param shaderMgr the {@link ShaderManager}
+     */
+    public ColorShader(ShaderManager shaderMgr) {
+        super(shaderMgr);
+    }
     
     /**
-     * Creates a new ColorShader object.
+     * Loads the color shader program. Is called automatically when this shader is
+     * bound for the first time and was not called manually before.
      * 
      * @param shaderMgr
      *            ShaderManager used to load the shader code
      */
-    public ColorShader(ShaderManager shaderMgr) {
-        // load color shader code
+    @Override
+    public void loadShader(ShaderManager shaderMgr) {
         try {
-            mShaderHandle = shaderMgr.loadShader("color");
+            // load color shader code
+            int handle = shaderMgr.loadShader("color");
+            setGlHandle(handle);
+
+            // get uniform locations
+            muMvpMatrixHandle = glGetUniformLocation(handle, "uMvpMatrix");
+            
+            // enable attributes
+            enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
+            enableAttribute(ATTRIBUTE_COLORS, "aVertexColor");
         } catch (GlException e) {
             Log.e(TAG, e.getMessage());
         }
-
-        // get uniform locations
-        muMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uMvpMatrix");
-        
-        // enable attributes
-        enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
-        enableAttribute(ATTRIBUTE_COLORS, "aVertexColor");
-    }
-    
-    /**
-     * @see Shader#getShaderHandle()
-     */
-    @Override
-    public int getShaderHandle() {
-        return mShaderHandle;
     }
 
     /**

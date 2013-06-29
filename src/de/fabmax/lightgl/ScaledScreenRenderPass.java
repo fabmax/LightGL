@@ -25,7 +25,7 @@ public class ScaledScreenRenderPass implements RenderPass {
     private Mesh mTexMesh;
 
     public ScaledScreenRenderPass(GfxEngine engine) {
-        mRenderer = new TextureRenderer(engine);
+        mRenderer = new TextureRenderer();
         createTexMesh(engine);
     }
 
@@ -110,37 +110,39 @@ public class ScaledScreenRenderPass implements RenderPass {
      * screen.
      */
     private static class FramebufferShader extends Shader {
-        private int mShaderHandle = 0;
         private int muTextureSampler = 0;
+
+        /**
+         * Creates a new FramebufferShader.
+         * 
+         * @param shaderMgr the {@link ShaderManager}
+         */
+        public FramebufferShader(ShaderManager shaderMgr) {
+            super(shaderMgr);
+        }
         
         /**
-         * Creates a new DepthShader object.
+         * Loads the color shader program. Is called automatically when this shader is
+         * bound for the first time and was not called manually before.
          * 
          * @param shaderMgr
          *            ShaderManager used to load the shader code
          */
-        FramebufferShader(ShaderManager shaderMgr) {
-            // load color shader code
+        @Override
+        public void loadShader(ShaderManager shaderMgr) {
             try {
-                mShaderHandle = shaderMgr.loadShader("framebuffer");
+                // load framebuffer shader code
+                setGlHandle(shaderMgr.loadShader("framebuffer"));
+
+                // get uniform locations
+                muTextureSampler = glGetUniformLocation(getGlHandle(), "uTextureSampler");
+                
+                // enable attributes
+                enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
+                enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
             } catch (GlException e) {
                 Log.e(TAG, e.getMessage());
             }
-
-            // get uniform locations
-            muTextureSampler = glGetUniformLocation(mShaderHandle, "uTextureSampler");
-            
-            // enable attributes
-            enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
-            enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
-        }
-        
-        /**
-         * @see Shader#getShaderHandle()
-         */
-        @Override
-        public int getShaderHandle() {
-            return mShaderHandle;
         }
 
         /**

@@ -8,36 +8,40 @@ public class DepthShader extends Shader {
 
     private static final String TAG = "DepthShader";
     
-    private int mShaderHandle = 0;
     private int muMvpMatrixHandle = 0;
     
     /**
-     * Creates a new DepthShader object.
+     * Creates a new DepthShader.
+     * 
+     * @param shaderMgr the {@link ShaderManager}
+     */
+    public DepthShader(ShaderManager shaderMgr) {
+        super(shaderMgr);
+    }
+
+    
+    /**
+     * Loads the color shader program. Is called automatically when this shader is
+     * bound for the first time and was not called manually before.
      * 
      * @param shaderMgr
      *            ShaderManager used to load the shader code
      */
-    public DepthShader(ShaderManager shaderMgr) {
-        // load color shader code
+    @Override
+    public void loadShader(ShaderManager shaderMgr) {
         try {
-            mShaderHandle = shaderMgr.loadShader("depth");
+            // load depth shader code
+            int handle = shaderMgr.loadShader("depth");
+            setGlHandle(handle);
+            
+            // get uniform locations
+            muMvpMatrixHandle = glGetUniformLocation(handle, "uMvpMatrix");
+            
+            // enable attributes
+            enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
         } catch (GlException e) {
             Log.e(TAG, e.getMessage());
         }
-
-        // get uniform locations
-        muMvpMatrixHandle = glGetUniformLocation(mShaderHandle, "uMvpMatrix");
-        
-        // enable attributes
-        enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
-    }
-    
-    /**
-     * @see Shader#getShaderHandle()
-     */
-    @Override
-    public int getShaderHandle() {
-        return mShaderHandle;
     }
 
     /**

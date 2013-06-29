@@ -67,7 +67,7 @@ public class ShadowRenderPass implements RenderPass {
     private void checkCreateGlObjects(GfxEngine engine) {
         if (mDepthShader == null || mRenderer == null) {
             mDepthShader = new DepthShader(engine.getShaderManager());
-            mRenderer = new TextureRenderer(engine);
+            mRenderer = new TextureRenderer();
             mRenderer.setTextureSize(mShadowMapSz, mShadowMapSz);
             
             // initialize the depth texture with maximum depth value

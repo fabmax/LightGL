@@ -145,6 +145,10 @@ public class GfxEngine implements Renderer {
 
         // update GL viewport size
         mState.setViewport(0, 0, width, height);
+        
+        if (mEngineListener != null) {
+            mEngineListener.onViewportChange(width, height);
+        }
     }
 
     /**
@@ -345,6 +349,5 @@ public class GfxEngine implements Renderer {
         } else {
             mMaxFrameInterval = Math.round(1000.0f / fps);
         }
-        Log.d(TAG, "set maximum framerate:" + fps);
     }
 }

@@ -3,6 +3,7 @@ package de.fabmax.lightgl;
 import static android.opengl.GLES20.GL_ARRAY_BUFFER;
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.glBindBuffer;
+import static android.opengl.GLES20.glDeleteBuffers;
 import static android.opengl.GLES20.glVertexAttribPointer;
 
 import java.nio.Buffer;
@@ -149,6 +150,11 @@ public abstract class ShaderAttributeBinder {
      *            the buffer target index as used in glVertexAttribPointer()
      */
     public abstract boolean bindAttribute(int target);
+    
+    /**
+     * Deletes the underlying data buffer of this ShaderAttributeBinder.
+     */
+    public abstract void delete();
 
     /**
      * ShaderAttributeBinder implementation for {@link java.nio.Buffer} binding.
@@ -158,7 +164,7 @@ public abstract class ShaderAttributeBinder {
      */
     private static class FloatBufferAttributeBinder extends ShaderAttributeBinder {
 
-        private final Buffer mBuffer;
+        private Buffer mBuffer;
 
         /**
          * Creates a ShaderAttributeBinder for a Buffer.
@@ -179,6 +185,14 @@ public abstract class ShaderAttributeBinder {
             glVertexAttribPointer(target, mSize, mType, false, mStride, mBuffer);
             return true;
         }
+
+        /**
+         * Deletes the underlying data buffer of this ShaderAttributeBinder.
+         */
+        @Override
+        public void delete() {
+            mBuffer = null;
+        }
     }
 
     /**
@@ -189,7 +203,7 @@ public abstract class ShaderAttributeBinder {
      */
     private static class VboBufferAttributeBinder extends ShaderAttributeBinder {
 
-        private final int mBuffer;
+        private int mBuffer;
 
         /**
          * Creates a ShaderAttributeBinder for a GL VBO.
@@ -210,6 +224,16 @@ public abstract class ShaderAttributeBinder {
             glVertexAttribPointer(target, mSize, mType, false, mStride, mOffset * 4);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             return true;
+        }
+        
+        /**
+         * Deletes the underlying data buffer of this ShaderAttributeBinder.
+         */
+        @Override
+        public void delete() {
+            int[] buf = new int[] { mBuffer };
+            glDeleteBuffers(0, buf, 0);
+            mBuffer = 0;
         }
 
     }

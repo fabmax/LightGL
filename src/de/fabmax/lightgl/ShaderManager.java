@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import android.content.Context;
 import android.util.Log;
@@ -40,6 +41,7 @@ public class ShaderManager {
     // context is needed to load assets
     private Context mContext;
 
+    private ArrayList<Shader> mLoadedShaders = new ArrayList<Shader>();
     // map that holds all generated shader handles
     private SparseIntArray mShaderHandles = new SparseIntArray();
     // currently bound shader
@@ -59,7 +61,51 @@ public class ShaderManager {
      * Is called by {@link GfxEngine} if the GL context was (re-)created. Drops all shader handles.
      */
     public void newGlContext() {
+        for (Shader s : mLoadedShaders) {
+            s.setGlHandle(0);
+        }
         mShaderHandles.clear();
+    }
+    
+    /**
+     * Called by the constructor of the {@link Shader} base class to register a newly created shader
+     * instance.
+     * 
+     * @param shader
+     *            {@link Shader} to register
+     */
+    protected void registerShader(Shader shader) {
+        mLoadedShaders.add(shader);
+    }
+    
+    /**
+     * Deletes the specified {@link Shader}. Same as calling {@link Shader#delete()}.
+     * 
+     * @param shader the shader to delete
+     */
+    public void deleteShader(Shader shader) {
+        int deleteHandle = shader.getGlHandle();
+        
+        shader.setGlHandle(0);
+        mLoadedShaders.remove(shader);
+        
+        // check whether handle is used by another shader
+        boolean inUse = false;
+        for (Shader s : mLoadedShaders) {
+            if (s.getGlHandle() == deleteHandle) {
+                inUse = true;
+                break;
+            }
+        }
+        
+        if (!inUse) {
+            // shader is not in use anymore - delete it
+            glDeleteShader(deleteHandle);
+            int index = mShaderHandles.indexOfValue(deleteHandle);
+            if (index >= 0) {
+                mShaderHandles.removeAt(index);
+            }
+        }
     }
 
     /**
@@ -71,18 +117,22 @@ public class ShaderManager {
      *            shader to be bound
      */
     public void bindShader(GfxState state, Shader shader) {
-        if (shader != mBoundShader) {
-            mBoundShader = shader;
-
-            if (shader != null) {
+        if (shader != null) {
+            if (!shader.isValid()) {
+                Log.d(TAG, "loading shader");
+                shader.loadShader(this);
+            }
+            if (shader != mBoundShader) {
                 // bind shader program
-                glUseProgram(shader.getShaderHandle());
+                glUseProgram(shader.getGlHandle());
+                mBoundShader = shader;
                 // notify shader that it was bound
                 shader.onBind(state);
-            } else {
-                // clear used shader
-                glUseProgram(0);
             }
+        } else {
+            // clear used shader
+            glUseProgram(0);
+            mBoundShader = null;
         }
     }
 

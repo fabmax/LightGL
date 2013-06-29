@@ -16,8 +16,8 @@ import de.fabmax.lightgl.Ray;
 import de.fabmax.lightgl.ScaledScreenRenderPass;
 import de.fabmax.lightgl.ShadowRenderPass;
 import de.fabmax.lightgl.ShadowShader;
+import de.fabmax.lightgl.SimpleShader;
 import de.fabmax.lightgl.Texture;
-import de.fabmax.lightgl.TextureProperties;
 import de.fabmax.lightgl.scene.Mesh;
 import de.fabmax.lightgl.scene.TransformGroup;
 import de.fabmax.lightgl.util.BufferedTouchListener;
@@ -98,22 +98,29 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         light.position[0] = (float) Math.cos(s / 5);
         light.position[1] = 1.0f;
         light.position[2] = (float) Math.sin(s / 5);
-        
-        // handle touch events
-        Camera cam = engine.getCamera();
-        for (Pointer pt : mTouchHandler.getPointers()) {
-            if (pt.isValid()) {
-                cam.getPickRay(state.getViewport(), pt.getX(), pt.getY(), mTouchRay);
-                Block block = mBlocks.getHitBlock(mTouchRay);
-                if (block != null) {
-                    block.animateToHeight(Block.MIN_HEIGHT, 250);
-                }
-                pt.recycle();
-            }
-        }
 
-        // interpolate block heights
-        mBlocks.interpolateHeights(state);
+        if (mBlocks != null) {
+            // handle touch events
+            Camera cam = engine.getCamera();
+            for (Pointer pt : mTouchHandler.getPointers()) {
+                if (pt.isValid()) {
+                    cam.getPickRay(state.getViewport(), pt.getX(), pt.getY(), mTouchRay);
+                    Block block = mBlocks.getHitBlock(mTouchRay);
+                    if (block != null) {
+                        block.animateToHeight(Block.MIN_HEIGHT, 250);
+                    }
+                    pt.recycle();
+                }
+            }
+            // interpolate block heights
+            mBlocks.interpolateHeights(state);
+            
+            if (!mBlocks.getTexture().isValid()) {
+                Log.w(TAG, "tex is 0");
+            }
+            SimpleShader shader = (SimpleShader) mBlocks.getMesh().getShader();
+            shader.setTexture(mBlocks.getTexture());
+        }
         
         // calculate frames per second and print them every second
         if(t > mLastFpsOut + 1000) {
@@ -142,6 +149,11 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     public void onLoadScene(GfxEngine engine) {
         setCubeScene(engine);
         //setObjModelScene(engine);
+    }
+    
+    @Override
+    public void onViewportChange(int width, int height) {
+        //onLoadScene(mEngine);
     }
     
     /**
@@ -178,7 +190,6 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         
         // add block mesh to scene
         mBlocks = new BlockAnimator(engine, shadow, blocksX, blocksZ);
-//        mBlocks = new BlockAnimator(engine, null, blocksX, blocksZ);
         mScene.addChild(mBlocks.getMesh());
     }
     
@@ -207,9 +218,9 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
             // load model and add it to the scene
             Mesh scene = ObjLoader.loadObj(this, "models/room_thickwalls.obj");
             mScene.addChild(scene);
+            
             // set model material
-            //Texture tex = engine.getTextureManager().loadTexture(R.drawable.gray, new TextureProperties());
-            Texture tex = engine.getTextureManager().loadTexture(R.drawable.stone_wall, new TextureProperties());
+            Texture tex = engine.getTextureManager().createTextureFromResource(R.drawable.stone_wall);
             scene.setShader(ShadowShader.createGouraudShadowShader(engine.getShaderManager(), tex, shadow));
         } catch (GlException e) {
             e.printStackTrace();
