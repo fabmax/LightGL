@@ -1,7 +1,9 @@
 package de.fabmax.lightgl.demo;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import de.fabmax.lightgl.GfxEngine;
@@ -15,7 +17,6 @@ import de.fabmax.lightgl.Texture;
 import de.fabmax.lightgl.scene.Mesh;
 import de.fabmax.lightgl.scene.TransformGroup;
 import de.fabmax.lightgl.util.BufferedTouchListener;
-import de.fabmax.lightgl.util.GlConfiguration;
 import de.fabmax.lightgl.util.ObjLoader;
 
 /**
@@ -45,6 +46,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     /**
      * Called on App startup.
      */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,14 +60,19 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         mGlView = (GLSurfaceView) findViewById(R.id.gl_view);
         // enable GLES 2.0
         mGlView.setEGLContextClientVersion(2);
-        GlConfiguration config = new GlConfiguration();
-        config.setNumSamples(0);
-        mGlView.setEGLConfigChooser(config);
+//        GlConfiguration config = new GlConfiguration();
+//        config.setNumSamples(0);
+//        mGlView.setEGLConfigChooser(config);
         // register graphics engine as GL renderer
         mGlView.setRenderer(mEngine);
         
         // register a touch listener for some simple touch response
         mGlView.setOnTouchListener(mTouchHandler);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            // if available preserve the GL context for faster visibility changes
+            //mGlView.setPreserveEGLContextOnPause(true);
+        }
     }
 
     /**
@@ -92,7 +99,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
         // calculate frames per second and print them every second
         if(t > mLastFpsOut + 1000) {
             mLastFpsOut = t;
-            Log.d(TAG, "Fps: " + engine.getFps());
+            //Log.d(TAG, "Fps: " + engine.getFps());
         }
     }
 
@@ -119,7 +126,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     
     @Override
     public void onViewportChange(int width, int height) {
-        //onLoadScene(mEngine);
+        //setObjModelScene(mEngine);
     }
     
     /**
@@ -149,8 +156,8 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
             mScene.addChild(scene);
             
             // set model material
-            Texture tex = engine.getTextureManager().createTextureFromResource(R.drawable.stone_wall);
-            scene.setShader(ShadowShader.createGouraudShadowShader(engine.getShaderManager(), tex, shadow));
+            Texture tex = engine.getTextureManager().createTextureFromAsset("textures/stone_wall.png");
+            scene.setShader(ShadowShader.createPhongShadowShader(engine.getShaderManager(), tex, shadow));
         } catch (GlException e) {
             e.printStackTrace();
         }
@@ -163,6 +170,7 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     protected void onPause() {
         super.onPause();
         mGlView.onPause();
+        Log.d(TAG, "GL paused");
     }
 
     /**
@@ -172,5 +180,6 @@ public class GlDemoActivity extends Activity implements GfxEngineListener {
     protected void onResume() {
         super.onResume();
         mGlView.onResume();
+        Log.d(TAG, "GL resumed");
     }
 }

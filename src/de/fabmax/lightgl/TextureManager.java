@@ -5,9 +5,12 @@ import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.glActiveTexture;
 import static android.opengl.GLES20.glBindTexture;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLUtils;
@@ -58,6 +61,8 @@ public class TextureManager {
         // clear all old texture references
         mLoadedTextures.clear();
         mResourceMap.clear();
+        mBoundTextureHandle = 0;
+        mActiveTextureUnit = 0;
     }
     
     /**
@@ -99,48 +104,60 @@ public class TextureManager {
     }
 
     /**
-     * Loads the specified bitmap resource as a texture. If the specified resource was loaded before
-     * the corresponding Texture is returned instead of a new one.
+     * Loads the specified file as a texture. If the specified resource was loaded before the
+     * corresponding Texture is returned instead of a new one. The specified file is loaded
+     * from the App assets by calling {@link AssetManager#open(String)}.
      * 
-     * @param resource
-     *            bitmap resource to load
+     * @param assetPath
+     *            path in the assets directory
      * @return the loaded texture
      */
-    public Texture createTextureFromResource(int resource) {
-        return createTextureFromResource(resource, DEFAULT_PROPERTIES);
+    public Texture createTextureFromAsset(String assetPath) {
+        return createTextureFromAsset(assetPath, DEFAULT_PROPERTIES);
     }
 
     /**
-     * Loads the specified bitmap resource as a texture. If the specified resource was loaded before
-     * the corresponding Texture is returned instead of a new one. Notice that in this case the
-     * specified {@link TextureProperties} are ignored.
+     * Loads the specified file as a texture. If the specified file was loaded before the
+     * corresponding Texture is returned instead of a new one. Notice that in this case the
+     * specified {@link TextureProperties} are ignored. The specified file is loaded from the App
+     * assets by calling {@link AssetManager#open(String)}.
      * 
-     * @param resource
-     *            bitmap resource to load
+     * @param assetPath
+     *            path in the assets directory
      * @param texProps
      *            {@link TextureProperties} to set
      * @return the loaded texture
      */
-    public Texture createTextureFromResource(int resource, TextureProperties props) {
-        Texture tex = mResourceMap.get(resource);
+    public Texture createTextureFromAsset(String assetPath, TextureProperties props) {
+        int key = assetPath.hashCode();
+        Texture tex = mResourceMap.get(key);
         if (tex != null) {
             // this resource was already loaded, return the corresponding Texture
             return tex;
         }
         
-        // load bitmap from resources
-        Bitmap bitmap = BitmapFactory.decodeResource(mContext.getResources(), resource);
-
-        // create texture from bitmap
-        tex = createEmptyTexture();
-        
-        // load texture data
-        bindTexture(tex, GL_TEXTURE0);
-        GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
-        tex.setTextureProperties(props);
-        
-        // put Texture to resource map
-        mResourceMap.put(resource, tex);
+        try {
+            // create texture from bitmap
+            tex = createEmptyTexture();
+            
+            // load bitmap from resources
+            InputStream in = mContext.getAssets().open(assetPath);
+            Bitmap bitmap = BitmapFactory.decodeStream(in);
+            in.close();
+            
+            // load texture data
+            bindTexture(tex, GL_TEXTURE0);
+            GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
+            bitmap.recycle();
+            
+            tex.setTextureProperties(props);
+            Log.i(TAG, "Successfully loaded texture: \"" + assetPath + "\"");
+            
+            // put Texture to resource map
+            mResourceMap.put(key, tex);
+        } catch(IOException e) {
+            Log.e(TAG, "Failed loading texture: " + assetPath + " (" + e.getMessage() + ")");
+        }
         return tex;
     }
 

@@ -65,6 +65,7 @@ public class ShaderManager {
             s.setGlHandle(0);
         }
         mShaderHandles.clear();
+        mBoundShader = null;
     }
     
     /**
