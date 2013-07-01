@@ -7,7 +7,7 @@ I made this mainly to play a little with OpenGL ES 2.0 on Android, but I aim for
 that is actually usable. However there's a long way to go.
 
 I built a cool live wallpaper with this, 
-[available on Google Play](https://play.google.com/store/apps/details?id=de.fabmax.blox.free)!
+[available on Google Play](https://play.google.com/store/apps/details?id=de.fabmax.blox.pro)!
 
 Features:
 * Arbitrary triangle meshes with texture mapping or vertex colors
