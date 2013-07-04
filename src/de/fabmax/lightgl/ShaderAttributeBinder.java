@@ -231,9 +231,11 @@ public abstract class ShaderAttributeBinder {
          */
         @Override
         public void delete() {
-            int[] buf = new int[] { mBuffer };
-            glDeleteBuffers(0, buf, 0);
-            mBuffer = 0;
+            if (mBuffer != 0) {
+                int[] buf = new int[] { mBuffer };
+                glDeleteBuffers(0, buf, 0);
+                mBuffer = 0;
+            }
         }
 
     }

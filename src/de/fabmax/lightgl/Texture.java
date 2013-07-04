@@ -62,6 +62,7 @@ public class Texture extends GlObject {
         // handle multiple delete calls gracefully
         if (isValid()) {
             glDeleteTextures(1, mHandle, 0);
+            mHandle[0] = 0;
         }
         if (mTexManager != null) {
             mTexManager.removeTexture(this);

@@ -73,6 +73,7 @@ public class BufferedTouchListener implements OnTouchListener {
                     pt.swapCoords();
                     pt.mId = id;
                     pt.mDownTime = t;
+                    event.getPointerCoords(i, pt.mFirstCoords);
                 }
                 pt.mDown = true;
                 pt.mUpdated = true;
@@ -134,6 +135,7 @@ public class BufferedTouchListener implements OnTouchListener {
         
         private PointerCoords mCoords = new PointerCoords();
         private PointerCoords mLastCoords = new PointerCoords();
+        private PointerCoords mFirstCoords = new PointerCoords();
         
         /**
          * Recycles this Pointer. You should call this method after evaluating this Pointer.
@@ -203,6 +205,24 @@ public class BufferedTouchListener implements OnTouchListener {
          */
         public float getDY() {
             return mCoords.y - mLastCoords.y;
+        }
+
+        /**
+         * Returns the difference between the current and the first X screen position.
+         * 
+         * @return the difference between the current and the first X screen position
+         */
+        public float getOverallDX() {
+            return mCoords.x - mFirstCoords.x;
+        }
+
+        /**
+         * Returns the difference between the current and the first Y screen position.
+         * 
+         * @return the difference between the current and the first Y screen position
+         */
+        public float getOverallDY() {
+            return mCoords.y - mFirstCoords.y;
         }
         
         /**

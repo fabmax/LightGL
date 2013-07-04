@@ -85,6 +85,11 @@ public class ShaderManager {
      * @param shader the shader to delete
      */
     public void deleteShader(Shader shader) {
+        if (!shader.isValid()) {
+            // shader was already deleted or never created
+            return;
+        }
+        
         int deleteHandle = shader.getGlHandle();
         
         shader.setGlHandle(0);
@@ -120,7 +125,6 @@ public class ShaderManager {
     public void bindShader(GfxState state, Shader shader) {
         if (shader != null) {
             if (!shader.isValid()) {
-                Log.d(TAG, "loading shader");
                 shader.loadShader(this);
             }
             if (shader != mBoundShader) {

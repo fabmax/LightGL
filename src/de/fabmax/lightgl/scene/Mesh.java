@@ -128,11 +128,13 @@ public class Mesh extends Node {
             mColorBinder.delete();
             mColorBinder = null;
         }
-        int[] buf = new int[] { mIndexBufferHandle };
-        glDeleteBuffers(1, buf, 0);
-        mIndexBufferHandle = 0;
-        mIndexBufferSize = 0;
-        mIndexBufferType = 0;
+        if (mIndexBufferHandle != 0) {
+            int[] buf = new int[] { mIndexBufferHandle };
+            glDeleteBuffers(1, buf, 0);
+            mIndexBufferHandle = 0;
+            mIndexBufferSize = 0;
+            mIndexBufferType = 0;
+        }
     }
 
     /**

@@ -128,8 +128,9 @@ public class GfxState {
         Matrix.setIdentityM(mProjMatrix, 0);
         Matrix.setIdentityM(mMvpMatrix, 0);
         
-//        mShaderManager.bindShader(this, null);
-//        mTextureManager.bindTexture(null, GL_TEXTURE0);
+        // unbind shader, is needed so that Shader#onBind() is called on next frame render
+        // if only one shader is used
+        mShaderManager.bindShader(this, null);
     }
 
     /**

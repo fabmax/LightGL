@@ -138,6 +138,8 @@ public abstract class Shader extends GlObject {
      */
     @Override
     public void delete() {
-        mShaderMgr.deleteShader(this);
+        if (isValid()) {
+            mShaderMgr.deleteShader(this);
+        }
     }
 }
