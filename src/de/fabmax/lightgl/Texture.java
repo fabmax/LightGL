@@ -61,6 +61,10 @@ public class Texture extends GlObject {
     public void delete() {
         // handle multiple delete calls gracefully
         if (isValid()) {
+            if (mTexManager != null && mTexManager.isBound(this)) {
+                // this texture is currently bound, unbind it
+                mTexManager.bindTexture(null, mTexManager.getActiveTextureUnit());
+            }
             glDeleteTextures(1, mHandle, 0);
             mHandle[0] = 0;
         }

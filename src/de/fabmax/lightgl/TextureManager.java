@@ -65,6 +65,14 @@ public class TextureManager {
         mActiveTextureUnit = 0;
     }
     
+    public boolean isBound(Texture tex) {
+        return tex.getGlHandle() == mBoundTextureHandle;
+    }
+    
+    public int getActiveTextureUnit() {
+        return mActiveTextureUnit;
+    }
+    
     /**
      * Removes the specified {@link Texture} from the list of loaded textures.
      * 
@@ -98,7 +106,7 @@ public class TextureManager {
         int handle = texture != null ? texture.getGlHandle() : 0;
         if (handle != mBoundTextureHandle) {
             // bind texture
-            glBindTexture(GL_TEXTURE_2D, texture.getGlHandle());
+            glBindTexture(GL_TEXTURE_2D, handle);
             mBoundTextureHandle = handle;
         }
     }
