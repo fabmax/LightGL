@@ -250,6 +250,7 @@ public class Mesh extends Node {
             // draw triangles
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndexBufferHandle);
             glDrawElements(GL_TRIANGLES, mIndexBufferSize, mIndexBufferType, 0);
+            shader.unbindMesh();
         } else {
             Log.w(TAG, "Failed rendering mesh: null material");
         }

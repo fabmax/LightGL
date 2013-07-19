@@ -1,5 +1,6 @@
 package de.fabmax.lightgl;
 
+import static android.opengl.GLES20.glDisableVertexAttribArray;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
 import de.fabmax.lightgl.scene.Mesh;
@@ -130,6 +131,28 @@ public abstract class Shader extends GlObject {
             if (binder != null && binder.bindAttribute(ptr)) {
                 glEnableVertexAttribArray(ptr);
             }
+        }
+    }
+    
+    /**
+     * Disables all vertex attribute arrays that where bound with the last Mesh.
+     */
+    public void unbindMesh() {
+        int ptr = mVertexAttributes[ATTRIBUTE_POSITIONS];
+        if (ptr != -1) {
+            glDisableVertexAttribArray(ptr);
+        }
+        ptr = mVertexAttributes[ATTRIBUTE_NORMALS];
+        if (ptr != -1) {
+            glDisableVertexAttribArray(ptr);
+        }
+        ptr = mVertexAttributes[ATTRIBUTE_TEXTURE_COORDS];
+        if (ptr != -1) {
+            glDisableVertexAttribArray(ptr);
+        }
+        ptr = mVertexAttributes[ATTRIBUTE_COLORS];
+        if (ptr != -1) {
+            glDisableVertexAttribArray(ptr);
         }
     }
 

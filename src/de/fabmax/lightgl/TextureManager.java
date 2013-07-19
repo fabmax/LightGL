@@ -40,6 +40,10 @@ public class TextureManager {
     // Active texture unit
     private int mActiveTextureUnit;
 
+    public ArrayList<Texture> getLoadedTextures() {
+        return mLoadedTextures;
+    }
+    
     /**
      * Creates a new TextureManager object.
      * 
@@ -175,6 +179,8 @@ public class TextureManager {
      * @return the created texture
      */
     public Texture createEmptyTexture() {
-        return new Texture(this);
+        Texture tex = new Texture(this);
+        mLoadedTextures.add(tex);
+        return tex;
     }
 }

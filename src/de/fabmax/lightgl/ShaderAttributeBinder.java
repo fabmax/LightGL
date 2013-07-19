@@ -233,7 +233,7 @@ public abstract class ShaderAttributeBinder {
         public void delete() {
             if (mBuffer != 0) {
                 int[] buf = new int[] { mBuffer };
-                glDeleteBuffers(0, buf, 0);
+                glDeleteBuffers(1, buf, 0);
                 mBuffer = 0;
             }
         }
