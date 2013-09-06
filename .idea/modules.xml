@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/LightGl/LightGl.iml" filepath="$PROJECT_DIR$/LightGl/LightGl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LightGlDemo/LightGlDemo.iml" filepath="$PROJECT_DIR$/LightGlDemo/LightGlDemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LightGlProject.iml" filepath="$PROJECT_DIR$/LightGlProject.iml" />
+    </modules>
+  </component>
+</project>
+
