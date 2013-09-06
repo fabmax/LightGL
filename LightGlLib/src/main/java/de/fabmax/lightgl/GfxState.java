@@ -248,10 +248,9 @@ public class GfxState {
     }
 
     /**
-     * Copies the current model matrix to the specified buffer.
-     * 
-     * @param modelMBuf
-     *            the buffer where the model matrix is copied into.
+     * Returns the current model matrix. The matrix is returned by reference and changes to it
+     * will be reflected immediately. However, for the MVP matrix to reflect the changes
+     * {@link GfxState#matrixUpdate()} must be called.
      */
     public float[] getModelMatrix() {
         return mModelMatrix[mModelMatrixIdx];

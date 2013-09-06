@@ -136,7 +136,7 @@ public class TextureManager {
      * 
      * @param assetPath
      *            path in the assets directory
-     * @param texProps
+     * @param props
      *            {@link TextureProperties} to set
      * @return the loaded texture
      */

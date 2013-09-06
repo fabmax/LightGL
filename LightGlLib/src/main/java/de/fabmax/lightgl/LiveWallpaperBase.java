@@ -11,7 +11,7 @@ import android.view.SurfaceHolder;
 
 /**
  * Base class for implementing live wallpapers. To implement a live wallpaper you have to extend
- * this class and return an implementation of {@link WallpaperEngineListener} to handle all
+ * this class and return an implementation of {@link GlWallpaperEngine} to handle all
  * important wallpaper and rendering callbacks.
  * 
  * @author fabmax

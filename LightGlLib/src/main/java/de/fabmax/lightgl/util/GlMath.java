@@ -59,7 +59,7 @@ public class GlMath {
      *            Target matrix
      * @param fovy
      *            field of view along the y-axis
-     * @param mAspect
+     * @param aspect
      *            mAspect ratio
      * @param zNear
      *            near clipping distance

@@ -91,8 +91,8 @@ public class SimpleShader extends Shader {
      * 
      * @param shaderMgr
      *            ShaderManager used to load the shader code
-     * @param texture
-     *            Optional texture that is mapped onto the shaded object
+     * @param useTexture
+     *            Flag that indicates if the shader should support texture mapping
      * @param shaderName
      *            name of the shader to load
      */

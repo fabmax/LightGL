@@ -29,7 +29,7 @@ public abstract class ShaderAttributeBinder {
      *            number of primitives for this attribute
      * @param stride
      *            buffer stride as number of bytes
-     * @return ShaderAttributeBinder for use with a {@link Mesh}
+     * @return ShaderAttributeBinder for use with a {@link de.fabmax.lightgl.scene.Mesh}
      */
     public static ShaderAttributeBinder createFloatBufferBinder(FloatBuffer buffer, int size, int stride) {
         ShaderAttributeBinder binder = new FloatBufferAttributeBinder(buffer);
@@ -49,7 +49,7 @@ public abstract class ShaderAttributeBinder {
      *            number of primitives for this attribute
      * @param stride
      *            buffer stride as number of bytes
-     * @return ShaderAttributeBinder for use with a {@link Mesh}
+     * @return ShaderAttributeBinder for use with a {@link de.fabmax.lightgl.scene.Mesh}
      */
     public static ShaderAttributeBinder createVboBufferBinder(int ptr, int size, int stride) {
         ShaderAttributeBinder binder = new VboBufferAttributeBinder(ptr);
@@ -120,8 +120,8 @@ public abstract class ShaderAttributeBinder {
      * @param size
      *            the number of primitives per element
      */
-    public void setSize(int mSize) {
-        this.mSize = mSize;
+    public void setSize(int size) {
+        this.mSize = size;
     }
 
     /**

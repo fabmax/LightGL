@@ -23,7 +23,7 @@ public class Ray {
     /**
      * Creates a Ray with origin = (0, 0, 0, 1) and direction (1, 0, 0, 0).
      * 
-     * @see GfxEngine#getPickRay(int, int, Ray)
+     * @see Camera#getPickRay(int[], float, float, Ray)
      */
     public Ray() {
         origin = new float[] { 0.0f, 0.0f, 0.0f, 1.0f };

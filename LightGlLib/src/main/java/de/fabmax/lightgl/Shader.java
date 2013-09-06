@@ -100,7 +100,7 @@ public abstract class Shader extends GlObject {
      * Binds the specified Mesh as input to this shader. The mesh's ShaderAttributBinders will
      * be bound to the Shader attributes.
      * 
-     * @param Mesh
+     * @param mesh
      *            Mesh to use as input for shader execution
      */
     public void bindMesh(Mesh mesh) {

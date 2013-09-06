@@ -105,10 +105,7 @@ public abstract class Camera {
     /**
      * Computes a {@link Ray} for the given screen coordinates. The Ray has the same origin and
      * direction as the virtual camera ray at that pixel. E.g. (x, y) can come from a
-     * {@link MotionEvent} and the computed Ray can be used to pick scene objects. Notice that this
-     * function uses the projection and view matrices from {@link GfxState} so these must be valid
-     * in order for this function to work. Use {@link GfxState#setCamera(Camera)} to explicitly set
-     * the camera matrices.
+     * {@link MotionEvent} and the computed Ray can be used to pick scene objects.
      * 
      * @see GfxState#getViewport()
      * 
