@@ -110,7 +110,7 @@ public class BufferedTouchListener implements OnTouchListener {
         for (Pointer pt : mPointers) {
             if (pt.mId == id) {
                 return pt;
-            } else if (pt.mId == POINTER_ID_UNUSED) {
+            } else if (pt.mId == POINTER_ID_UNUSED && freePt == null) {
                 freePt = pt;
             }
         }
