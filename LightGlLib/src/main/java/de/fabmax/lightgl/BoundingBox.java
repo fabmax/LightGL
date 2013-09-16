@@ -8,8 +8,8 @@ package de.fabmax.lightgl;
  */
 public class BoundingBox {
 
-    private float mMinX, mMinY, mMinZ;
-    private float mMaxX, mMaxY, mMaxZ;
+    public float minX, minY, minZ;
+    public float maxX, maxY, maxZ;
 
     /**
      * Creates a new BoundingBox with the specified initial values for minX, minY, minZ, maxX, maxY
@@ -44,12 +44,12 @@ public class BoundingBox {
      *            initial value for maxZ
      */
     public BoundingBox(float minX, float maxX, float minY, float maxY, float minZ, float maxZ) {
-        mMinX = minX;
-        mMinY = minY;
-        mMinZ = minZ;
-        mMaxX = maxX;
-        mMaxY = maxY;
-        mMaxZ = maxZ;
+        this.minX = minX;
+        this.minY = minY;
+        this.minZ = minZ;
+        this.maxX = maxX;
+        this.maxY = maxY;
+        this.maxZ = maxZ;
     }
 
     /**
@@ -63,9 +63,9 @@ public class BoundingBox {
      *            reset value for minZ and maxZ
      */
     public void reset(float x, float y, float z) {
-        mMinX = mMaxX = x;
-        mMinY = mMaxY = y;
-        mMinZ = mMaxZ = z;
+        minX = maxX = x;
+        minY = maxY = y;
+        minZ = maxZ = z;
     }
 
     /**
@@ -75,9 +75,9 @@ public class BoundingBox {
      *            reset values
      */
     public void reset(float[] point) {
-        mMinX = mMaxX = point[0];
-        mMinY = mMaxY = point[1];
-        mMinZ = mMaxZ = point[2];
+        minX = maxX = point[0];
+        minY = maxY = point[1];
+        minZ = maxZ = point[2];
     }
     
     /**
@@ -87,12 +87,12 @@ public class BoundingBox {
      *            the BoundingBox dimensions to set
      */
     public void set(BoundingBox box) {
-        mMinX = box.mMinX;
-        mMinY = box.mMinY;
-        mMinZ = box.mMinZ;
-        mMaxX = box.mMaxX;
-        mMaxY = box.mMaxY;
-        mMaxZ = box.mMaxZ;
+        minX = box.minX;
+        minY = box.minY;
+        minZ = box.minZ;
+        maxX = box.maxX;
+        maxY = box.maxY;
+        maxZ = box.maxZ;
     }
 
     /**
@@ -107,22 +107,22 @@ public class BoundingBox {
      *            Z value to add
      */
     public void addPoint(float x, float y, float z) {
-        if (x < mMinX) {
-            mMinX = x;
-        } else if (x > mMaxX) {
-            mMaxX = x;
+        if (x < minX) {
+            minX = x;
+        } else if (x > maxX) {
+            maxX = x;
         }
 
-        if (y < mMinY) {
-            mMinY = y;
-        } else if (y > mMaxY) {
-            mMaxY = y;
+        if (y < minY) {
+            minY = y;
+        } else if (y > maxY) {
+            maxY = y;
         }
 
-        if (z < mMinZ) {
-            mMinZ = z;
-        } else if (z > mMaxZ) {
-            mMaxZ = z;
+        if (z < minZ) {
+            minZ = z;
+        } else if (z > maxZ) {
+            maxZ = z;
         }
     }
 
@@ -134,22 +134,22 @@ public class BoundingBox {
      *            the point to add
      */
     public void addPoint(float[] point) {
-        if (point[0] < mMinX) {
-            mMinX = point[0];
-        } else if (point[0] > mMaxX) {
-            mMaxX = point[0];
+        if (point[0] < minX) {
+            minX = point[0];
+        } else if (point[0] > maxX) {
+            maxX = point[0];
         }
 
-        if (point[1] < mMinY) {
-            mMinY = point[1];
-        } else if (point[1] > mMaxY) {
-            mMaxY = point[1];
+        if (point[1] < minY) {
+            minY = point[1];
+        } else if (point[1] > maxY) {
+            maxY = point[1];
         }
 
-        if (point[2] < mMinZ) {
-            mMinZ = point[2];
-        } else if (point[2] > mMaxZ) {
-            mMaxZ = point[2];
+        if (point[2] < minZ) {
+            minZ = point[2];
+        } else if (point[2] > maxZ) {
+            maxZ = point[2];
         }
     }
 
@@ -165,9 +165,9 @@ public class BoundingBox {
      * @return true if the point is included, false otherwise
      */
     public boolean includes(float x, float y, float z) {
-        return x >= mMinX && x <= mMaxX &&
-               y >= mMinY && y <= mMaxY &&
-               z >= mMinZ && z <= mMaxZ;
+        return x >= minX && x <= maxX &&
+               y >= minY && y <= maxY &&
+               z >= minZ && z <= maxZ;
     }
     
     /**
@@ -192,20 +192,20 @@ public class BoundingBox {
 
         div = 1.0f / rd[0];
         if (div >= 0.0f) {
-            tmin = (mMinX - ro[0]) * div;
-            tmax = (mMaxX - ro[0]) * div;
+            tmin = (minX - ro[0]) * div;
+            tmax = (maxX - ro[0]) * div;
         } else {
-            tmin = (mMaxX - ro[0]) * div;
-            tmax = (mMinX - ro[0]) * div;
+            tmin = (maxX - ro[0]) * div;
+            tmax = (minX - ro[0]) * div;
         }
 
         div = 1.0f / rd[1];
         if (div >= 0.0f) {
-            tymin = (mMinY - ro[1]) * div;
-            tymax = (mMaxY - ro[1]) * div;
+            tymin = (minY - ro[1]) * div;
+            tymax = (maxY - ro[1]) * div;
         } else {
-            tymin = (mMaxY - ro[1]) * div;
-            tymax = (mMinY - ro[1]) * div;
+            tymin = (maxY - ro[1]) * div;
+            tymax = (minY - ro[1]) * div;
         }
 
         if ((tmin > tymax) || (tymin > tmax)) {
@@ -221,11 +221,11 @@ public class BoundingBox {
 
         div = 1.0f / rd[2];
         if (div >= 0.0f) {
-            tzmin = (mMinZ - ro[2]) * div;
-            tzmax = (mMaxZ - ro[2]) * div;
+            tzmin = (minZ - ro[2]) * div;
+            tzmax = (maxZ - ro[2]) * div;
         } else {
-            tzmin = (mMaxZ - ro[2]) * div;
-            tzmax = (mMinZ - ro[2]) * div;
+            tzmin = (maxZ - ro[2]) * div;
+            tzmax = (minZ - ro[2]) * div;
         }
 
         if ((tmin > tzmax) || (tzmin > tmax)) {
@@ -261,9 +261,9 @@ public class BoundingBox {
      *            array to store the minimum point coordinates in.
      */
     public void getMin(float[] point) {
-        point[0] = mMinX;
-        point[1] = mMinY;
-        point[2] = mMinZ;
+        point[0] = minX;
+        point[1] = minY;
+        point[2] = minZ;
     }
 
     /**
@@ -273,122 +273,8 @@ public class BoundingBox {
      *            array to store the maximum point coordinates in.
      */
     public void getMax(float[] point) {
-        point[0] = mMaxX;
-        point[1] = mMaxY;
-        point[2] = mMaxZ;
-    }
-
-    /**
-     * Returns the minimum X value included by this BoundingBox.
-     * 
-     * @return the minimum X value
-     */
-    public float getMinX() {
-        return mMinX;
-    }
-
-    /**
-     * Sets the minimum X value included by this BoundingBox.
-     * 
-     * @param minX
-     *            minimum X value
-     */
-    public void setMinX(float minX) {
-        mMinX = minX;
-    }
-
-    /**
-     * Returns the minimum Y value included by this BoundingBox.
-     * 
-     * @return the minimum Y value
-     */
-    public float getMinY() {
-        return mMinY;
-    }
-
-    /**
-     * Sets the minimum Y value included by this BoundingBox.
-     * 
-     * @param minY
-     *            minimum Y value
-     */
-    public void setMinY(float minY) {
-        mMinY = minY;
-    }
-
-    /**
-     * Returns the minimum Z value included by this BoundingBox.
-     * 
-     * @return the minimum Z value
-     */
-    public float getMinZ() {
-        return mMinZ;
-    }
-
-    /**
-     * Sets the minimum Z value included by this BoundingBox.
-     * 
-     * @param minZ
-     *            minimum Z value
-     */
-    public void setMinZ(float minZ) {
-        mMinZ = minZ;
-    }
-
-    /**
-     * Returns the maximum X value included by this BoundingBox.
-     * 
-     * @return the maximum X value
-     */
-    public float getMaxX() {
-        return mMaxX;
-    }
-
-    /**
-     * Sets the maximum X value included by this BoundingBox.
-     * 
-     * @param maxX
-     *            maximum X value
-     */
-    public void setMaxX(float maxX) {
-        mMaxX = maxX;
-    }
-
-    /**
-     * Returns the maximum Y value included by this BoundingBox.
-     * 
-     * @return the maximum Y value
-     */
-    public float getMaxY() {
-        return mMaxY;
-    }
-
-    /**
-     * Sets the maximum X value included by this BoundingBox.
-     * 
-     * @param maxY
-     *            maximum Y value
-     */
-    public void setMaxY(float maxY) {
-        mMaxY = maxY;
-    }
-
-    /**
-     * Returns the maximum Z value included by this BoundingBox.
-     * 
-     * @return the maximum Z value
-     */
-    public float getMaxZ() {
-        return mMaxZ;
-    }
-
-    /**
-     * Sets the maximum Z value included by this BoundingBox.
-     * 
-     * @param maxZ
-     *            maximum Z value
-     */
-    public void setMaxZ(float maxZ) {
-        mMaxZ = maxZ;
+        point[0] = maxX;
+        point[1] = maxY;
+        point[2] = maxZ;
     }
 }

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 
 import de.fabmax.lightgl.util.GlConfiguration;
 
@@ -15,6 +16,8 @@ import de.fabmax.lightgl.util.GlConfiguration;
  */
 public abstract class LigthtGlActivity extends Activity implements GfxEngineListener {
 
+    private static final String TAG = "LightGlActivity";
+
     protected GLSurfaceView mGlView;
     // main graphics engine object
     protected GfxEngine mEngine;
@@ -22,6 +25,9 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
     private int mNumSamples = 0;
 
     private boolean mCreated = false;
+
+    private boolean mLogFps = false;
+    private long mLastFpsOut = 0;
 
     /**
      * Initializes the underlying GLSurfaceView and the LightGL engine.
@@ -71,6 +77,16 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
     }
 
     /**
+     * Call this method to en-/disable fps logging. If enabled the rendered frames per second are
+     * logged to logcat once a second.
+     *
+     * @param enabled true to enable fps logging
+     */
+    public void setLogFramesPerSecond(boolean enabled) {
+        mLogFps = enabled;
+    }
+
+    /**
      * Returns the underlying {@link android.opengl.GLSurfaceView}.
      *
      * @return the underlying {@link android.opengl.GLSurfaceView}
@@ -90,7 +106,8 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
 
     /**
      * Called every time before a frame is rendered. Override this method to animate your camera or
-     * scene or do other dynamic stuff. The default implementation does nothing.
+     * scene or do other dynamic stuff. However, your should call super.onRenderFrame() when
+     * overriding this method.
      *
      * @see #onRenderMainPass(de.fabmax.lightgl.GfxEngine)
      * @see de.fabmax.lightgl.GfxEngineListener#onRenderFrame(de.fabmax.lightgl.GfxEngine)
@@ -99,7 +116,14 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
      */
     @Override
     public void onRenderFrame(GfxEngine engine) {
-        // default implementation does nothing
+        // calculate frames per second and log them every second
+        if (mLogFps) {
+            long t = System.currentTimeMillis();
+            if(t > mLastFpsOut + 1000) {
+                mLastFpsOut = t;
+                Log.d(TAG, "Fps: " + engine.getFps());
+            }
+        }
     }
 
     /**
@@ -134,6 +158,7 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
     @Override
     protected void onPause() {
         super.onPause();
+        mEngine.onPause();
         mGlView.onPause();
     }
 
@@ -143,6 +168,7 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
     @Override
     protected void onResume() {
         super.onResume();
+        mEngine.onResume();
         mGlView.onResume();
     }
 }

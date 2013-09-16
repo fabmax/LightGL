@@ -137,7 +137,7 @@ public class SimpleShader extends Shader {
             enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
             enableAttribute(ATTRIBUTE_NORMALS, "aVertexNormal_modelspace");
 
-        } catch (GlException e) {
+        } catch (LightGlException e) {
             Log.e(TAG, e.getMessage());
         }
     }

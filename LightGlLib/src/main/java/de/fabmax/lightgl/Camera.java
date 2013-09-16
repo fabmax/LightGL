@@ -119,7 +119,7 @@ public abstract class Camera {
      *            Ray representing the camera Ray at the specified pixel
      */
     public void getPickRay(int[] viewport, float x, float y, Ray result) {
-        GlMath.computePickRay(viewport, mViewMatrix, 0, mProjMatrix, 0, x, y, result);
+        GlMath.computePickRay(viewport, mViewMatrix, mProjMatrix, x, y, result);
     }
 
     /**

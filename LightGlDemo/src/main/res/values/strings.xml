@@ -3,5 +3,6 @@
 
     <string name="app_name">LightGL Demo</string>
     <string name="title_simpleScene">Simple Scene</string>
+    <string name="title_physicsScene">Physics</string>
 
 </resources>

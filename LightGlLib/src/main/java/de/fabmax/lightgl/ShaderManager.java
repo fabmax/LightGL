@@ -160,10 +160,10 @@ public class ShaderManager {
      *            "_vert.glsl" for the vertex shader and name + "_frag.glsl" for the fragment
      *            shader.
      * @return the GL shader handle; is 0 if there was an error while loading the shader
-     * @throws GlException
+     * @throws LightGlException
      *             if shader compilation failed
      */
-    public int loadShader(String name) throws GlException {
+    public int loadShader(String name) throws LightGlException {
         try {
             // load vertex shader source code from assets
             String vertShaderSrc = loadSource("shaders/" + name + "_vert.glsl", mContext);
@@ -175,7 +175,7 @@ public class ShaderManager {
             return handle;
 
         } catch (IOException e) {
-            throw new GlException("Failed loading shader source", e);
+            throw new LightGlException("Failed loading shader source", e);
         }
     }
 
@@ -187,10 +187,10 @@ public class ShaderManager {
      * @param fragmentShaderSrc
      *            source code for the fragment shader
      * @return the GL shader handle; is 0 if there was an error while loading the shader
-     * @throws GlException
+     * @throws LightGlException
      *             if shader compilation failed
      */
-    public int loadShader(String vertexShaderSrc, String fragmentShaderSrc) throws GlException {
+    public int loadShader(String vertexShaderSrc, String fragmentShaderSrc) throws LightGlException {
         // check if this shader code was already loaded
         int hashcode = (vertexShaderSrc + fragmentShaderSrc).hashCode();
         int shaderHandle = mShaderHandles.get(hashcode);
@@ -213,7 +213,7 @@ public class ShaderManager {
             String log = glGetShaderInfoLog(vertShader);
             // delete allocated shader objects
             glDeleteShader(vertShader);
-            throw new GlException("Vertex shader compilation failed: " + log);
+            throw new LightGlException("Vertex shader compilation failed: " + log);
         }
 
         // create fragment shader object
@@ -230,7 +230,7 @@ public class ShaderManager {
             glDeleteShader(vertShader);
             glDeleteShader(fragShader);
             // throw exception with error message
-            throw new GlException("Fragment shader compilation failed: " + log);
+            throw new LightGlException("Fragment shader compilation failed: " + log);
         }
 
         // link shader program
@@ -250,7 +250,7 @@ public class ShaderManager {
             // delete allocated shader object
             glDeleteProgram(shaderHandle);
             // throw exception with error message
-            throw new GlException("Shader linkage failed failed: " + log);
+            throw new LightGlException("Shader linkage failed failed: " + log);
         }
 
         // if everything went well put the shader handle into the handle map

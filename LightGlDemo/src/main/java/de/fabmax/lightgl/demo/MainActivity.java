@@ -25,6 +25,12 @@ public class MainActivity extends ListActivity {
         item.put("start", SimpleScene.class);
         mData.add(item);
 
+        item = new HashMap<String, Object>();
+        item.put("text1", "Physics");
+        item.put("text2", "A simple physics demo using the JBullet physics engine (Tap to spawn cubes)");
+        item.put("start", PhysicsScene.class);
+        mData.add(item);
+
         String from[] = new String[] {
                 "text1",
                 "text2"

@@ -30,6 +30,10 @@
             android:name="de.fabmax.lightgl.demo.SimpleScene"
             android:label="@string/title_simpleScene" >
         </activity>
+        <activity
+            android:name="de.fabmax.lightgl.demo.PhysicsScene"
+            android:label="@string/title_physicsScene" >
+        </activity>
     </application>
 
 </manifest>

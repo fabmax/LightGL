@@ -140,7 +140,7 @@ public class ScaledScreenRenderPass implements RenderPass {
                 // enable attributes
                 enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
                 enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
-            } catch (GlException e) {
+            } catch (LightGlException e) {
                 Log.e(TAG, e.getMessage());
             }
         }

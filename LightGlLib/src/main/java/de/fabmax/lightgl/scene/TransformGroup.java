@@ -13,7 +13,7 @@ import de.fabmax.lightgl.GfxState;
 public class TransformGroup extends Group {
 
     // transformation matrix
-    private float[] mTransformationM = new float[16];
+    protected float[] mTransformationM = new float[16];
 
     // temp matrices needed for matrix computations
     private float[] mTemp1 = new float[16];

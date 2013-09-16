@@ -39,7 +39,7 @@ public class DepthShader extends Shader {
             
             // enable attributes
             enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
-        } catch (GlException e) {
+        } catch (LightGlException e) {
             Log.e(TAG, e.getMessage());
         }
     }

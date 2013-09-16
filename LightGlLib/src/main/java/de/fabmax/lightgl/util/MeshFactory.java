@@ -11,6 +11,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import de.fabmax.lightgl.ShaderAttributeBinder;
+import de.fabmax.lightgl.SimpleShader;
 import de.fabmax.lightgl.scene.Mesh;
 
 /**
@@ -126,39 +127,47 @@ public class MeshFactory {
     /**
      * Creates a cube mesh with valid vertex colors and texture coordinates. The texture coordinates
      * are the same for every side, vertex colors are different for different sides.
+     *
+     * @param sizeX    width of the cube
+     * @param sizeY    height of the cube
+     * @param sizeZ    depth of the cube
      */
-    public static Mesh createColorCube() {
+    public static Mesh createColorCube(float sizeX, float sizeY, float sizeZ) {
+        sizeX /= 2.0f;
+        sizeY /= 2.0f;
+        sizeZ /= 2.0f;
+
         float[] pos = {
             // front
-                -1.0f,  1.0f,  1.0f,
-                -1.0f, -1.0f,  1.0f,
-                 1.0f, -1.0f,  1.0f,
-                 1.0f,  1.0f,  1.0f,
+                -sizeX,  sizeY,  sizeZ,
+                -sizeX, -sizeY,  sizeZ,
+                 sizeX, -sizeY,  sizeZ,
+                 sizeX,  sizeY,  sizeZ,
             // rear
-                -1.0f,  1.0f, -1.0f,
-                -1.0f, -1.0f, -1.0f,
-                 1.0f, -1.0f, -1.0f,
-                 1.0f,  1.0f, -1.0f,
+                -sizeX,  sizeY, -sizeZ,
+                -sizeX, -sizeY, -sizeZ,
+                 sizeX, -sizeY, -sizeZ,
+                 sizeX,  sizeY, -sizeZ,
             // left
-                -1.0f, -1.0f,  1.0f,
-                -1.0f, -1.0f, -1.0f,
-                -1.0f,  1.0f, -1.0f,
-                -1.0f,  1.0f,  1.0f,
+                -sizeX, -sizeY,  sizeZ,
+                -sizeX, -sizeY, -sizeZ,
+                -sizeX,  sizeY, -sizeZ,
+                -sizeX,  sizeY,  sizeZ,
             // right
-                 1.0f, -1.0f,  1.0f,
-                 1.0f, -1.0f, -1.0f,
-                 1.0f,  1.0f, -1.0f,
-                 1.0f,  1.0f,  1.0f,
+                 sizeX, -sizeY,  sizeZ,
+                 sizeX, -sizeY, -sizeZ,
+                 sizeX,  sizeY, -sizeZ,
+                 sizeX,  sizeY,  sizeZ,
             // bottom
-                -1.0f, -1.0f,  1.0f,
-                -1.0f, -1.0f, -1.0f,
-                 1.0f, -1.0f, -1.0f,
-                 1.0f, -1.0f,  1.0f,
+                -sizeX, -sizeY,  sizeZ,
+                -sizeX, -sizeY, -sizeZ,
+                 sizeX, -sizeY, -sizeZ,
+                 sizeX, -sizeY,  sizeZ,
             // top
-                -1.0f,  1.0f,  1.0f,
-                -1.0f,  1.0f, -1.0f,
-                 1.0f,  1.0f, -1.0f,
-                 1.0f,  1.0f,  1.0f,
+                -sizeX,  sizeY,  sizeZ,
+                -sizeX,  sizeY, -sizeZ,
+                 sizeX,  sizeY, -sizeZ,
+                 sizeX,  sizeY,  sizeZ,
         };
         float[] norms = {
             // front
@@ -276,7 +285,8 @@ public class MeshFactory {
                 20, 22, 21,
                 20, 23, 22,
         };
-        
-        return MeshFactory.createStaticMesh(pos, norms, uvs, colors, indcs);
+
+        Mesh mesh = MeshFactory.createStaticMesh(pos, norms, uvs, colors, indcs);
+        return mesh;
     }
 }

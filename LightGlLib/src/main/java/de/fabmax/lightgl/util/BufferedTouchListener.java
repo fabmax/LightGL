@@ -31,6 +31,16 @@ public class BufferedTouchListener implements OnTouchListener {
     }
 
     /**
+     * Convenience method that returns the first pointer. This method can be used if no multi touch
+     * gestures are to be considered.
+     *
+     * @return the first touch pointer
+     */
+    public Pointer getFirstPointer() {
+        return mPointers[0];
+    }
+
+    /**
      * Returns the {@link Pointer} buffer. Notice that the buffer has always a size of
      * {@link #MAX_POINTERS}. Only Pointers that return true on {@link Pointer#isValid()} contain
      * valid Pointer coordinates. The buffer returned by this method is used directly by the

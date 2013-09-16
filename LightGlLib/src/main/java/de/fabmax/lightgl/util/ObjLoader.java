@@ -18,7 +18,7 @@ import android.content.Context;
 import android.util.Log;
 import android.util.SparseIntArray;
 
-import de.fabmax.lightgl.GlException;
+import de.fabmax.lightgl.LightGlException;
 import de.fabmax.lightgl.ShaderAttributeBinder;
 import de.fabmax.lightgl.scene.Mesh;
 
@@ -42,10 +42,10 @@ public class ObjLoader {
      * @param file
      *            file name of model file
      * @return the loaded {@link Mesh}
-     * @throws GlException
+     * @throws de.fabmax.lightgl.LightGlException
      *             if an error occurred during model loading
      */
-    public static Mesh loadObj(Context context, String file) throws GlException {
+    public static Mesh loadObj(Context context, String file) throws LightGlException {
         try {
             // open specified OBJ file
             InputStream in = context.getAssets().open(file);
@@ -177,7 +177,7 @@ public class ObjLoader {
             return new Mesh(meshIndices, posBinder, normalBinder, uvBinder, null);
 
         } catch (Exception e) {
-            throw new GlException("Failed parsing OBJ file: " + e.getMessage(), e);
+            throw new LightGlException("Failed parsing OBJ file: " + e.getMessage(), e);
         }
     }
 
@@ -227,10 +227,10 @@ public class ObjLoader {
      *            line to parse indices from
      * @param dstBuf
      *            destination buffer
-     * @throws GlException
+     * @throws de.fabmax.lightgl.LightGlException
      *             if the face has more than 3 vertices
      */
-    private static void parseFaceIndices(String line, IntList dstBuf) throws GlException {
+    private static void parseFaceIndices(String line, IntList dstBuf) throws LightGlException {
         StringTokenizer tok = new StringTokenizer(line, " ");
         // skip first token (line prefix)
         tok.nextToken();
@@ -247,7 +247,7 @@ public class ObjLoader {
             }
         }
         if (tok.hasMoreTokens()) {
-            throw new GlException("No support for more than 3 vertex indices per face");
+            throw new LightGlException("No support for more than 3 vertex indices per face");
         }
     }
 

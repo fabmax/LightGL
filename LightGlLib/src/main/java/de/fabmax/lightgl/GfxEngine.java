@@ -2,7 +2,9 @@ package de.fabmax.lightgl;
 
 import static android.opengl.GLES20.GL_CULL_FACE;
 import static android.opengl.GLES20.GL_DEPTH_TEST;
+import static android.opengl.GLES20.GL_LEQUAL;
 import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glDepthFunc;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glGetError;
 
@@ -16,6 +18,7 @@ import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 import android.util.Log;
 
+import de.fabmax.lightgl.physics.PhysicsEngine;
 import de.fabmax.lightgl.scene.Node;
 
 /**
@@ -40,6 +43,8 @@ public class GfxEngine implements Renderer {
     private GfxEngineListener mEngineListener;
     private RenderPass mPrePass;
     private RenderPass mMainPass;
+
+    private PhysicsEngine mPhysics;
 
     private long mLastFrameTime = System.currentTimeMillis();
     private long mMaxFrameInterval = 0;
@@ -67,13 +72,40 @@ public class GfxEngine implements Renderer {
     }
 
     /**
-     * Is called to render the scene.
+     * Enables / disables physics simulation.
+     */
+    public void setPhysicsEnabled(boolean enabled) {
+        if (enabled && mPhysics == null) {
+            mPhysics = new PhysicsEngine();
+        } else {
+            mPhysics = null;
+        }
+    }
+
+    /**
+     * Returns the used {@link de.fabmax.lightgl.physics.PhysicsEngine}. This method only returns an
+     * non-null value if physics simulation was enabled with {@link #setPhysicsEnabled(boolean)}
+     * before.
+     *
+     * @return the used {@link de.fabmax.lightgl.physics.PhysicsEngine}
+     */
+    public PhysicsEngine getPhysicsEngine() {
+        return mPhysics;
+    }
+
+    /**
+     * Is called by a {@link android.opengl.GLSurfaceView} to render the scene.
      * 
      * @see Renderer#onDrawFrame(GL10)
      */
     @Override
     public void onDrawFrame(GL10 unused) {
         doFpsStats();
+
+        if (mPhysics != null) {
+            // if physics is enabled, run physics simulation
+            mPhysics.stepPhysics();
+        }
         
         mState.reset();
 
@@ -131,7 +163,7 @@ public class GfxEngine implements Renderer {
 
         // update fps
         float fps = 1000.0f / (float) (mLastFrameTime - tLast);
-        mFps = mFps * 0.95f + fps * 0.05f;
+        mFps = mFps * 0.85f + fps * 0.15f;
     }
 
     /**
@@ -168,10 +200,29 @@ public class GfxEngine implements Renderer {
         glClearColor(0, 0, 0, 1);
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
         
         // notify registered listener that now is the right time to load scene data
         if (mEngineListener != null) {
             mEngineListener.onLoadScene(this);
+        }
+    }
+
+    /**
+     * Call this from your {@link android.app.Activity#onPause()}.
+     */
+    public void onPause() {
+        if (mPhysics != null) {
+            mPhysics.stop();
+        }
+    }
+
+    /**
+     * Call this from your {@link android.app.Activity#onResume()}.
+     */
+    public void onResume() {
+        if (mPhysics != null) {
+            mPhysics.start();
         }
     }
 

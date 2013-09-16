@@ -252,7 +252,7 @@ public class Mesh extends Node {
             glDrawElements(GL_TRIANGLES, mIndexBufferSize, mIndexBufferType, 0);
             shader.unbindMesh();
         } else {
-            Log.w(TAG, "Failed rendering mesh: null material");
+            Log.w(TAG, "Failed rendering mesh: No shader set");
         }
     }
 

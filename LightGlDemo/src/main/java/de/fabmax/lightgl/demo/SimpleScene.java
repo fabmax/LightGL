@@ -1,12 +1,10 @@
 package de.fabmax.lightgl.demo;
 
-import android.annotation.TargetApi;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
 import de.fabmax.lightgl.GfxEngine;
-import de.fabmax.lightgl.GlException;
+import de.fabmax.lightgl.LightGlException;
 import de.fabmax.lightgl.Light;
 import de.fabmax.lightgl.LigthtGlActivity;
 import de.fabmax.lightgl.ShadowRenderPass;
@@ -18,7 +16,8 @@ import de.fabmax.lightgl.util.BufferedTouchListener;
 import de.fabmax.lightgl.util.ObjLoader;
 
 /**
- * A demo Activity that shows a spinning color cube with Phong lighting.
+ * A simple demo scene with a loaded obj model touch interaction, texture mapping and dynamic
+ * shadows.
  * 
  * @author fabmax
  *
@@ -34,26 +33,25 @@ public class SimpleScene extends LigthtGlActivity {
     private float mRotationX = 180;
     private float mRotationY = 0;
 
-    private long mLastFpsOut = 0;
-
     private BufferedTouchListener mTouchHandler = new BufferedTouchListener();
     
     /**
-     * Called on App startup.
+     * Called on Activity startup.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // initializes the GLSurfaceView and the GfxEngine inside parent class LightGlActivity
         super.onCreate(savedInstanceState);
 
-        // register a touch listener for touch input
-        mGlView.setOnTouchListener(mTouchHandler);
-
         if (savedInstanceState != null) {
             mRotationX = savedInstanceState.getFloat(STATE_ROT_X);
             mRotationY = savedInstanceState.getFloat(STATE_ROT_Y);
         }
+
+        // register a touch listener for touch input
+        mGlView.setOnTouchListener(mTouchHandler);
+        // enable FPS log output
+        setLogFramesPerSecond(true);
     }
 
     /**
@@ -61,23 +59,19 @@ public class SimpleScene extends LigthtGlActivity {
      */
     @Override
     public void onRenderFrame(GfxEngine engine) {
+        super.onRenderFrame(engine);
+
         // rotate the camera
         BufferedTouchListener.Pointer pt = mTouchHandler.getPointers()[0];
-        if (pt.isDown()) {
+        if (pt.isValid()) {
             // some simple touch response
             mRotationX += pt.getDX() / 10.0f;
             mRotationY -= pt.getDY() / 10.0f;
+            pt.recycle();
         }
         mScene.resetTransform();
         mScene.rotate(mRotationX, 0, 1, 0);
         mScene.rotate(mRotationY, 1, 0, 0);
-        
-        // calculate frames per second and log them every second
-        long t = System.currentTimeMillis();
-        if(t > mLastFpsOut + 1000) {
-            mLastFpsOut = t;
-            Log.d(TAG, "Fps: " + engine.getFps());
-        }
     }
 
     /**
@@ -85,7 +79,6 @@ public class SimpleScene extends LigthtGlActivity {
      */
     @Override
     public void onLoadScene(GfxEngine engine) {
-        // set camera position
         engine.getState().setBackgroundColor(0, 0, 0.2f);
         engine.getCamera().setPosition(0, 12, 18);
         
@@ -109,7 +102,7 @@ public class SimpleScene extends LigthtGlActivity {
             // set model material
             Texture tex = engine.getTextureManager().createTextureFromAsset("textures/stone_wall.png");
             scene.setShader(ShadowShader.createPhongShadowShader(engine.getShaderManager(), tex, shadow));
-        } catch (GlException e) {
+        } catch (LightGlException e) {
             e.printStackTrace();
         }
     }

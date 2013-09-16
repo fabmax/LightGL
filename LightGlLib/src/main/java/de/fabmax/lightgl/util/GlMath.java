@@ -80,12 +80,28 @@ public class GlMath {
         m[14] = -((2 * zNear * zFar) / frustumLen);
         m[15] = 0;
     }
-    
-    public static void computePickRay(int[] viewport, float[] viewMatrix, int viewMatrixOff,
-            float[] projMatrix, int projMatrixOff, float x, float y, Ray result) {
+
+    /**
+     * Computes a {@link de.fabmax.lightgl.Ray} that corresponds to the camera's view direction at
+     * the specified screen coordinate in pixels.
+     *
+     * @see de.fabmax.lightgl.Camera#getPickRay(int[], float, float, de.fabmax.lightgl.Ray)
+     *
+     * @param viewport         Viewport matrix as returned by
+     *                         {@link de.fabmax.lightgl.GfxState#getViewport()}
+     * @param viewMatrix       View matrix as returned by
+     *                         {@link de.fabmax.lightgl.GfxState#getViewMatrix()}
+     * @param projMatrix       Projection matrix as returned by
+     *                         {@link de.fabmax.lightgl.GfxState#getProjectionMatrix()}
+     * @param x                Screen x-coordinate
+     * @param y                Screen y-coordinate
+     * @param result           Ray used to store the result
+     */
+    public static void computePickRay(int[] viewport, float[] viewMatrix, float[] projMatrix,
+                                      float x, float y, Ray result) {
         float yInv = viewport[3] - y;
-        GLU.gluUnProject(x, yInv, 0.0f, viewMatrix, viewMatrixOff, projMatrix, projMatrixOff, viewport, 0, result.origin, 0);
-        GLU.gluUnProject(x, yInv, 1.0f, viewMatrix, viewMatrixOff, projMatrix, projMatrixOff, viewport, 0, result.direction, 0);
+        GLU.gluUnProject(x, yInv, 0.0f, viewMatrix, 0, projMatrix, 0, viewport, 0, result.origin, 0);
+        GLU.gluUnProject(x, yInv, 1.0f, viewMatrix, 0, projMatrix, 0, viewport, 0, result.direction, 0);
         
         // only took me a hour to figure out that the Android gluUnProject version does not divide
         // the resulting coordinates by w...
@@ -104,6 +120,24 @@ public class GlMath {
         result.direction[0] -= result.origin[0];
         result.direction[1] -= result.origin[1];
         result.direction[2] -= result.origin[2];
+    }
+
+    /**
+     * Clamps the value of f to the range [min, max].
+     *
+     * @param f      value to clamp
+     * @param min    minimum bound
+     * @param max    maximum bound
+     * @return clamped value
+     */
+    public static float clamp(float f, float min, float max) {
+        if (f < min) {
+            return min;
+        } else if (f > max) {
+            return max;
+        } else {
+            return f;
+        }
     }
 
     /**
