@@ -10,21 +10,24 @@ I built a cool live wallpaper with this,
 [available on Google Play](https://play.google.com/store/apps/details?id=de.fabmax.blox.pro)!
 
 Features:
+* NEW: (Very basic) Integration of JBullet physics engine
 * Arbitrary triangle meshes with texture mapping or vertex colors
 * Model loading for .obj files
 * Simple scene graph supporting arbitrary object transformations
 * Various custom shaders
 * Dynamic shadow mapping without usage of any OpenGL extensions
 
-The included demo Activity shows an animated scene illuminated by a single light source with dynamic shadows.
-Shadow mapping works pretty well now. Just set a ShadowRenderPass as pre-pass in the engine, use a ShadowShader
-to render your Mesh and set the scene bounds for the ShadowRenderPass with setSceneBounds(BoundingBox)... and BOOM
-dynamic shadows :)
+The included demo App currently has two demo scenes: The first scene loads an .obj model and renders
+it with dynamic shadows. The second scene gives a little physics demo; however, performance is not
+that great.
 
-The depth rendering during the pre-pass uses a standard texture instead of the usual depth texture, because depth textures
-are not supported on many GL ES devices.
+Dynamic shadow mapping currently uses a standard texture instead of the usual depth texture, because
+depth textures are not supported on many GL ES 2.0 devices. OpenGL ES 3.0 fixes that but is not
+supported yet.
 
 Screenshots:
+
+![Physics Simulation](/docs/images/physics.png)
 
 ![Shadow Mapping 1](/docs/images/texture1.png)
 
