@@ -80,12 +80,16 @@ public class PhysicsObject {
         mGfxNode.addChild(mGfxMesh);
     }
 
+    /**
+     * Sets the position of the body's center of mass in world coordinates.
+     */
     public void setPosition(float x, float y, float z) {
-        mPhysicsBody.getCenterOfMassTransform(mTransform);
-        mTransform.origin.x = x;
-        mTransform.origin.y = y;
-        mTransform.origin.z = z;
-        mPhysicsBody.setCenterOfMassTransform(mTransform);
+        synchronized (mTransform) {
+            mTransform.origin.x = x;
+            mTransform.origin.y = y;
+            mTransform.origin.z = z;
+            mPhysicsBody.setCenterOfMassTransform(mTransform);
+        }
     }
 
     /**
@@ -110,6 +114,15 @@ public class PhysicsObject {
         return mGfxNode;
     }
 
+    /**
+     * Called by the physics thread after every simulation step.
+     */
+    void postSimulateStep() {
+        synchronized (mTransform) {
+            mPhysicsBody.getCenterOfMassTransform(mTransform);
+        }
+    }
+
     /*
      * PhysicsTransformGroup takes the transform information from the physics object and applies it
      * to the rendered object.
@@ -118,8 +131,9 @@ public class PhysicsObject {
         @Override
         public void render(GfxState state) {
             // apply transformation from physics
-            mPhysicsBody.getCenterOfMassTransform(mTransform);
-            mTransform.getOpenGLMatrix(mTransformationM);
+            synchronized (mTransform) {
+                mTransform.getOpenGLMatrix(mTransformationM);
+            }
 
             // render body
             super.render(state);

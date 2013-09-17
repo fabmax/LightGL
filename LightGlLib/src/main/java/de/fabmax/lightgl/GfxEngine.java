@@ -101,11 +101,6 @@ public class GfxEngine implements Renderer {
     @Override
     public void onDrawFrame(GL10 unused) {
         doFpsStats();
-
-        if (mPhysics != null) {
-            // if physics is enabled, run physics simulation
-            mPhysics.stepPhysics();
-        }
         
         mState.reset();
 
@@ -213,7 +208,7 @@ public class GfxEngine implements Renderer {
      */
     public void onPause() {
         if (mPhysics != null) {
-            mPhysics.stop();
+            mPhysics.onPause();
         }
     }
 
@@ -222,7 +217,16 @@ public class GfxEngine implements Renderer {
      */
     public void onResume() {
         if (mPhysics != null) {
-            mPhysics.start();
+            mPhysics.onResume();
+        }
+    }
+
+    /**
+     * Call this from your {@link android.app.Activity#onDestroy()}.
+     */
+    public void onDestroy() {
+        if (mPhysics != null) {
+            mPhysics.onDestroy();
         }
     }
 

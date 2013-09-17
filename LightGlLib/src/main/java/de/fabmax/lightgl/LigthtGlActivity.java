@@ -171,4 +171,13 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
         mEngine.onResume();
         mGlView.onResume();
     }
+
+    /**
+     * Called if the Activity is destroyed. Does some cleanup.
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mEngine.onDestroy();
+    }
 }
