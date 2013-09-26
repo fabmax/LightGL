@@ -1,5 +1,7 @@
 package de.fabmax.lightgl.physics;
 
+import android.util.Log;
+
 import com.bulletphysics.collision.shapes.CollisionShape;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
@@ -24,15 +26,12 @@ import de.fabmax.lightgl.scene.TransformGroup;
  *
  * @author fabmax
  */
-public class PhysicsObject {
+public class PhysicsObject extends TransformGroup {
 
-    private CollisionShape mPhysicsShape;
-    private RigidBody mPhysicsBody;
-    private Vector3f mTempV;
-    private Transform mTransform;
+    protected RigidBody mPhysicsBody;
+    protected final Transform mPhysicsTransform = new Transform();
 
-    private PhysicsTransformGroup mGfxNode;
-    private Mesh mGfxMesh;
+    protected Mesh mGfxMesh;
 
     /**
      * Creates a new static physics object from the specified {@link de.fabmax.lightgl.scene.Mesh}
@@ -55,40 +54,80 @@ public class PhysicsObject {
      * @param mass            Mass of the physics body
      */
     public PhysicsObject(Mesh gfxMesh, CollisionShape physicsShape, float mass) {
-        mGfxMesh = gfxMesh;
-        mPhysicsShape = physicsShape;
+        if (gfxMesh != null) {
+            mGfxMesh = gfxMesh;
+            addChild(mGfxMesh);
+        }
 
+        // create body for physics simulation
+        setCollisionShape(physicsShape, mass);
+    }
+
+    /**
+     * Default constructor is only available to sub-classes. Sub-class must call
+     * {@link #setCollisionShape(com.bulletphysics.collision.shapes.CollisionShape, float)} in their
+     * constructor to set the shape of the physics body. Moreover,
+     * {@link #setMesh(de.fabmax.lightgl.scene.Mesh)} has to be called to set the mesh that is to
+     * be rendered.
+     *
+     */
+    protected PhysicsObject() {
+        // your ad here...
+    }
+
+    /**
+     * Sets the shape and mass of the body simulated by the physics engine.
+     *
+     * @param physicsShape    Shape of the body
+     * @param mass            Mass of the body
+     */
+    protected void setCollisionShape(CollisionShape physicsShape, float mass) {
         // create initial dynamics transform
-        mTransform = new Transform();
-        mTransform.setIdentity();
+        mPhysicsTransform.setIdentity();
 
         // compute inertia (only for non static bodies)
-        mTempV = new Vector3f(0, 0, 0);
+        Vector3f localInertia = new Vector3f(0, 0, 0);
         if (mass != 0) {
-            mPhysicsShape.calculateLocalInertia(mass, mTempV);
+            physicsShape.calculateLocalInertia(mass, localInertia);
         }
 
         // create rigid body for physics simulation
-        DefaultMotionState motionState = new DefaultMotionState(mTransform);
+        DefaultMotionState motionState = new DefaultMotionState(mPhysicsTransform);
         RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, motionState,
-                mPhysicsShape, mTempV);
+                physicsShape, localInertia);
         mPhysicsBody = new RigidBody(rbInfo);
         mPhysicsBody.setFriction(1.0f);
+    }
 
-        // create node for rendering
-        mGfxNode = new PhysicsTransformGroup();
-        mGfxNode.addChild(mGfxMesh);
+    /**
+     * Returns the mesh, which is rendered for this physics object.
+     *
+     * @return The mesh, which is rendered for this physics object
+     */
+    public Mesh getMesh() {
+        return mGfxMesh;
+    }
+
+    /**
+     * Replaces the mesh, which is rendered for this physics object.
+     *
+     * @param mesh    New mesh to set
+     */
+    public void setMesh(Mesh mesh) {
+        mGfxMesh = mesh;
+        removeAllChildren();
+        addChild(mGfxMesh);
     }
 
     /**
      * Sets the position of the body's center of mass in world coordinates.
      */
     public void setPosition(float x, float y, float z) {
-        synchronized (mTransform) {
-            mTransform.origin.x = x;
-            mTransform.origin.y = y;
-            mTransform.origin.z = z;
-            mPhysicsBody.setCenterOfMassTransform(mTransform);
+        synchronized (mPhysicsTransform) {
+            mPhysicsTransform.origin.x = x;
+            mPhysicsTransform.origin.y = y;
+            mPhysicsTransform.origin.z = z;
+            mPhysicsBody.setCenterOfMassTransform(mPhysicsTransform);
         }
     }
 
@@ -104,39 +143,26 @@ public class PhysicsObject {
     }
 
     /**
-     * Returns the {@link de.fabmax.lightgl.scene.Node} which is rendered by
-     * {@link de.fabmax.lightgl.GfxEngine}.
-     *
-     * @return the {@link de.fabmax.lightgl.scene.Node} which is rendered by
-     *         {@link de.fabmax.lightgl.GfxEngine}
+     * Called by the physics thread after every simulation step.
      */
-    public Node getGfxNode() {
-        return mGfxNode;
+    protected void postSimulateStep(float deltaT) {
+        synchronized (mPhysicsTransform) {
+            mPhysicsBody.getCenterOfMassTransform(mPhysicsTransform);
+        }
     }
 
     /**
-     * Called by the physics thread after every simulation step.
+     * Applies the transformation computed by the physics simulation and renders this physics
+     * object.
      */
-    void postSimulateStep() {
-        synchronized (mTransform) {
-            mPhysicsBody.getCenterOfMassTransform(mTransform);
+    @Override
+    public void render(GfxState state) {
+        // apply transformation from physics
+        synchronized (mPhysicsTransform) {
+            mPhysicsTransform.getOpenGLMatrix(mTransformationM);
         }
-    }
 
-    /*
-     * PhysicsTransformGroup takes the transform information from the physics object and applies it
-     * to the rendered object.
-     */
-    private class PhysicsTransformGroup extends TransformGroup {
-        @Override
-        public void render(GfxState state) {
-            // apply transformation from physics
-            synchronized (mTransform) {
-                mTransform.getOpenGLMatrix(mTransformationM);
-            }
-
-            // render body
-            super.render(state);
-        }
+        // render body
+        super.render(state);
     }
 }

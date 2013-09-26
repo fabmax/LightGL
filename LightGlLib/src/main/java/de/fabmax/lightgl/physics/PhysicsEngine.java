@@ -2,11 +2,8 @@ package de.fabmax.lightgl.physics;
 
 import android.util.Log;
 
-import com.bulletphysics.BulletStats;
 import com.bulletphysics.collision.broadphase.AxisSweep3;
-import com.bulletphysics.collision.broadphase.AxisSweep3_32;
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
-import com.bulletphysics.collision.broadphase.DbvtBroadphase;
 import com.bulletphysics.collision.dispatch.CollisionConfiguration;
 import com.bulletphysics.collision.dispatch.CollisionDispatcher;
 import com.bulletphysics.collision.dispatch.DefaultCollisionConfiguration;
@@ -24,14 +21,14 @@ import javax.vecmath.Vector3f;
  */
 public class PhysicsEngine {
 
-    /** Gravity in m/s on earth */
+    /** Gravity in m/s^2 on earth */
     public static final float G = 9.81f;
 
     // time step for physics simulation in milliseconds (~60 steps per second)
     private static final int SIM_TIME_STEP_MS = 17;
 
-    private PhysicsThread mPhysicsThread;
-    private DiscreteDynamicsWorld mWorld;
+    private final PhysicsThread mPhysicsThread;
+    private final DiscreteDynamicsWorld mWorld;
 
     /**
      * Initializes the JBullet physics engine. {@link #onResume()}, {@link #onPause()} and
@@ -165,7 +162,8 @@ public class PhysicsEngine {
 
                 // add new objects
                 synchronized (this) {
-                    for (PhysicsObject po : mAddObjects) {
+                    for (int i = 0; i < mAddObjects.size(); i++) {
+                        PhysicsObject po = mAddObjects.get(i);
                         mWorld.addRigidBody(po.getPhysicsBody());
                         mObjects.add(po);
                     }
@@ -173,12 +171,11 @@ public class PhysicsEngine {
                 }
 
                 // simulate physics step
-                mWorld.applyGravity();
                 mWorld.stepSimulation(SIM_TIME_STEP_MS / 1000.0f, 0, SIM_TIME_STEP_MS / 1000.0f);
 
                 // synchronize rendered objects with simulated objects
-                for (PhysicsObject po : mObjects) {
-                    po.postSimulateStep();
+                for (int i = 0; i < mObjects.size(); i++) {
+                    mObjects.get(i).postSimulateStep(SIM_TIME_STEP_MS / 1000.0f);
                 }
 
                 //ns = System.nanoTime() - ns;

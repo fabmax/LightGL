@@ -48,6 +48,27 @@ public class FloatList implements Iterable<Float> {
         }
         return mBuffer[index];
     }
+
+    /**
+     * Creates a new float array and copies the content of this list to it.
+     *
+     * @return a newly created float array with the same content as this list
+     */
+    public float[] asArray() {
+        float[] arr = new float[size()];
+        copyToArray(arr);
+        return arr;
+    }
+
+    /**
+     * Copies the contents of the list to the specified float array. The array must have a
+     * sufficient size.
+     *
+     * @param arr   target float array
+     */
+    public void copyToArray(float[] arr) {
+        System.arraycopy(mBuffer, 0, arr, 0, size());
+    }
     
     /**
      * Creates a new FloatBuffer and copies the content of this list to it.
@@ -59,10 +80,10 @@ public class FloatList implements Iterable<Float> {
         copyToBuffer(buf);
         return buf;
     }
-    
+
     /**
      * Copies the contents of the list to the specified FloatBuffer.
-     * 
+     *
      * @param fb
      *            target FloatBuffer
      */

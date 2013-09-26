@@ -20,13 +20,59 @@ public class GlMath {
     /**
      * Scales the specified vector to unit length.
      * 
-     * @param vec3 the vector to scale
+     * @param vec3  The vector to scale
+     * @param off   Array offset of the vector
      */
     public static void normalize(float[] vec3, int off) {
         float s = 1 / (float) Math.sqrt(vec3[off+0] * vec3[off+0] + vec3[off+1] * vec3[off+1] + vec3[off+2] * vec3[off+2]);
         vec3[off+0] *= s;
         vec3[off+1] *= s;
         vec3[off+2] *= s;
+    }
+
+    /**
+     * Transform the specified vector in place according to the given 4x4 transform matrix.
+     *
+     * @param vec3    Vector to transform, result will override initial value
+     * @param vOff    Vector array offset
+     * @param w       Vector w-component, 0 to only consider rotation, 1 for translation as well
+     * @param m44     4x4 transform matrix
+     * @param mOff    Matrix array offset
+     */
+    public static void transformVector(float[] vec3, int vOff, float w, float[] m44, int mOff) {
+        float x = m44[mOff] * vec3[vOff] + m44[mOff + 4] * vec3[vOff + 1] + m44[mOff + 8] * vec3[vOff + 2] + m44[mOff + 12] * w;
+        float y = m44[mOff + 1] * vec3[vOff] + m44[mOff + 5] * vec3[vOff + 1] + m44[mOff + 9] * vec3[vOff + 2] + m44[mOff + 13] * w;
+        float z = m44[mOff + 2] * vec3[vOff] + m44[mOff + 6] * vec3[vOff + 1] + m44[mOff + 10] * vec3[vOff + 2] + m44[mOff + 14] * w;
+        vec3[vOff] = x;
+        vec3[vOff + 1] = y;
+        vec3[vOff + 2] = z;
+    }
+
+    /**
+     * Subtracts two vectors and stores the result as a third vector: result = lhs - rhs. All
+     * vectors can bestored in the same array with different offsets.
+     */
+    public static void subtractVector(float[] result, int resOff, float[] lhs, int lhsOff, float[] rhs, int rhsOff) {
+        result[resOff] = lhs[lhsOff] - rhs[rhsOff];
+        result[resOff + 1] = lhs[lhsOff + 1] - rhs[rhsOff + 1];
+        result[resOff + 2] = lhs[lhsOff + 2] - rhs[rhsOff + 2];
+    }
+
+    /**
+     * Computes the cross product of two vectors ans stores the result as a third vector:
+     * result = lhs x rhs. All vectors can bestored in the same array with different offsets.
+     */
+    public static void crossVector(float[] result, int resOff, float[] lhs, int lhsOff, float[] rhs, int rhsOff) {
+        result[resOff] = lhs[lhsOff + 1] * rhs[rhsOff + 2] - lhs[lhsOff + 2] * rhs[rhsOff + 1];
+        result[resOff + 1] = lhs[lhsOff + 2] * rhs[rhsOff] - lhs[lhsOff] * rhs[rhsOff + 2];
+        result[resOff + 2] = lhs[lhsOff] * rhs[rhsOff + 1] - lhs[lhsOff + 1] * rhs[rhsOff];
+    }
+
+    /**
+     * Computes the dot product of two vectors.
+     */
+    public static float dotVector(float[] lhs, int lhsOff, float[] rhs, int rhsOff) {
+        return lhs[lhsOff] * rhs[rhsOff] + lhs[lhsOff + 1] * rhs[rhsOff + 1] + lhs[lhsOff + 2] * rhs[rhsOff + 2];
     }
     
     /**
@@ -142,6 +188,24 @@ public class GlMath {
 
     /**
      * Returns the maximum value of the specified values.
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @return maximum value of a, b and c
+     */
+    public static float max3(float a, float b, float c) {
+        if (a > b && a > c) {
+            return a;
+        } else if (b > a && b > c) {
+            return b;
+        } else {
+            return c;
+        }
+    }
+
+    /**
+     * Returns the maximum value of the specified values.
      * 
      * @param a
      * @param b
@@ -152,6 +216,42 @@ public class GlMath {
         if (a > b && a > c) {
             return a;
         } else if (b > a && b > c) {
+            return b;
+        } else {
+            return c;
+        }
+    }
+
+    /**
+     * Returns the minimum value of the specified values.
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @return minimum value of a, b and c
+     */
+    public static float min3(float a, float b, float c) {
+        if (a < b && a < c) {
+            return a;
+        } else if (b < a && b < c) {
+            return b;
+        } else {
+            return c;
+        }
+    }
+
+    /**
+     * Returns the minimum value of the specified values.
+     *
+     * @param a
+     * @param b
+     * @param c
+     * @return minimum value of a, b and c
+     */
+    public static int min3(int a, int b, int c) {
+        if (a < b && a < c) {
+            return a;
+        } else if (b < a && b < c) {
             return b;
         } else {
             return c;

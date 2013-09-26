@@ -14,13 +14,16 @@ import static android.opengl.GLES20.glGenBuffers;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
+import java.util.Comparator;
 
 import android.util.Log;
 
+import de.fabmax.lightgl.BoundingBox;
 import de.fabmax.lightgl.GfxState;
 import de.fabmax.lightgl.Shader;
 import de.fabmax.lightgl.ShaderAttributeBinder;
 import de.fabmax.lightgl.util.MeshFactory;
+import de.fabmax.lightgl.util.TriangleKdTree;
 
 /**
  * A triangle mesh. Currently only triangle meshes are supported by LightGl.

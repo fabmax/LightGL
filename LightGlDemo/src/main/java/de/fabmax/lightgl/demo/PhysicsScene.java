@@ -84,11 +84,12 @@ public class PhysicsScene extends LigthtGlActivity {
 
     private void spawnCube(GfxEngine engine) {
         // add a color cube
-        Mesh boxMesh = MeshFactory.createColorCube(1, 1, 1);
+        Mesh boxMesh = MeshFactory.createStaticMesh(MeshFactory.createColorCube(1, 1, 1, null));
+        //Mesh boxMesh = MeshFactory.createCylinder(0.5f, 1, 20);
         boxMesh.setShader(mCubeMaterial);
         PhysicsObject cube = PhysicsFactory.createBox(boxMesh, 1, 1, 1, 1);
         cube.setPosition((float)Math.random(), 10, (float)Math.random());
-        mScene.addChild(cube.getGfxNode());
+        mScene.addChild(cube);
         engine.getPhysicsEngine().addObject(cube);
 
         Log.d(TAG, "Cube count: " + ++mCubeCount);
@@ -114,11 +115,11 @@ public class PhysicsScene extends LigthtGlActivity {
         float floorY = 1;
         float floorZ = 100;
         Texture tex = engine.getTextureManager().createTextureFromAsset("textures/gray.png");
-        Mesh boxMesh = MeshFactory.createColorCube(floorX, floorY, floorZ);
+        Mesh boxMesh = MeshFactory.createStaticMesh(MeshFactory.createColorCube(floorX, floorY, floorZ, null));
         boxMesh.setShader(SimpleShader.createPhongTextureShader(engine.getShaderManager(), tex));
         PhysicsObject floor = PhysicsFactory.createBox(boxMesh, floorX, floorY, floorZ, 0);
         floor.setPosition(0, -5, 0);
-        mScene.addChild(floor.getGfxNode());
+        mScene.addChild(floor);
         engine.getPhysicsEngine().addObject(floor);
     }
 }

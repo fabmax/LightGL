@@ -64,8 +64,8 @@ public class Group extends Node {
      */
     @Override
     public void render(GfxState state) {
-        for (Node child : mChildren) {
-            child.render(state);
+        for (int i=0; i < mChildren.size(); i++) {
+            mChildren.get(i).render(state);
         }
     }
 

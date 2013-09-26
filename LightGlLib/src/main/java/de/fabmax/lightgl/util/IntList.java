@@ -49,6 +49,27 @@ public class IntList implements Iterable<Integer> {
         }
         return mBuffer[index];
     }
+
+    /**
+     * Creates a new int array and copies the content of this list to it.
+     *
+     * @return a newly created int array with the same content as this list
+     */
+    public int[] asArray() {
+        int[] arr = new int[size()];
+        copyToArray(arr);
+        return arr;
+    }
+
+    /**
+     * Copies the contents of the list to the specified int array. The array must have a
+     * sufficient size.
+     *
+     * @param arr   target int array
+     */
+    public void copyToArray(int[] arr) {
+        System.arraycopy(mBuffer, 0, arr, 0, size());
+    }
     
     /**
      * Creates a new IntBuffer and copies the content of this list to it.

@@ -83,25 +83,26 @@ public class ScaledScreenRenderPass implements RenderPass {
      * Creates the mesh the texture is finally drawn to.
      */
     private void createTexMesh(GfxEngine engine) {
+        MeshFactory.MeshConstructionInfo info = new MeshFactory.MeshConstructionInfo();
         // vertex positions
-        float[] pos = {
+        info.positions = new float[] {
                -1.0f, -1.0f, 0.0f,
                 1.0f, -1.0f, 0.0f,
                 1.0f,  1.0f, 0.0f,
                -1.0f,  1.0f, 0.0f
         };
         // texture coordinates
-        float[] uvs = {
+        info.texCoords = new float[] {
                 0.0f, 0.0f,
                 1.0f, 0.0f,
                 1.0f, 1.0f,
                 0.0f, 1.0f
         };
         // vertex indices
-        int indcs[] = {
+        info.indices = new int[] {
                 0, 1, 2, 0, 2, 3
         };
-        mTexMesh = MeshFactory.createStaticMesh(pos, null, uvs, null, indcs);
+        mTexMesh = MeshFactory.createStaticMesh(info);
         mTexMesh.setShader(new FramebufferShader(engine.getShaderManager()));
     }
     

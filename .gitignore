@@ -1,4 +1,5 @@
 .gradle
+/CarDemo
 /local.properties
 /.idea/workspace.xml
 .DS_Store
