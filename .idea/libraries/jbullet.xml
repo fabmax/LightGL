@@ -1,6 +1,7 @@
 <component name="libraryTable">
   <library name="jbullet">
     <CLASSES>
+      <root url="jar://$PROJECT_DIR$/CarDemo/build/exploded-bundles/LightGlLightGlLibUnspecified.aar/libs/jbullet.jar!/" />
       <root url="jar://$PROJECT_DIR$/LightGlLib/libs/jbullet.jar!/" />
     </CLASSES>
     <JAVADOC />

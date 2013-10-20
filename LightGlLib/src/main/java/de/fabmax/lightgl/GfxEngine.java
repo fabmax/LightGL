@@ -22,7 +22,7 @@ import de.fabmax.lightgl.physics.PhysicsEngine;
 import de.fabmax.lightgl.scene.Node;
 
 /**
- * The central engine management class.
+ * The central graphics engine management class.
  * 
  * @author fabmax
  * 

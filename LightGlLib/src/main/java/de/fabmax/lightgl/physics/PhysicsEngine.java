@@ -80,7 +80,7 @@ public class PhysicsEngine {
      * Pauses physics simulation.
      */
     public void onPause() {
-        mPhysicsThread.setPaused(false);
+        mPhysicsThread.setPaused(true);
     }
 
     /**

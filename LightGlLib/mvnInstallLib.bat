@@ -1,1 +1,0 @@
-mvn install:install-file -Dfile=build\libs\LightGlLib.aar -DgroupId=de.fabmax -DartifactId=lightgl -Dversion=1.0.0 -Dpackaging=aar

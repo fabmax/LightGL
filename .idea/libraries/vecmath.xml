@@ -3,6 +3,7 @@
     <CLASSES>
       <root url="jar://$PROJECT_DIR$/LightGlLib/vecmath.jar!/" />
       <root url="jar://$PROJECT_DIR$/LightGlLib/vecmath.jar!/" />
+      <root url="jar://$PROJECT_DIR$/CarDemo/build/exploded-bundles/LightGlLightGlLibUnspecified.aar/libs/vecmath.jar!/" />
       <root url="jar://$PROJECT_DIR$/LightGlLib/libs/vecmath.jar!/" />
     </CLASSES>
     <JAVADOC />

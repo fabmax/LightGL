@@ -222,8 +222,8 @@ public class MeshFactory {
         info.positions = pos.asArray();
         info.normals = norms.asArray();
         if (transform != null) {
-            transformVerts(transform, info.positions, 1);
-            transformVerts(transform, info.normals, 0);
+            transformVectors(transform, info.positions, 1);
+            transformVectors(transform, info.normals, 0);
         }
 
         return info;
@@ -400,17 +400,24 @@ public class MeshFactory {
         };
 
         if (transform != null) {
-            transformVerts(transform, info.positions, 1);
-            transformVerts(transform, info.normals, 0);
+            transformVectors(transform, info.positions, 1);
+            transformVectors(transform, info.normals, 0);
         }
 
         return info;
     }
 
-    private static void transformVerts(float[] transform, float[] verts, float w) {
-        int n = verts.length / 3;
+    /**
+     * Transforms an array of 3 element vectors according to the specified transformation matrix.
+     *
+     * @param transform    4x4 Transformation matrix
+     * @param vectors      Array with 3 element vectors
+     * @param w            4th vector component for transformation
+     */
+    public static void transformVectors(float[] transform, float[] vectors, float w) {
+        int n = vectors.length / 3;
         for (int i = 0, j = 0; i < n; i++, j += 3) {
-            GlMath.transformVector(verts, j, w, transform, 0);
+            GlMath.transformVector(vectors, j, w, transform, 0);
         }
     }
 
