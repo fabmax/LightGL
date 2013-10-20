@@ -124,10 +124,19 @@ public class PhysicsObject extends TransformGroup {
      */
     public void setPosition(float x, float y, float z) {
         synchronized (mPhysicsTransform) {
-            mPhysicsTransform.origin.x = x;
-            mPhysicsTransform.origin.y = y;
-            mPhysicsTransform.origin.z = z;
+            mPhysicsTransform.origin.set(x, y, z);
             mPhysicsBody.setCenterOfMassTransform(mPhysicsTransform);
+        }
+    }
+
+    /**
+     * Returns the center position of this body in world coordinates.
+     * .
+     * @param outPosition     3 component array used to store the position
+     */
+    public void getPosition(float[] outPosition) {
+        synchronized (mPhysicsTransform) {
+            mPhysicsTransform.origin.get(outPosition);
         }
     }
 
