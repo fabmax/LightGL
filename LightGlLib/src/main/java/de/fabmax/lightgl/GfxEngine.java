@@ -103,6 +103,9 @@ public class GfxEngine implements Renderer {
         doFpsStats();
         
         mState.reset();
+        if (mPhysics != null) {
+            mPhysics.synchronizeBodyConfigurations();
+        }
 
         if (mEngineListener != null) {
             mEngineListener.onRenderFrame(this);

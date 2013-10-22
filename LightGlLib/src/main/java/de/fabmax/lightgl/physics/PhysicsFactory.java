@@ -23,10 +23,10 @@ public class PhysicsFactory {
      * @param mass     mass of the box
      * @return a physics enabled box
      */
-    public static PhysicsObject createBox(Mesh boxMesh, float sizeX, float sizeY, float sizeZ, float mass) {
+    public static PhysicsBody createBox(Mesh boxMesh, float sizeX, float sizeY, float sizeZ, float mass) {
         Vector3f size = new Vector3f(sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
         BoxShape box = new BoxShape(size);
-        return new PhysicsObject(boxMesh, box, mass);
+        return new PhysicsBody(boxMesh, box, mass);
     }
 
 }

@@ -59,13 +59,25 @@ public class PhysicsEngine {
     }
 
     /**
-     * Adds a {@link de.fabmax.lightgl.physics.PhysicsObject} to the physices engine.
+     * Adds a {@link PhysicsBody} to the physices engine.
      *
      * @param object    the object to add
      */
-    public void addObject(PhysicsObject object) {
+    public void addObject(PhysicsBody object) {
         synchronized (mPhysicsThread) {
             mPhysicsThread.mAddObjects.add(object);
+        }
+    }
+
+    /**
+     * Called by the GL thread in order to synchronize the simulated configurations of all bodies to
+     * their rendered meshes.
+     */
+    public void synchronizeBodyConfigurations() {
+        synchronized (mPhysicsThread) {
+            for (int i = 0; i < mPhysicsThread.mObjects.size(); i++) {
+                mPhysicsThread.mObjects.get(i).synchronizeBodyConfig();
+            }
         }
     }
 
@@ -97,8 +109,8 @@ public class PhysicsEngine {
     private class PhysicsThread extends Thread {
         private static final String TAG = "PhysicsThread";
 
-        private ArrayList<PhysicsObject> mAddObjects = new ArrayList<PhysicsObject>();
-        private ArrayList<PhysicsObject> mObjects = new ArrayList<PhysicsObject>();
+        private ArrayList<PhysicsBody> mAddObjects = new ArrayList<PhysicsBody>();
+        private ArrayList<PhysicsBody> mObjects = new ArrayList<PhysicsBody>();
 
         private boolean mPaused = true;
         private boolean mTerminate = false;
@@ -163,9 +175,9 @@ public class PhysicsEngine {
                 // add new objects
                 synchronized (this) {
                     for (int i = 0; i < mAddObjects.size(); i++) {
-                        PhysicsObject po = mAddObjects.get(i);
-                        mWorld.addRigidBody(po.getPhysicsBody());
-                        mObjects.add(po);
+                        PhysicsBody body = mAddObjects.get(i);
+                        mWorld.addRigidBody(body.getPhysicsBody());
+                        mObjects.add(body);
                     }
                     mAddObjects.clear();
                 }

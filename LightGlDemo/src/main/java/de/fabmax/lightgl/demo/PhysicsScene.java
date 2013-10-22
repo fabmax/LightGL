@@ -3,15 +3,14 @@ package de.fabmax.lightgl.demo;
 import android.os.Bundle;
 import android.util.Log;
 
-import de.fabmax.lightgl.Camera;
 import de.fabmax.lightgl.GfxEngine;
 import de.fabmax.lightgl.Light;
 import de.fabmax.lightgl.LigthtGlActivity;
 import de.fabmax.lightgl.Shader;
 import de.fabmax.lightgl.SimpleShader;
 import de.fabmax.lightgl.Texture;
+import de.fabmax.lightgl.physics.PhysicsBody;
 import de.fabmax.lightgl.physics.PhysicsFactory;
-import de.fabmax.lightgl.physics.PhysicsObject;
 import de.fabmax.lightgl.scene.Group;
 import de.fabmax.lightgl.scene.Mesh;
 import de.fabmax.lightgl.util.BufferedTouchListener;
@@ -87,7 +86,7 @@ public class PhysicsScene extends LigthtGlActivity {
         Mesh boxMesh = MeshFactory.createStaticMesh(MeshFactory.createColorCube(1, 1, 1, null));
         //Mesh boxMesh = MeshFactory.createCylinder(0.5f, 1, 20);
         boxMesh.setShader(mCubeMaterial);
-        PhysicsObject cube = PhysicsFactory.createBox(boxMesh, 1, 1, 1, 1);
+        PhysicsBody cube = PhysicsFactory.createBox(boxMesh, 1, 1, 1, 1);
         cube.setPosition((float)Math.random(), 10, (float)Math.random());
         mScene.addChild(cube);
         engine.getPhysicsEngine().addObject(cube);
@@ -117,7 +116,7 @@ public class PhysicsScene extends LigthtGlActivity {
         Texture tex = engine.getTextureManager().createTextureFromAsset("textures/gray.png");
         Mesh boxMesh = MeshFactory.createStaticMesh(MeshFactory.createColorCube(floorX, floorY, floorZ, null));
         boxMesh.setShader(SimpleShader.createPhongTextureShader(engine.getShaderManager(), tex));
-        PhysicsObject floor = PhysicsFactory.createBox(boxMesh, floorX, floorY, floorZ, 0);
+        PhysicsBody floor = PhysicsFactory.createBox(boxMesh, floorX, floorY, floorZ, 0);
         floor.setPosition(0, -5, 0);
         mScene.addChild(floor);
         engine.getPhysicsEngine().addObject(floor);
