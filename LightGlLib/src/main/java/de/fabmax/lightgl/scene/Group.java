@@ -64,9 +64,24 @@ public class Group extends Node {
      */
     @Override
     public void render(GfxState state) {
+        // we save an object allocation by using a classic for-loop instead of foreach
         for (int i=0; i < mChildren.size(); i++) {
             mChildren.get(i).render(state);
         }
+    }
+
+    /**
+     * Calls delete() on all existing children and removes them from this group.
+     *
+     * @param state    the current graphics engine state
+     */
+    @Override
+    public void delete(GfxState state) {
+        // we save an object allocation by using a classic for-loop instead of foreach
+        for (int i=0; i < mChildren.size(); i++) {
+            mChildren.get(i).delete(state);
+        }
+        removeAllChildren();
     }
 
 }

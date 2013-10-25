@@ -13,9 +13,15 @@ public abstract class Node {
     /**
      * Renders this node using the specified graphics engine state.
      * 
-     * @param state
-     *            the current graphics engine state
+     * @param state    the current graphics engine state
      */
     public abstract void render(GfxState state);
+
+    /**
+     * Frees all resources occupied by this Node.
+     *
+     * @param state    the current graphics engine state
+     */
+    public abstract void delete(GfxState state);
 
 }

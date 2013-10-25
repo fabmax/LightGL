@@ -59,13 +59,24 @@ public class PhysicsEngine {
     }
 
     /**
-     * Adds a {@link PhysicsBody} to the physices engine.
+     * Adds a {@link PhysicsBody} to the physices simulation.
      *
      * @param object    the object to add
      */
     public void addObject(PhysicsBody object) {
         synchronized (mPhysicsThread) {
             mPhysicsThread.mAddObjects.add(object);
+        }
+    }
+
+    /**
+     * Removes a {@link PhysicsBody} from the physics simulation.
+     *
+     * @param object    the object to remove
+     */
+    public void removeObject(PhysicsBody object) {
+        synchronized (mPhysicsThread) {
+            mPhysicsThread.mRemoveObjects.add(object);
         }
     }
 
@@ -110,6 +121,7 @@ public class PhysicsEngine {
         private static final String TAG = "PhysicsThread";
 
         private ArrayList<PhysicsBody> mAddObjects = new ArrayList<PhysicsBody>();
+        private ArrayList<PhysicsBody> mRemoveObjects = new ArrayList<PhysicsBody>();
         private ArrayList<PhysicsBody> mObjects = new ArrayList<PhysicsBody>();
 
         private boolean mPaused = true;
@@ -172,14 +184,21 @@ public class PhysicsEngine {
 
                 //long ns = System.nanoTime();
 
-                // add new objects
                 synchronized (this) {
+                    // add new objects
                     for (int i = 0; i < mAddObjects.size(); i++) {
                         PhysicsBody body = mAddObjects.get(i);
                         mWorld.addRigidBody(body.getPhysicsBody());
                         mObjects.add(body);
                     }
                     mAddObjects.clear();
+                    // remove deleted objects
+                    for (int i = 0; i < mRemoveObjects.size(); i++) {
+                        PhysicsBody body = mRemoveObjects.get(i);
+                        mWorld.removeRigidBody(body.getPhysicsBody());
+                        mObjects.remove(body);
+                    }
+                    mRemoveObjects.clear();
                 }
 
                 // simulate physics step

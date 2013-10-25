@@ -188,4 +188,21 @@ public class PhysicsBody extends TransformGroup {
         // render body
         super.render(state);
     }
+
+    /**
+     * Deletes this body. The underlying mesh is deleted and the body is removed from the physics
+     * simulation.
+     *
+     * @param state    the current graphics engine state
+     */
+    @Override
+    public void delete(GfxState state) {
+        // deletes the mesh
+        super.delete(state);
+        // remove body from physics simulation
+        state.getEngine().getPhysicsEngine().removeObject(this);
+        // additional cleanup
+        mGfxMesh = null;
+        mPhysicsBody = null;
+    }
 }

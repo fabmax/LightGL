@@ -1,5 +1,16 @@
 package de.fabmax.lightgl.scene;
 
+import android.util.Log;
+
+import java.nio.Buffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+
+import de.fabmax.lightgl.GfxState;
+import de.fabmax.lightgl.Shader;
+import de.fabmax.lightgl.ShaderAttributeBinder;
+import de.fabmax.lightgl.util.MeshFactory;
+
 import static android.opengl.GLES20.GL_ELEMENT_ARRAY_BUFFER;
 import static android.opengl.GLES20.GL_STATIC_DRAW;
 import static android.opengl.GLES20.GL_TRIANGLES;
@@ -10,20 +21,6 @@ import static android.opengl.GLES20.glBufferData;
 import static android.opengl.GLES20.glDeleteBuffers;
 import static android.opengl.GLES20.glDrawElements;
 import static android.opengl.GLES20.glGenBuffers;
-
-import java.nio.Buffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import java.util.Comparator;
-
-import android.util.Log;
-
-import de.fabmax.lightgl.BoundingBox;
-import de.fabmax.lightgl.GfxState;
-import de.fabmax.lightgl.Shader;
-import de.fabmax.lightgl.ShaderAttributeBinder;
-import de.fabmax.lightgl.util.MeshFactory;
-import de.fabmax.lightgl.util.TriangleKdTree;
 
 /**
  * A triangle mesh. Currently only triangle meshes are supported by LightGl.
@@ -88,7 +85,7 @@ public class Mesh extends Node {
      *            Mesh index buffer. Must either be an IntBuffer or a ShortBuffer.
      */
     private void createIndexBufferObject(Buffer indexBuffer) {
-        int sizeInBytes = 0;
+        int sizeInBytes;
         if (indexBuffer instanceof ShortBuffer) {
             sizeInBytes = indexBuffer.capacity() * 2;
             mIndexBufferType = GL_UNSIGNED_SHORT;
@@ -114,7 +111,8 @@ public class Mesh extends Node {
     /**
      * Deletes all buffers associated with this mesh.
      */
-    public void delete() {
+    @Override
+    public void delete(GfxState state) {
         if (mPositionBinder != null) {
             mPositionBinder.delete();
             mPositionBinder = null;
@@ -169,32 +167,12 @@ public class Mesh extends Node {
     }
 
     /**
-     * Sets the binder for vertex positions.
-     * 
-     * @param positionBinder
-     *            the binder for vertex positions
-     */
-    public void setVertexPositionBinder(ShaderAttributeBinder positionBinder) {
-        mPositionBinder = positionBinder;
-    }
-
-    /**
      * Returns the binder for vertex normals.
      * 
      * @return the binder for vertex normals
      */
     public ShaderAttributeBinder getVertexNormalBinder() {
         return mNormalBinder;
-    }
-
-    /**
-     * Sets the binder for vertex normals.
-     * 
-     * @param normalBinder
-     *            the binder for vertex normals
-     */
-    public void setVertexNormalBinder(ShaderAttributeBinder normalBinder) {
-        mNormalBinder = normalBinder;
     }
 
     /**
@@ -207,32 +185,12 @@ public class Mesh extends Node {
     }
 
     /**
-     * Sets the binder for vertex texture coordinates.
-     * 
-     * @param texCoordBinder
-     *            the binder for vertex texture coordinates
-     */
-    public void setVertexTexCoordBinder(ShaderAttributeBinder texCoordBinder) {
-        mTexCoordBinder = texCoordBinder;
-    }
-
-    /**
      * Returns the binder for vertex colors.
      * 
      * @return the binder for vertex colors
      */
     public ShaderAttributeBinder getVertexColorBinder() {
         return mColorBinder;
-    }
-
-    /**
-     * Sets the binder for vertex colors.
-     * 
-     * @param colorBinder
-     *            the binder for vertex positions
-     */
-    public void setVertexColorBinder(ShaderAttributeBinder colorBinder) {
-        mColorBinder = colorBinder;
     }
 
     /**
