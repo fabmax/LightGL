@@ -201,8 +201,5 @@ public class PhysicsBody extends TransformGroup {
         super.delete(state);
         // remove body from physics simulation
         state.getEngine().getPhysicsEngine().removeObject(this);
-        // additional cleanup
-        mGfxMesh = null;
-        mPhysicsBody = null;
     }
 }
