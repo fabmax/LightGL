@@ -1,11 +1,10 @@
 package de.fabmax.lightgl.demo;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import de.fabmax.lightgl.GfxEngine;
-import de.fabmax.lightgl.LightGlException;
 import de.fabmax.lightgl.Light;
+import de.fabmax.lightgl.LightGlException;
 import de.fabmax.lightgl.LigthtGlActivity;
 import de.fabmax.lightgl.ShadowRenderPass;
 import de.fabmax.lightgl.ShadowShader;
@@ -40,8 +39,10 @@ public class SimpleScene extends LigthtGlActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // initializes the GLSurfaceView and the GfxEngine inside parent class LightGlActivity
         super.onCreate(savedInstanceState);
+
+        // initializes the GLSurfaceView and the GfxEngine inside parent class LightGlActivity
+        createEngine();
 
         if (savedInstanceState != null) {
             mRotationX = savedInstanceState.getFloat(STATE_ROT_X);

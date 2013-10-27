@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
-import android.os.Bundle;
 import android.util.Log;
 
 import de.fabmax.lightgl.util.GlConfiguration;
@@ -30,18 +29,30 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
     private long mLastFpsOut = 0;
 
     /**
-     * Initializes the underlying GLSurfaceView and the LightGL engine.
+     * Same as {@link #createEngine(android.opengl.GLSurfaceView)} but creates a new GLSurfaceView
+     * and sets it as this Activity's content view.
+     */
+    protected void createEngine() {
+        // create and initialize the GLSurfaceView
+        GLSurfaceView glView = new GLSurfaceView(this);
+        createEngine(glView);
+
+        // set the GL view as Activity's only content
+        setContentView(glView);
+    }
+
+    /**
+     * Call this method from your Activity's onCreate() method and pass the GLSurfaceView from your
+     * layout.
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    protected void createEngine(GLSurfaceView glView) {
         // initialize graphics engine
         mEngine = new GfxEngine(getApplicationContext());
         mEngine.setEngineListener(this);
 
-        mGlView = new GLSurfaceView(this);
+        mGlView = glView;
+
         // enable GLES 2.0
         mGlView.setEGLContextClientVersion(2);
         // set desired GL config
@@ -56,22 +67,19 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
             mGlView.setPreserveEGLContextOnPause(true);
         }
 
-        // set the GL view as Activity's only content
-        setContentView(mGlView);
-
         mCreated = true;
     }
 
     /**
      * Sets the number of samples to request for the GL configuration. A value greater than 1
-     * enables anti aliasing. This method must be called before onCreate().
+     * enables anti aliasing. This method must be called before {@link #createEngine()}.
      *
      * @param numSamples Number of samples to use for rendering
      */
     public void setNumSamples(int numSamples) {
         if (mCreated) {
             throw new RuntimeException("setNumSamples must be called before " +
-                    "LightGlActivity.onCreate()");
+                    "LightGlActivity.createEngine()");
         }
         mNumSamples = numSamples;
     }

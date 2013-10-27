@@ -1,5 +1,18 @@
 package de.fabmax.lightgl;
 
+import android.content.Context;
+import android.opengl.GLSurfaceView.Renderer;
+import android.opengl.GLU;
+import android.util.Log;
+
+import java.util.ArrayList;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+import de.fabmax.lightgl.physics.PhysicsEngine;
+import de.fabmax.lightgl.scene.Node;
+
 import static android.opengl.GLES20.GL_CULL_FACE;
 import static android.opengl.GLES20.GL_DEPTH_TEST;
 import static android.opengl.GLES20.GL_LEQUAL;
@@ -7,19 +20,6 @@ import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glDepthFunc;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glGetError;
-
-import java.util.ArrayList;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
-
-import android.content.Context;
-import android.opengl.GLSurfaceView.Renderer;
-import android.opengl.GLU;
-import android.util.Log;
-
-import de.fabmax.lightgl.physics.PhysicsEngine;
-import de.fabmax.lightgl.scene.Node;
 
 /**
  * The central graphics engine management class.
@@ -144,7 +144,6 @@ public class GfxEngine implements Renderer {
             
             // limit framerate
             long s = mMaxFrameInterval - tDif;
-            
             if(s > 0) {
                 try {
                     Thread.sleep(s);
@@ -160,8 +159,11 @@ public class GfxEngine implements Renderer {
         }
 
         // update fps
-        float fps = 1000.0f / (float) (mLastFrameTime - tLast);
-        mFps = mFps * 0.85f + fps * 0.15f;
+        int dt = (int) (mLastFrameTime - tLast);
+        if (dt > 0) {
+            float fps = 1000.0f / (float) dt;
+            mFps = mFps * 0.85f + fps * 0.15f;
+        }
     }
 
     /**

@@ -40,10 +40,11 @@ public class PhysicsScene extends LigthtGlActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setNumSamples(4);
+        super.onCreate(savedInstanceState);
 
         // initializes the GLSurfaceView and the GfxEngine inside parent class LightGlActivity
-        super.onCreate(savedInstanceState);
+        setNumSamples(4);
+        createEngine();
 
         // register a touch listener for touch input
         mGlView.setOnTouchListener(mTouchHandler);

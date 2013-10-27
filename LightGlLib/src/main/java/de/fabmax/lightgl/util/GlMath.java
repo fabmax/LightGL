@@ -1,8 +1,9 @@
 package de.fabmax.lightgl.util;
 
-import de.fabmax.lightgl.Ray;
 import android.opengl.GLU;
 import android.opengl.Matrix;
+
+import de.fabmax.lightgl.Ray;
 
 /**
  * Helper class with several GL related math functions.
@@ -73,6 +74,23 @@ public class GlMath {
      */
     public static float dotVector(float[] lhs, int lhsOff, float[] rhs, int rhsOff) {
         return lhs[lhsOff] * rhs[rhsOff] + lhs[lhsOff + 1] * rhs[rhsOff + 1] + lhs[lhsOff + 2] * rhs[rhsOff + 2];
+    }
+
+    /**
+     * Returns the squared distance between the two 3-component vectors.
+     */
+    public static float distanceSqr(float[] lhs, int lhsOff, float[] rhs, int rhsOff) {
+        float dx = lhs[lhsOff]     - rhs[rhsOff];
+        float dy = lhs[lhsOff + 1] - rhs[rhsOff + 1];
+        float dz = lhs[lhsOff + 2] - rhs[rhsOff + 2];
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    /**
+     * Returns the distance between the two 3-component vectors.
+     */
+    public static float distance(float[] lhs, int lhsOff, float[] rhs, int rhsOff) {
+        return (float) Math.sqrt(distanceSqr(lhs, lhsOff, rhs, rhsOff));
     }
     
     /**
@@ -189,9 +207,6 @@ public class GlMath {
     /**
      * Returns the maximum value of the specified values.
      *
-     * @param a
-     * @param b
-     * @param c
      * @return maximum value of a, b and c
      */
     public static float max3(float a, float b, float c) {
@@ -206,10 +221,7 @@ public class GlMath {
 
     /**
      * Returns the maximum value of the specified values.
-     * 
-     * @param a
-     * @param b
-     * @param c
+     *
      * @return maximum value of a, b and c
      */
     public static int max3(int a, int b, int c) {
@@ -225,9 +237,6 @@ public class GlMath {
     /**
      * Returns the minimum value of the specified values.
      *
-     * @param a
-     * @param b
-     * @param c
      * @return minimum value of a, b and c
      */
     public static float min3(float a, float b, float c) {
@@ -243,9 +252,6 @@ public class GlMath {
     /**
      * Returns the minimum value of the specified values.
      *
-     * @param a
-     * @param b
-     * @param c
      * @return minimum value of a, b and c
      */
     public static int min3(int a, int b, int c) {
