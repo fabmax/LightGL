@@ -2,6 +2,7 @@ package de.fabmax.lightgl.demo;
 
 import android.os.Bundle;
 
+import de.fabmax.lightgl.Camera;
 import de.fabmax.lightgl.GfxEngine;
 import de.fabmax.lightgl.Light;
 import de.fabmax.lightgl.LightGlException;
@@ -23,7 +24,6 @@ import de.fabmax.lightgl.util.ObjLoader;
  */
 public class SimpleScene extends LigthtGlActivity {
 
-    private static final String TAG = "SimpleScene";
     private static final String STATE_ROT_X = "state_rot_x";
     private static final String STATE_ROT_Y = "state_rot_y";
 
@@ -81,7 +81,9 @@ public class SimpleScene extends LigthtGlActivity {
     @Override
     public void onLoadScene(GfxEngine engine) {
         engine.getState().setBackgroundColor(0, 0, 0.2f);
-        engine.getCamera().setPosition(0, 12, 18);
+        Camera cam = engine.getCamera();
+        cam.setPosition(0, 120, 180);
+        cam.animatePositionTo(0, 12, 18);
         
         // add a directional light
         Light light = Light.createDirectionalLight(1, 1, 1, 0.7f, 0.7f, 0.7f);

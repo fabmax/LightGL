@@ -2,6 +2,7 @@ package de.fabmax.lightgl;
 
 import android.opengl.Matrix;
 import android.view.MotionEvent;
+
 import de.fabmax.lightgl.util.GlMath;
 
 /**
@@ -12,14 +13,12 @@ import de.fabmax.lightgl.util.GlMath;
  */
 public abstract class Camera {
 
-    /** Camera position */
-    protected float mEyeX = 0, mEyeY = 0, mEyeZ = 10;
-
-    /** Camera look at position */
-    protected float mLookAtX = 0, mLookAtY = 0, mLookAtZ = 0;
-
-    /** Camera up direction */
-    protected float mUpX = 0, mUpY = 1, mUpZ = 0;
+    // Camera position
+    private AnimatedVector mEye = new AnimatedVector(0, 0, 10);
+    // Camera look at position
+    private AnimatedVector mLookAt = new AnimatedVector(0, 0, 0);
+    // Camera up direction
+    private AnimatedVector mUp = new AnimatedVector(0, 1, 0);
     
     /** Matrix recalculation flag */
     protected boolean mDirty = true;
@@ -32,32 +31,16 @@ public abstract class Camera {
      * Sets the camera position.
      */
     public void setPosition(float x, float y, float z) {
-        mEyeX = x;
-        mEyeY = y;
-        mEyeZ = z;
+        mEye.set(x, y, z);
         mDirty = true;
     }
 
     /**
      * Sets the position the camera looks at. This is an alternative way to set the camera's llok
      * direction.
-     * 
-     * @see #setLookDirection(float, float, float)
      */
     public void setLookAt(float x, float y, float z) {
-        mLookAtX = x;
-        mLookAtY = y;
-        mLookAtZ = z;
-        mDirty = true;
-    }
-
-    /**
-     * Sets the look direction of the camera.
-     */
-    public void setLookDirection(float x, float y, float z) {
-        mLookAtX = mEyeX + x;
-        mLookAtY = mEyeY + y;
-        mLookAtZ = mEyeZ + z;
+        mLookAt.set(x, y, z);
         mDirty = true;
     }
 
@@ -65,10 +48,54 @@ public abstract class Camera {
      * Sets the camera up direction.
      */
     public void setUpDirection(float x, float y, float z) {
-        mUpX = x;
-        mUpY = y;
-        mUpZ = z;
+        mUp.set(x, y, z);
         mDirty = true;
+    }
+
+    /**
+     * Smoothly animate the camera to the specified position.
+     */
+    public void animatePositionTo(float x, float y, float z) {
+        mEye.animateTo(x, y, z);
+    }
+
+    /**
+     * Smoothly animate the camera to the specified direction.
+     */
+    public void animateLookAtTo(float x, float y, float z) {
+        mLookAt.animateTo(x, y, z);
+    }
+
+    /**
+     * Smoothly animate the camera to the specified up direction.
+     */
+    public void animateUpTo(float x, float y, float z) {
+        mUp.animateTo(x, y, z);
+    }
+
+    /**
+     * Sets the camera animation speed for {@link #animatePositionTo(float, float, float)},
+     * {@link #animateLookAtTo(float, float, float)} and {@link #animateUpTo(float, float, float)}.
+     * Larger values will increase the animation speed. The default value is 10. However, large
+     * values may result in erratic behavior.
+     */
+    public void setCameraAnimationSpeed(float speed) {
+        mEye.setStiffness(speed);
+        mLookAt.setStiffness(speed);
+        mUp.setStiffness(speed);
+    }
+
+    /**
+     * Called on every {@link de.fabmax.lightgl.GfxEngine#onDrawFrame(javax.microedition.khronos.opengles.GL10)}
+     * in order to animate the camera position and direction. deltaT is filtered by GfxEngine to
+     * achieve a smoother animation.
+     *
+     * @param deltaT    time since last frame.
+     */
+    protected void animate(float deltaT) {
+        if (mEye.animate(deltaT) | mLookAt.animate(deltaT) | mUp.animate(deltaT)) {
+            mDirty = true;
+        }
     }
     
     /**
@@ -132,8 +159,8 @@ public abstract class Camera {
      *            16 element array where the view matrix is stored in
      */
     public void computeViewMatrix(float[] viewMBuf) {
-        Matrix.setLookAtM(viewMBuf, 0, mEyeX, mEyeY, mEyeZ, mLookAtX, mLookAtY, mLookAtZ, mUpX,
-                mUpY, mUpZ);
+        Matrix.setLookAtM(viewMBuf, 0, mEye.x, mEye.y, mEye.z, mLookAt.x, mLookAt.y, mLookAt.z,
+                mUp.x, mUp.y, mUp.z);
     }
 
     /**
@@ -144,4 +171,84 @@ public abstract class Camera {
      *            16 element array where the projection matrix is stored in
      */
     public abstract void computeProjectionMatrix(float[] projMBuf);
+
+    /**
+     * Helper class for camera position, direction and up vector. Allows for smooth animation.
+     * Animation is done by a critically damped mass spring damper system. Thus the animation starts
+     * with quickly increasing speed and then slows down until he destination value is reached.
+     */
+    private static class AnimatedVector {
+        float x;
+        float y;
+        float z;
+
+        float mDstX;
+        float mDstY;
+        float mDstZ;
+
+        float mDX;
+        float mDY;
+        float mDZ;
+
+        float mStiffness;
+        float mDamping;
+        boolean mAnimated = false;
+
+        AnimatedVector(float x, float y, float z) {
+            set(x, y, z);
+            setStiffness(10.0f);
+        }
+
+        /**
+         * Set vector value without animation.
+         */
+        void set(float x, float y, float z) {
+            this.x = mDstX = x;
+            this.y = mDstY = y;
+            this.z = mDstZ = z;
+            mDX = mDY = mDZ = 0;
+            mAnimated = false;
+        }
+
+        /**
+         * Set animation target vector value.
+         */
+        void animateTo(float x, float y, float z) {
+            mDstX = x;
+            mDstY = y;
+            mDstZ = z;
+            mAnimated = true;
+        }
+
+        /**
+         * Animate vector value towards previously set target value.
+         */
+        boolean animate(float deltaT) {
+            if (!mAnimated) {
+                return false;
+            }
+
+            float e = mDstX - x;
+            mDX += (e * mStiffness - mDX * mDamping) * deltaT;
+            x += mDX * deltaT;
+
+            e = mDstY - y;
+            mDY += (e * mStiffness - mDY * mDamping) * deltaT;
+            y += mDY * deltaT;
+
+            e = mDstZ - z;
+            mDZ += (e * mStiffness - mDZ * mDamping) * deltaT;
+            z += mDZ * deltaT;
+
+            return true;
+        }
+
+        /**
+         * Set animation speed.
+         */
+        void setStiffness(float stiffness) {
+            mStiffness = stiffness;
+            mDamping = 2.0f * (float) Math.sqrt(stiffness);
+        }
+    }
 }

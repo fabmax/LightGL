@@ -25,7 +25,7 @@ public class PhysicsEngine {
     public static final float G = 9.81f;
 
     // time step for physics simulation in seconds (~60 steps per second)
-    private static final float SIM_TIME_STEP = 0.0166f;
+    private static final float SIM_TIME_STEP = 0.016f;
 
     private final PhysicsThread mPhysicsThread;
     private final DiscreteDynamicsWorld mWorld;

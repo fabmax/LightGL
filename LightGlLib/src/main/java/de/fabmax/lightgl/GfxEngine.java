@@ -48,7 +48,7 @@ public class GfxEngine implements Renderer {
 
     private long mLastFrameTime = System.currentTimeMillis();
     private long mMaxFrameInterval = 0;
-    private float mFps = 0;
+    private float mFps = 60;
 
     /**
      * Creates a new GfxEngine object.
@@ -100,7 +100,7 @@ public class GfxEngine implements Renderer {
      */
     @Override
     public void onDrawFrame(GL10 unused) {
-        doFpsStats();
+        doTimeControl();
         
         mState.reset();
         if (mPhysics != null) {
@@ -117,6 +117,7 @@ public class GfxEngine implements Renderer {
 
         if (mMainPass != null) {
             if (mCamera != null) {
+                mCamera.animate(1.0f / mFps);
                 mCamera.setup(mState);
             }
             
@@ -133,12 +134,12 @@ public class GfxEngine implements Renderer {
     }
     
     /**
-     * Computes current frame rate and limits the frame rate if set.
+     * Determines current FPS and controls the maximum frame rate if a limit is set.
      */
-    private void doFpsStats() {
+    private void doTimeControl() {
         long t = System.currentTimeMillis();
         long tLast = mLastFrameTime;
-        
+
         if (mMaxFrameInterval > 0) {
             long tDif = t - mLastFrameTime;
             
@@ -159,10 +160,9 @@ public class GfxEngine implements Renderer {
         }
 
         // update fps
-        int dt = (int) (mLastFrameTime - tLast);
-        if (dt > 0) {
-            float fps = 1000.0f / (float) dt;
-            mFps = mFps * 0.85f + fps * 0.15f;
+        float deltaT = (mLastFrameTime - tLast) / 1000.0f;
+        if (deltaT > 0) {
+            mFps = mFps * 0.85f + 0.15f / deltaT;
         }
     }
 
