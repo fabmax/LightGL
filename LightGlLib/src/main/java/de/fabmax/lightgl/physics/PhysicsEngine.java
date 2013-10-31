@@ -131,6 +131,34 @@ public class PhysicsEngine {
         mPhysicsThread.terminate();
     }
 
+    /**
+     * Sets a {@link de.fabmax.lightgl.physics.PhysicsEngine.PhysicsListener}, which is called
+     * by the physics thread after every simulation step.
+     */
+    public void setPhysicsListener(PhysicsListener physicsListener) {
+        mPhysicsThread.mPhysicsListener = physicsListener;
+    }
+
+    /**
+     * The PhysicsListener is called by the physics thread on every simulation step.
+     */
+    public interface PhysicsListener {
+
+        /**
+         * Called by the physics thread before every simulation step.
+         *
+         * @param deltaT    simulation time step
+         */
+        public void preSimulateStep(float deltaT);
+
+        /**
+         * Called by the physics thread after every simulation step.
+         *
+         * @param deltaT    simulation time step
+         */
+        public void postSimulateStep(float deltaT);
+    }
+
     /*
      * PhysicsThread runs the physics simulation. The physics simulation runs in fixed timesteps of
      * 1/60 seconds.
@@ -141,6 +169,8 @@ public class PhysicsEngine {
         private ArrayList<PhysicsBody> mAddObjects = new ArrayList<PhysicsBody>();
         private ArrayList<PhysicsBody> mRemoveObjects = new ArrayList<PhysicsBody>();
         private ArrayList<PhysicsBody> mObjects = new ArrayList<PhysicsBody>();
+
+        private PhysicsListener mPhysicsListener;
 
         private volatile boolean mPaused = true;
         private boolean mTerminate = false;
@@ -209,11 +239,16 @@ public class PhysicsEngine {
 
                 //long ns = System.nanoTime();
 
+                if (mPhysicsListener != null) {
+                    mPhysicsListener.preSimulateStep(SIM_TIME_STEP);
+                }
+
                 if (mAddObjects.size() > 0 || mRemoveObjects.size() > 0) {
                     synchronized (this) {
                         // add new objects
                         for (int i = 0; i < mAddObjects.size(); i++) {
                             PhysicsBody body = mAddObjects.get(i);
+                            body.buildCollisionShape();
                             mWorld.addRigidBody(body.getPhysicsBody());
                             mObjects.add(body);
                         }
@@ -235,6 +270,9 @@ public class PhysicsEngine {
                 // synchronize rendered objects with simulated objects
                 for (int i = 0; i < mObjects.size(); i++) {
                     mObjects.get(i).postSimulateStep(SIM_TIME_STEP);
+                }
+                if (mPhysicsListener != null) {
+                    mPhysicsListener.postSimulateStep(SIM_TIME_STEP);
                 }
 
                 //ns = System.nanoTime() - ns;

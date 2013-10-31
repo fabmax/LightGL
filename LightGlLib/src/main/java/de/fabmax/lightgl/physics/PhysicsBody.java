@@ -1,6 +1,8 @@
 package de.fabmax.lightgl.physics;
 
+import com.bulletphysics.collision.shapes.BvhTriangleMeshShape;
 import com.bulletphysics.collision.shapes.CollisionShape;
+import com.bulletphysics.collision.shapes.TriangleIndexVertexArray;
 import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.RigidBodyConstructionInfo;
 import com.bulletphysics.linearmath.DefaultMotionState;
@@ -27,74 +29,87 @@ import de.fabmax.lightgl.scene.TransformGroup;
  */
 public class PhysicsBody extends TransformGroup {
 
+    protected Mesh mGfxMesh;
+
+    private TriangleIndexVertexArray mCollisionMesh;
+    private float mMass;
+
     protected RigidBody mPhysicsBody;
     protected final Transform mPhysicsTransform = new Transform();
     protected final Transform mBufferedTransform = new Transform();
 
-    protected Mesh mGfxMesh;
+    /**
+     * Default constructor is only available to sub-classes. Sub-classes can make use of different
+     * collision shapes, etc.
+     */
+    protected PhysicsBody() {
+        this(null, null, 0);
+    }
 
     /**
      * Creates a new static body from the specified {@link de.fabmax.lightgl.scene.Mesh}
      * and {@link com.bulletphysics.collision.shapes.CollisionShape}. Static bodies do not react
      * on gravity or applied forces but other bodies can collide with them.
      *
-     * @param gfxMesh         {@link de.fabmax.lightgl.scene.Mesh} used to render this body
-     * @param physicsShape    Shape of the physics body
+     * @param gfxMesh          {@link de.fabmax.lightgl.scene.Mesh} used to render this body
+     * @param collisionMesh    Triangle mesh that will be used to build the collision shape for this
+     *                         body
      */
-    public PhysicsBody(Mesh gfxMesh, CollisionShape physicsShape) {
-        this(gfxMesh, physicsShape, 0);
+    public PhysicsBody(Mesh gfxMesh, TriangleIndexVertexArray collisionMesh) {
+        this(gfxMesh, collisionMesh, 0);
     }
 
     /**
      * Creates a new body from the specified {@link de.fabmax.lightgl.scene.Mesh} and
      * {@link com.bulletphysics.collision.shapes.CollisionShape} with the specified mass.
      *
-     * @param gfxMesh         {@link de.fabmax.lightgl.scene.Mesh} used to render this body
-     * @param physicsShape    Shape of the body
-     * @param mass            Mass of the body
+     * @param gfxMesh          {@link de.fabmax.lightgl.scene.Mesh} used to render this body
+     * @param collisionMesh    Triangle mesh that will be used to build the collision shape for this
+     *                         body
+     * @param mass             Mass of the body
      */
-    public PhysicsBody(Mesh gfxMesh, CollisionShape physicsShape, float mass) {
+    public PhysicsBody(Mesh gfxMesh, TriangleIndexVertexArray collisionMesh, float mass) {
         if (gfxMesh != null) {
             mGfxMesh = gfxMesh;
             addChild(mGfxMesh);
         }
-        // create body for physics simulation
-        setCollisionShape(physicsShape, mass);
-    }
+        mCollisionMesh = collisionMesh;
+        mMass = mass;
 
-    /**
-     * Default constructor is only available to sub-classes. Sub-classes must call
-     * {@link #setCollisionShape(com.bulletphysics.collision.shapes.CollisionShape, float)} in their
-     * constructor to set the body shape. Moreover, {@link #setMesh(de.fabmax.lightgl.scene.Mesh)}
-     * has to be called to set the mesh used to render this body.
-     *
-     */
-    protected PhysicsBody() {
-        // your ad here...
-    }
-
-    /**
-     * Sets the shape and mass of the body simulated by the physics engine.
-     *
-     * @param physicsShape    Shape of the body
-     * @param mass            Mass of the body
-     */
-    protected void setCollisionShape(CollisionShape physicsShape, float mass) {
-        // create initial dynamics transform
         mPhysicsTransform.setIdentity();
+    }
 
+    /**
+     * Called by the physics thread before this PhysicsBody is added to the physics world. The
+     * method builds a {@link com.bulletphysics.collision.shapes.BvhTriangleMeshShape} from the
+     * collision mesh passed at construction.
+     */
+    protected void buildCollisionShape() {
+        BvhTriangleMeshShape shape = new BvhTriangleMeshShape(mCollisionMesh, true);
+        setCollisionShape(shape, mMass);
+    }
+
+    /**
+     * Creates a {@link com.bulletphysics.dynamics.RigidBody} with the specified shape and mass.
+     *
+     * @param colShape    Collision shape for physics simulation
+     * @param mass        Mass of the body
+     */
+    protected void setCollisionShape(CollisionShape colShape, float mass) {
         // compute inertia (only for non static bodies)
         Vector3f localInertia = new Vector3f(0, 0, 0);
         if (mass != 0) {
-            physicsShape.calculateLocalInertia(mass, localInertia);
+            colShape.calculateLocalInertia(mass, localInertia);
         }
 
         // create rigid body for physics simulation
-        DefaultMotionState motionState = new DefaultMotionState(mPhysicsTransform);
-        RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, motionState,
-                physicsShape, localInertia);
-        mPhysicsBody = new RigidBody(rbInfo);
-        mPhysicsBody.setFriction(1.0f);
+        synchronized (mPhysicsTransform) {
+            DefaultMotionState motionState = new DefaultMotionState(mPhysicsTransform);
+            RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass, motionState,
+                    colShape, localInertia);
+            mPhysicsBody = new RigidBody(rbInfo);
+            mPhysicsBody.setFriction(1.0f);
+        }
     }
 
     /**
@@ -124,7 +139,9 @@ public class PhysicsBody extends TransformGroup {
         synchronized (mPhysicsTransform) {
             mBufferedTransform.origin.set(x, y, z);
             mPhysicsTransform.origin.set(x, y, z);
-            mPhysicsBody.setCenterOfMassTransform(mPhysicsTransform);
+            if (mPhysicsBody != null) {
+                mPhysicsBody.setCenterOfMassTransform(mPhysicsTransform);
+            }
         }
     }
 

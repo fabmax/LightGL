@@ -25,8 +25,33 @@ public class PhysicsFactory {
      */
     public static PhysicsBody createBox(Mesh boxMesh, float sizeX, float sizeY, float sizeZ, float mass) {
         Vector3f size = new Vector3f(sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-        BoxShape box = new BoxShape(size);
-        return new PhysicsBody(boxMesh, box, mass);
+        return new BoxBody(boxMesh, size, mass);
     }
 
+
+    /**
+     * A simple box shaped physics body.
+     */
+    private static class BoxBody extends PhysicsBody {
+        private Vector3f mHalfSize;
+        private float mMass;
+
+        /**
+         * Creates a boy shaped physics body.
+         */
+        BoxBody(Mesh mesh, Vector3f halfSize, float mass) {
+            mHalfSize = halfSize;
+            mMass = mass;
+            setMesh(mesh);
+        }
+
+        /**
+         * Build box collision shape.
+         */
+        @Override
+        protected void buildCollisionShape() {
+            BoxShape box = new BoxShape(mHalfSize);
+            setCollisionShape(box, mMass);
+        }
+    }
 }

@@ -25,8 +25,8 @@ public class GlMath {
      * @param off   Array offset of the vector
      */
     public static void normalize(float[] vec3, int off) {
-        float s = 1 / (float) Math.sqrt(vec3[off+0] * vec3[off+0] + vec3[off+1] * vec3[off+1] + vec3[off+2] * vec3[off+2]);
-        vec3[off+0] *= s;
+        float s = 1 / (float) Math.sqrt(vec3[off] * vec3[off] + vec3[off+1] * vec3[off+1] + vec3[off+2] * vec3[off+2]);
+        vec3[off]   *= s;
         vec3[off+1] *= s;
         vec3[off+2] *= s;
     }
@@ -173,13 +173,11 @@ public class GlMath {
         result.origin[0] *= s;
         result.origin[1] *= s;
         result.origin[2] *= s;
-        result.origin[3] = 1.0f;
         
         s = 1.0f / result.direction[3];
         result.direction[0] *= s;
         result.direction[1] *= s;
         result.direction[2] *= s;
-        result.direction[3] = 0.0f;
 
         result.direction[0] -= result.origin[0];
         result.direction[1] -= result.origin[1];
