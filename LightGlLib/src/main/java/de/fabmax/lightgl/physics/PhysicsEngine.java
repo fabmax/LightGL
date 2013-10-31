@@ -25,20 +25,29 @@ public class PhysicsEngine {
     public static final float G = 9.81f;
 
     // time step for physics simulation in seconds (~60 steps per second)
-    private static final float SIM_TIME_STEP = 0.016f;
+    private static final float SIM_TIME_STEP = 0.0167f;
 
-    private final PhysicsThread mPhysicsThread;
     private final DiscreteDynamicsWorld mWorld;
 
+    private ArrayList<PhysicsBody> mAddObjects = new ArrayList<PhysicsBody>();
+    private ArrayList<PhysicsBody> mRemoveObjects = new ArrayList<PhysicsBody>();
+    private ArrayList<PhysicsBody> mObjects = new ArrayList<PhysicsBody>();
+
+    private PhysicsThread mPhysicsThread;
+    private PhysicsListener mPhysicsListener;
+
+    private long mSimulationStartTime = 0;
     private float mSimulationTime = 0;
+    private float mSimulationMissTime = 0;
+    private boolean mActive = false;
 
     /**
      * Initializes the JBullet physics engine. {@link #onResume()}, {@link #onPause()} and
      * {@link #onDestroy()} have to be called from the corresponding life cycle methods. By default
-     * this is all handled by {@link de.fabmax.lightgl.GfxEngine} after enabling physics simulation
-     * with {@link de.fabmax.lightgl.GfxEngine#setPhysicsEnabled(boolean)}.
+     * this is all handled by {@link de.fabmax.lightgl.GfxEngine} if physics simulation was enabled
+     * on engine creation.
      *
-     * @see de.fabmax.lightgl.GfxEngine#setPhysicsEnabled(boolean)
+     * @see de.fabmax.lightgl.GfxEngine#GfxEngine(android.content.Context, boolean)
      * @see de.fabmax.lightgl.GfxEngine#getPhysicsEngine()
      */
     public PhysicsEngine() {
@@ -55,9 +64,26 @@ public class PhysicsEngine {
 
         mWorld = new DiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
         mWorld.setGravity(new Vector3f(0, -G, 0));
+    }
 
-        mPhysicsThread = new PhysicsThread();
-        mPhysicsThread.start();
+    /**
+     * Initializes the physics simulation. If threaded is true a separate thread is started for
+     * physics simulation and the simulation runs asynchronously. If threaded is false
+     * {@link #simulateBlocking()} has to be called in regular intervals (e.g. from the render loop)
+     * in order to update the simulation.
+     *
+     * @param threaded    true to use a separate thread for simulation
+     */
+    public synchronized void initSimulation(boolean threaded) {
+        mSimulationStartTime = System.currentTimeMillis();
+
+        if (threaded) {
+            mPhysicsThread = new PhysicsThread();
+            if (mActive) {
+                mPhysicsThread.setPaused(false);
+            }
+            mPhysicsThread.start();
+        }
     }
 
     /**
@@ -74,6 +100,8 @@ public class PhysicsEngine {
      */
     public void resetSimulationTime() {
         mSimulationTime = 0;
+        mSimulationMissTime = 0;
+        mSimulationStartTime = System.currentTimeMillis();
     }
 
     /**
@@ -82,8 +110,8 @@ public class PhysicsEngine {
      * @param object    the object to add
      */
     public void addObject(PhysicsBody object) {
-        synchronized (mPhysicsThread) {
-            mPhysicsThread.mAddObjects.add(object);
+        synchronized (mWorld) {
+            mAddObjects.add(object);
         }
     }
 
@@ -93,8 +121,71 @@ public class PhysicsEngine {
      * @param object    the object to remove
      */
     public void removeObject(PhysicsBody object) {
-        synchronized (mPhysicsThread) {
-            mPhysicsThread.mRemoveObjects.add(object);
+        synchronized (mWorld) {
+            mRemoveObjects.add(object);
+        }
+    }
+
+    /**
+     * Runs the physics simulation. This method simulates at most 0.1s simulation time. If the last
+     * call of this method is longer ago, simulation time is skipped.
+     */
+    public void simulateBlocking() {
+        if (mPhysicsThread != null) {
+            throw new IllegalStateException("Do not call this method, while simulation runs asynchronously");
+        }
+
+        float simT = (System.currentTimeMillis() - mSimulationStartTime) / 1000.0f;
+        float dt = simT - mSimulationTime - mSimulationMissTime;
+        if (dt > 0.1f) {
+            // time step is to large, we have to skip time
+            mSimulationMissTime = dt - 0.1f;
+            dt = 0.1f;
+        }
+        float targetTime = mSimulationTime + dt;
+        while (Math.abs(mSimulationTime - targetTime) > 0.01f) {
+            simulateSingleStep();
+        }
+    }
+
+    /**
+     * Performs a single simulation step.
+     */
+    private void simulateSingleStep() {
+        if (mPhysicsListener != null) {
+            mPhysicsListener.preSimulateStep(SIM_TIME_STEP);
+        }
+
+        if (mAddObjects.size() > 0 || mRemoveObjects.size() > 0) {
+            synchronized (mWorld) {
+                // add new objects
+                for (int i = 0; i < mAddObjects.size(); i++) {
+                    PhysicsBody body = mAddObjects.get(i);
+                    body.buildCollisionShape();
+                    mWorld.addRigidBody(body.getPhysicsBody());
+                    mObjects.add(body);
+                }
+                mAddObjects.clear();
+                // remove deleted objects
+                for (int i = 0; i < mRemoveObjects.size(); i++) {
+                    PhysicsBody body = mRemoveObjects.get(i);
+                    mWorld.removeRigidBody(body.getPhysicsBody());
+                    mObjects.remove(body);
+                }
+                mRemoveObjects.clear();
+            }
+        }
+
+        // simulate physics step
+        mWorld.stepSimulation(SIM_TIME_STEP, 0, SIM_TIME_STEP);
+        mSimulationTime += SIM_TIME_STEP;
+
+        // synchronize rendered objects with simulated objects
+        for (int i = 0; i < mObjects.size(); i++) {
+            mObjects.get(i).postSimulateStep(SIM_TIME_STEP);
+        }
+        if (mPhysicsListener != null) {
+            mPhysicsListener.postSimulateStep(SIM_TIME_STEP);
         }
     }
 
@@ -103,9 +194,9 @@ public class PhysicsEngine {
      * their rendered meshes.
      */
     public void synchronizeBodyConfigurations() {
-        synchronized (mPhysicsThread) {
-            for (int i = 0; i < mPhysicsThread.mObjects.size(); i++) {
-                mPhysicsThread.mObjects.get(i).synchronizeBodyConfig();
+        synchronized (mWorld) {
+            for (int i = 0; i < mObjects.size(); i++) {
+                mObjects.get(i).synchronizeBodyConfig();
             }
         }
     }
@@ -113,22 +204,30 @@ public class PhysicsEngine {
     /**
      * Starts / resumes physics simulation.
      */
-    public void onResume() {
-        mPhysicsThread.setPaused(false);
+    public synchronized void onResume() {
+        mActive = true;
+        if (mPhysicsThread != null) {
+            mPhysicsThread.setPaused(false);
+        }
     }
 
     /**
      * Pauses physics simulation.
      */
-    public void onPause() {
-        mPhysicsThread.setPaused(true);
+    public synchronized void onPause() {
+        mActive = false;
+        if (mPhysicsThread != null) {
+            mPhysicsThread.setPaused(true);
+        }
     }
 
     /**
      * Stops physics simulation and destroys the physics computation thread.
      */
-    public void onDestroy() {
-        mPhysicsThread.terminate();
+    public synchronized void onDestroy() {
+        if (mPhysicsThread != null) {
+            mPhysicsThread.terminate();
+        }
     }
 
     /**
@@ -136,7 +235,7 @@ public class PhysicsEngine {
      * by the physics thread after every simulation step.
      */
     public void setPhysicsListener(PhysicsListener physicsListener) {
-        mPhysicsThread.mPhysicsListener = physicsListener;
+        mPhysicsListener = physicsListener;
     }
 
     /**
@@ -160,17 +259,10 @@ public class PhysicsEngine {
     }
 
     /*
-     * PhysicsThread runs the physics simulation. The physics simulation runs in fixed timesteps of
-     * 1/60 seconds.
+     * PhysicsThread asynchronously runs the physics simulation.
      */
     private class PhysicsThread extends Thread {
         private static final String TAG = "PhysicsThread";
-
-        private ArrayList<PhysicsBody> mAddObjects = new ArrayList<PhysicsBody>();
-        private ArrayList<PhysicsBody> mRemoveObjects = new ArrayList<PhysicsBody>();
-        private ArrayList<PhysicsBody> mObjects = new ArrayList<PhysicsBody>();
-
-        private PhysicsListener mPhysicsListener;
 
         private volatile boolean mPaused = true;
         private boolean mTerminate = false;
@@ -239,41 +331,7 @@ public class PhysicsEngine {
 
                 //long ns = System.nanoTime();
 
-                if (mPhysicsListener != null) {
-                    mPhysicsListener.preSimulateStep(SIM_TIME_STEP);
-                }
-
-                if (mAddObjects.size() > 0 || mRemoveObjects.size() > 0) {
-                    synchronized (this) {
-                        // add new objects
-                        for (int i = 0; i < mAddObjects.size(); i++) {
-                            PhysicsBody body = mAddObjects.get(i);
-                            body.buildCollisionShape();
-                            mWorld.addRigidBody(body.getPhysicsBody());
-                            mObjects.add(body);
-                        }
-                        mAddObjects.clear();
-                        // remove deleted objects
-                        for (int i = 0; i < mRemoveObjects.size(); i++) {
-                            PhysicsBody body = mRemoveObjects.get(i);
-                            mWorld.removeRigidBody(body.getPhysicsBody());
-                            mObjects.remove(body);
-                        }
-                        mRemoveObjects.clear();
-                    }
-                }
-
-                // simulate physics step
-                mWorld.stepSimulation(SIM_TIME_STEP, 0, SIM_TIME_STEP);
-                mSimulationTime += SIM_TIME_STEP;
-
-                // synchronize rendered objects with simulated objects
-                for (int i = 0; i < mObjects.size(); i++) {
-                    mObjects.get(i).postSimulateStep(SIM_TIME_STEP);
-                }
-                if (mPhysicsListener != null) {
-                    mPhysicsListener.postSimulateStep(SIM_TIME_STEP);
-                }
+                simulateSingleStep();
 
                 //ns = System.nanoTime() - ns;
                 //Log.d(TAG, "comp time: " + ns / 1e6);

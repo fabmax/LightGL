@@ -42,7 +42,7 @@ public class SimpleScene extends LigthtGlActivity {
         super.onCreate(savedInstanceState);
 
         // initializes the GLSurfaceView and the GfxEngine inside parent class LightGlActivity
-        createEngine();
+        createEngine(false);
 
         if (savedInstanceState != null) {
             mRotationX = savedInstanceState.getFloat(STATE_ROT_X);

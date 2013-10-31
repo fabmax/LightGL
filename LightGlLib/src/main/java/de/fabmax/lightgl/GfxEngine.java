@@ -53,10 +53,10 @@ public class GfxEngine implements Renderer {
     /**
      * Creates a new GfxEngine object.
      * 
-     * @param context
-     *            the application context
+     * @param context       the application context
+     * @param usePhysics    true to create a {@link de.fabmax.lightgl.physics.PhysicsEngine}
      */
-    public GfxEngine(Context context) {
+    public GfxEngine(Context context, boolean usePhysics) {
         // ensure that we have the application context
         context = context.getApplicationContext();
 
@@ -69,23 +69,15 @@ public class GfxEngine implements Renderer {
         
         // by default a standard perspective camera is used
         mCamera = new PerspectiveCamera();
-    }
 
-    /**
-     * Enables / disables physics simulation.
-     */
-    public void setPhysicsEnabled(boolean enabled) {
-        if (enabled && mPhysics == null) {
+        if (usePhysics) {
             mPhysics = new PhysicsEngine();
-        } else {
-            mPhysics = null;
         }
     }
 
     /**
      * Returns the used {@link de.fabmax.lightgl.physics.PhysicsEngine}. This method only returns an
-     * non-null value if physics simulation was enabled with {@link #setPhysicsEnabled(boolean)}
-     * before.
+     * non-null value if this GfxEngine was created with usePhysics = true.
      *
      * @return the used {@link de.fabmax.lightgl.physics.PhysicsEngine}
      */

@@ -38,6 +38,8 @@ public class PhysicsBody extends TransformGroup {
     protected final Transform mPhysicsTransform = new Transform();
     protected final Transform mBufferedTransform = new Transform();
 
+    private final Vector3f mZeroVector = new Vector3f();
+
     /**
      * Default constructor is only available to sub-classes. Sub-classes can make use of different
      * collision shapes, etc.
@@ -76,6 +78,7 @@ public class PhysicsBody extends TransformGroup {
         mCollisionMesh = collisionMesh;
         mMass = mass;
 
+        mBufferedTransform.setIdentity();
         mPhysicsTransform.setIdentity();
     }
 
@@ -133,14 +136,20 @@ public class PhysicsBody extends TransformGroup {
     }
 
     /**
-     * Sets the position of the body's center of mass in world coordinates.
+     * Sets the position of the body's center of mass in world coordinates. Attention: If this
+     * object was already added to the physics engine and this method is called from outside the
+     * physics thread weird things can happen.
      */
     public void setPosition(float x, float y, float z) {
         synchronized (mPhysicsTransform) {
+            mBufferedTransform.setIdentity();
             mBufferedTransform.origin.set(x, y, z);
+            mPhysicsTransform.setIdentity();
             mPhysicsTransform.origin.set(x, y, z);
             if (mPhysicsBody != null) {
                 mPhysicsBody.setCenterOfMassTransform(mPhysicsTransform);
+                mPhysicsBody.setAngularVelocity(mZeroVector);
+                mPhysicsBody.setLinearVelocity(mZeroVector);
             }
         }
     }

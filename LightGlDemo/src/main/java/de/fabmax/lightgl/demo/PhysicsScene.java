@@ -44,12 +44,11 @@ public class PhysicsScene extends LigthtGlActivity {
 
         // initializes the GLSurfaceView and the GfxEngine inside parent class LightGlActivity
         setNumSamples(4);
-        createEngine();
+        // enable physics simulation
+        createEngine(true);
 
         // register a touch listener for touch input
         mGlView.setOnTouchListener(mTouchHandler);
-        // enable physics simulation
-        mEngine.setPhysicsEnabled(true);
         // enable FPS log output
         setLogFramesPerSecond(true);
     }
@@ -101,6 +100,7 @@ public class PhysicsScene extends LigthtGlActivity {
     @Override
     public void onLoadScene(GfxEngine engine) {
         engine.getState().setBackgroundColor(0, 0, 0.2f);
+        engine.getPhysicsEngine().initSimulation(true);
 
         // add a directional light
         Light light = Light.createDirectionalLight(1, 1, 1, 0.7f, 0.7f, 0.7f);

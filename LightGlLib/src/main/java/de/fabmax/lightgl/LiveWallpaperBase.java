@@ -1,6 +1,5 @@
 package de.fabmax.lightgl;
 
-import de.fabmax.lightgl.util.GlConfiguration;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -8,6 +7,8 @@ import android.os.Build;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
 import android.view.SurfaceHolder;
+
+import de.fabmax.lightgl.util.GlConfiguration;
 
 /**
  * Base class for implementing live wallpapers. To implement a live wallpaper you have to extend
@@ -49,20 +50,23 @@ public abstract class LiveWallpaperBase extends WallpaperService {
         /**
          * The default constructor initializes the {@link GfxEngine}; however OpenGL methods can
          * only be called after the Surface is created.
+         *
+         * @param usePhysics    true to enable physics simulation
          */
-        public GlWallpaperEngine() {
-            this(null);
+        public GlWallpaperEngine(boolean usePhysics) {
+            this(null, usePhysics);
         }
 
         /**
          * The constructor initializes the {@link GfxEngine} and sets a {@link GlConfiguration} as
          * desired OpenGL configuration.
          * 
-         * @param configChooser the desired OpenGL configuration
+         * @param configChooser    the desired OpenGL configuration
+         * @param usePhysics       true to enable physics simulation
          */
-        public GlWallpaperEngine(GlConfiguration configChooser) {
+        public GlWallpaperEngine(GlConfiguration configChooser, boolean usePhysics) {
             mConfigChooser = configChooser;
-            mGfxEngine = new GfxEngine(LiveWallpaperBase.this);
+            mGfxEngine = new GfxEngine(LiveWallpaperBase.this, usePhysics);
             mGfxEngine.setEngineListener(this);
         }
         

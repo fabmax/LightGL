@@ -29,13 +29,15 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
     private long mLastFpsOut = 0;
 
     /**
-     * Same as {@link #createEngine(android.opengl.GLSurfaceView)} but creates a new GLSurfaceView
-     * and sets it as this Activity's content view.
+     * Same as {@link #createEngine(android.opengl.GLSurfaceView, boolean)} but creates a new
+     * GLSurfaceView and sets it as this Activity's content view.
+     *
+     * @param usePhysics    true to enable physics simulation
      */
-    protected void createEngine() {
+    protected void createEngine(boolean usePhysics) {
         // create and initialize the GLSurfaceView
         GLSurfaceView glView = new GLSurfaceView(this);
-        createEngine(glView);
+        createEngine(glView, usePhysics);
 
         // set the GL view as Activity's only content
         setContentView(glView);
@@ -44,11 +46,14 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
     /**
      * Call this method from your Activity's onCreate() method and pass the GLSurfaceView from your
      * layout.
+     *
+     * @param glView        GLSurfaceView to use for graphics output
+     * @param usePhysics    true to enable physics simulation
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    protected void createEngine(GLSurfaceView glView) {
+    protected void createEngine(GLSurfaceView glView, boolean usePhysics) {
         // initialize graphics engine
-        mEngine = new GfxEngine(getApplicationContext());
+        mEngine = new GfxEngine(getApplicationContext(), usePhysics);
         mEngine.setEngineListener(this);
 
         mGlView = glView;
@@ -72,7 +77,7 @@ public abstract class LigthtGlActivity extends Activity implements GfxEngineList
 
     /**
      * Sets the number of samples to request for the GL configuration. A value greater than 1
-     * enables anti aliasing. This method must be called before {@link #createEngine()}.
+     * enables anti aliasing. This method must be called before {@link #createEngine(boolean)}.
      *
      * @param numSamples Number of samples to use for rendering
      */
