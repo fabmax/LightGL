@@ -19,7 +19,7 @@ public class BufferedTouchListener implements OnTouchListener {
 
     private static final int POINTER_ID_UNUSED = -1;
 
-    private Pointer[] mPointers = new Pointer[MAX_POINTERS];
+    private final Pointer[] mPointers = new Pointer[MAX_POINTERS];
 
     /**
      * Creates a new BufferedTouchListener.
@@ -143,9 +143,9 @@ public class BufferedTouchListener implements OnTouchListener {
         private long mLastTime;
         private long mCurrentTime;
         
-        private PointerCoords mCoords = new PointerCoords();
-        private PointerCoords mLastCoords = new PointerCoords();
-        private PointerCoords mFirstCoords = new PointerCoords();
+        private final PointerCoords mCoords = new PointerCoords();
+        private final PointerCoords mLastCoords = new PointerCoords();
+        private final PointerCoords mFirstCoords = new PointerCoords();
         
         /**
          * Recycles this Pointer. You should call this method after evaluating this Pointer.

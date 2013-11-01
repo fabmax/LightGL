@@ -1,9 +1,10 @@
 package de.fabmax.lightgl;
 
+import android.opengl.Matrix;
+
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.glClearColor;
 import static android.opengl.GLES20.glViewport;
-import android.opengl.Matrix;
 
 /**
  * Current graphics engine state.
@@ -20,7 +21,7 @@ public class GfxState {
     private final TextureManager mTextureManager;
 
     // viewport dimensions (x, y, width, height)
-    private int[] mViewport = new int[4];
+    private final int[] mViewport = new int[4];
     // projection matrix - holds field of view and mAspect ratio of the camera
     private final float[] mProjMatrix = new float[16];
     // view matrix - holds the camera position
@@ -176,11 +177,6 @@ public class GfxState {
     /**
      * Sets the viewport dimensions. This is called automatically by
      * {@link GfxEngine#onSurfaceChanged(javax.microedition.khronos.opengles.GL10, int, int)}
-     * 
-     * @param x
-     * @param y
-     * @param width
-     * @param height
      */
     public void setViewport(int x, int y, int width, int height) {
         mViewport[0] = x;

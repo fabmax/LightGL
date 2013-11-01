@@ -1,14 +1,5 @@
 package de.fabmax.lightgl;
 
-import static android.opengl.GLES20.GL_TEXTURE0;
-import static android.opengl.GLES20.GL_TEXTURE_2D;
-import static android.opengl.GLES20.glActiveTexture;
-import static android.opengl.GLES20.glBindTexture;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -16,6 +7,15 @@ import android.graphics.BitmapFactory;
 import android.opengl.GLUtils;
 import android.util.Log;
 import android.util.SparseArray;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
+import static android.opengl.GLES20.GL_TEXTURE0;
+import static android.opengl.GLES20.GL_TEXTURE_2D;
+import static android.opengl.GLES20.glActiveTexture;
+import static android.opengl.GLES20.glBindTexture;
 
 /**
  * The TextureManager handles loading and binding of de.fabmax.lightgl.demo.textures.
@@ -29,20 +29,20 @@ public class TextureManager {
     private static final TextureProperties DEFAULT_PROPERTIES = new TextureProperties();
 
     // Context is needed to load de.fabmax.lightgl.demo.textures from resources
-    private Context mContext;
+    private final Context mContext;
 
     // List of all loaded de.fabmax.lightgl.demo.textures
-    private ArrayList<Texture> mLoadedTextures = new ArrayList<Texture>();
-    // Map of loaded texture resources
-    private SparseArray<Texture> mResourceMap = new SparseArray<Texture>();
+    private final ArrayList<Texture> mLoadedTextures = new ArrayList<>();
+    // Map with textures loaded from app assets
+    private final SparseArray<Texture> mResourceMap = new SparseArray<>();
     // Currently bound texture handle
     private int mBoundTextureHandle;
     // Active texture unit
     private int mActiveTextureUnit;
 
-    public ArrayList<Texture> getLoadedTextures() {
-        return mLoadedTextures;
-    }
+//    public ArrayList<Texture> getLoadedTextures() {
+//        return mLoadedTextures;
+//    }
     
     /**
      * Creates a new TextureManager object.
@@ -80,7 +80,7 @@ public class TextureManager {
     /**
      * Removes the specified {@link Texture} from the list of loaded de.fabmax.lightgl.demo.textures.
      * 
-     * @param tex 
+     * @param tex    Texture to remove
      */
     protected void removeTexture(Texture tex) {
         if (tex.isValid()) {

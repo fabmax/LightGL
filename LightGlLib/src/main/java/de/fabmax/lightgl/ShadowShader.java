@@ -1,10 +1,11 @@
 package de.fabmax.lightgl;
 
+import android.opengl.Matrix;
+
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform1f;
 import static android.opengl.GLES20.glUniform1i;
 import static android.opengl.GLES20.glUniformMatrix4fv;
-import android.opengl.Matrix;
 
 /**
  * ShadowShader is a SimpleShader that supports dynamic shadows. To compute the necessary
@@ -16,15 +17,15 @@ import android.opengl.Matrix;
  */
 public class ShadowShader extends SimpleShader {
 
-    private ShadowRenderPass mShadowPass;
+    private final ShadowRenderPass mShadowPass;
 
     private int muShadowSamplerHandle;
     private int muShadowMvpMatrixHandle;
     private int muMapScaleHandle;
     
-    private float[] mTempMatrix = new float[16];
-    private float[] mShadowMvpMatrix = new float[16];
-    private float[] mShadowBiasMatrix;
+    private final float[] mTempMatrix = new float[16];
+    private final float[] mShadowMvpMatrix = new float[16];
+    private final float[] mShadowBiasMatrix;
 
     /**
      * Creates a ShadowShader with Gouraud model. Gouraud shading is faster than Phong shading but

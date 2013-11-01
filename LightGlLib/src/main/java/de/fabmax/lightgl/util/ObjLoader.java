@@ -1,10 +1,8 @@
 package de.fabmax.lightgl.util;
 
-import static android.opengl.GLES20.GL_ARRAY_BUFFER;
-import static android.opengl.GLES20.GL_STATIC_DRAW;
-import static android.opengl.GLES20.glBindBuffer;
-import static android.opengl.GLES20.glBufferData;
-import static android.opengl.GLES20.glGenBuffers;
+import android.content.Context;
+import android.util.Log;
+import android.util.SparseIntArray;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -14,13 +12,15 @@ import java.nio.IntBuffer;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
-import android.content.Context;
-import android.util.Log;
-import android.util.SparseIntArray;
-
 import de.fabmax.lightgl.LightGlException;
 import de.fabmax.lightgl.ShaderAttributeBinder;
 import de.fabmax.lightgl.scene.Mesh;
+
+import static android.opengl.GLES20.GL_ARRAY_BUFFER;
+import static android.opengl.GLES20.GL_STATIC_DRAW;
+import static android.opengl.GLES20.glBindBuffer;
+import static android.opengl.GLES20.glBufferData;
+import static android.opengl.GLES20.glGenBuffers;
 
 /**
  * Basic model loader for .obj files. Supports vertex positions, normals and texture coordinates in
@@ -126,10 +126,10 @@ public class ObjLoader {
 
                 // get vertex normal (if present)
                 if (!normals.isEmpty()) {
-                    vnIdx = indices.get(ii++) * 3;
+                    vnIdx = indices.get(ii) * 3;
                     vertex[vi++] = normals.get(vnIdx);
                     vertex[vi++] = normals.get(vnIdx + 1);
-                    vertex[vi++] = normals.get(vnIdx + 2);
+                    vertex[vi] = normals.get(vnIdx + 2);
                 }
 
                 int hash = getIndexHash(idx, vtIdx, vnIdx);

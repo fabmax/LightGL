@@ -12,14 +12,14 @@ import static android.opengl.GLES20.glClearColor;
  */
 public class ShadowRenderPass implements RenderPass {
 
-    private OrthograpicCamera mShadowCamera = new OrthograpicCamera();
+    private final OrthograpicCamera mShadowCamera = new OrthograpicCamera();
     private TextureRenderer mRenderer;
     private Shader mDepthShader;
     private int mTextureUnit = GL_TEXTURE1;
 
-    private BoundingBox mSceneBounds = new BoundingBox(-10, 10, -10, 10, -10, 10);
-    private float[] mShadowViewMatrix = new float[16];    
-    private float[] mShadowProjMatrix = new float[16];
+    private final BoundingBox mSceneBounds = new BoundingBox(-10, 10, -10, 10, -10, 10);
+    private final float[] mShadowViewMatrix = new float[16];
+    private final float[] mShadowProjMatrix = new float[16];
 
     private int mShadowMapSz = 512;
 
@@ -105,7 +105,7 @@ public class ShadowRenderPass implements RenderPass {
     }
     
     /**
-     * Sets the scene bounds. The specified volume will be covered by the schadow map renderer.
+     * Sets the scene bounds. The specified volume will be covered by the shadow map renderer.
      * 
      * @param sceneBounds
      *            Bounds of the scene to be covered

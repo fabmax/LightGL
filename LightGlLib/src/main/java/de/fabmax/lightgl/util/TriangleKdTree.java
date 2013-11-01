@@ -23,13 +23,13 @@ public class TriangleKdTree {
     private static final int S = 6;
     private static final int P = 9;
     private static final int Q = 12;
-    private float[] mTemp = new float[15];
+    private final float[] mTemp = new float[15];
 
     // triangle vertex positions
-    private float[] mPoints;
+    private final float[] mPoints;
 
-    private KdNode mRoot;
-    private Triangle[] mTriangles;
+    private final KdNode mRoot;
+    private final Triangle[] mTriangles;
 
     /**
      * Creates a new TriangleKdTree, which contains the triangles defined by points and indices.
@@ -67,8 +67,8 @@ public class TriangleKdTree {
         private BoundingBox mBounds;
         private KdNode mLeft;
         private KdNode mRight;
-        private int mStart;
-        private int mEnd;
+        private final int mStart;
+        private final int mEnd;
 
         /**
          * Creates a new tree node containing the specified triangles. If the number of triangles is
@@ -149,10 +149,9 @@ public class TriangleKdTree {
             // create left and right sub nodes
             int startLeft = mStart;
             int endLeft = mStart + (mEnd - mStart) / 2;
-            int startRight = endLeft;
             int endRight = mEnd;
             mLeft = new KdNode(startLeft, endLeft);
-            mRight = new KdNode(startRight, endRight);
+            mRight = new KdNode(endLeft, endRight);
         }
 
         /**
@@ -177,9 +176,9 @@ public class TriangleKdTree {
      * A triangle inside a TriangleKdTree.
      */
     private class Triangle {
-        private int mOff0;
-        private int mOff1;
-        private int mOff2;
+        private final int mOff0;
+        private final int mOff1;
+        private final int mOff2;
 
         /**
          * Creates a triangle with the specified vertex indices.
@@ -308,9 +307,9 @@ public class TriangleKdTree {
         /** Squared distance from ray origin to hit point. */
         public float distanceSqr;
         /** Hit point coordinates. */
-        public float[] point = new float[3];
+        public final float[] point = new float[3];
         /** Hit point normal x component. */
-        public float[] normal = new float[3];
+        public final float[] normal = new float[3];
 
         /**
          * Returns true if the hit test was positive, i.e. the ray hit a triangle.

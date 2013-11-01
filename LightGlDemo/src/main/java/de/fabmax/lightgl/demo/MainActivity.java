@@ -12,19 +12,19 @@ import java.util.HashMap;
 
 public class MainActivity extends ListActivity {
 
-    private ArrayList<HashMap<String, Object>> mData = new ArrayList<HashMap<String, Object>>();
+    private final ArrayList<HashMap<String, Object>> mData = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        HashMap<String, Object> item = new HashMap<String, Object>();
+        HashMap<String, Object> item = new HashMap<>();
         item.put("text1", "Simple Scene");
         item.put("text2", "A simple scene with touch input and dynamic shadows");
         item.put("start", SimpleScene.class);
         mData.add(item);
 
-        item = new HashMap<String, Object>();
+        item = new HashMap<>();
         item.put("text1", "Physics");
         item.put("text2", "A simple physics demo using the JBullet physics engine (Tap to spawn cubes)");
         item.put("start", PhysicsScene.class);

@@ -31,14 +31,14 @@ public class GfxEngine implements Renderer {
     
     private static final String TAG = "GfxEngine";
 
-    private ShaderManager mShaderManager;
-    private TextureManager mTextureManager;
-    private GfxState mState;
+    private final ShaderManager mShaderManager;
+    private final TextureManager mTextureManager;
+    private final GfxState mState;
 
-    private ArrayList<Light> mLights = new ArrayList<Light>();
-    private Node mScene;
+    private final ArrayList<Light> mLights = new ArrayList<>();
 
     private Camera mCamera;
+    private Node mScene;
 
     private GfxEngineListener mEngineListener;
     private RenderPass mPrePass;

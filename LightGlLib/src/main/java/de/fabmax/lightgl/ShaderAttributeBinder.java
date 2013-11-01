@@ -1,13 +1,13 @@
 package de.fabmax.lightgl;
 
+import java.nio.Buffer;
+import java.nio.FloatBuffer;
+
 import static android.opengl.GLES20.GL_ARRAY_BUFFER;
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.glBindBuffer;
 import static android.opengl.GLES20.glDeleteBuffers;
 import static android.opengl.GLES20.glVertexAttribPointer;
-
-import java.nio.Buffer;
-import java.nio.FloatBuffer;
 
 /**
  * A ShaderAttributeBinder binds a buffer with vertex attribute data to a Shader. The buffer can be
@@ -149,7 +149,7 @@ public abstract class ShaderAttributeBinder {
      * @param target
      *            the buffer target index as used in glVertexAttribPointer()
      */
-    public abstract boolean bindAttribute(int target);
+    public abstract void bindAttribute(int target);
     
     /**
      * Deletes the underlying data buffer of this ShaderAttributeBinder.
@@ -180,10 +180,9 @@ public abstract class ShaderAttributeBinder {
          * Bind buffer to shader attribute.
          */
         @Override
-        public boolean bindAttribute(int target) {
+        public void bindAttribute(int target) {
             mBuffer.position(mOffset);
             glVertexAttribPointer(target, mSize, mType, false, mStride, mBuffer);
-            return true;
         }
 
         /**
@@ -219,11 +218,10 @@ public abstract class ShaderAttributeBinder {
          * Bind buffer to shader attribute.
          */
         @Override
-        public boolean bindAttribute(int target) {
+        public void bindAttribute(int target) {
             glBindBuffer(GL_ARRAY_BUFFER, mBuffer);
             glVertexAttribPointer(target, mSize, mType, false, mStride, mOffset * 4);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-            return true;
         }
         
         /**

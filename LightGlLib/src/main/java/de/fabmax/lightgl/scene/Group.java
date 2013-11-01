@@ -12,14 +12,7 @@ import de.fabmax.lightgl.GfxState;
  */
 public class Group extends Node {
 
-    private ArrayList<Node> mChildren;
-
-    /**
-     * Standard constructor that creates a new Group. Nothing special here.
-     */
-    public Group() {
-        mChildren = new ArrayList<Node>();
-    }
+    private final ArrayList<Node> mChildren = new ArrayList<>();
     
     /**
      * Adds a child node to this group.

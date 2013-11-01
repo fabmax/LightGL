@@ -10,10 +10,10 @@ package de.fabmax.lightgl;
 public class Light {
 
     /** Light position ( X, Y, Z, W ) */
-    public float[] position = new float[4];
+    public final float[] position = new float[4];
 
     /** Light color ( R, G, B, A ) */
-    public float[] color = new float[4];
+    public final float[] color = new float[4];
     
     /**
      * Creates a point light with the specified position and color.

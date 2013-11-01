@@ -13,7 +13,7 @@ public abstract class GlObject {
      * The OpenGL object handle. This is a one-element array for easier calling of many GL
      * functions.
      */
-    protected int[] mHandle = new int[1];
+    protected final int[] mHandle = new int[1];
 
     /**
      * Creates a GlObject that has not yet assigned an OpenGL object handle. Notice that there is no
@@ -49,7 +49,7 @@ public abstract class GlObject {
      * this method is called with 0 as argument by a corresponding Manager class after the OpenGL
      * context was recreated.
      * 
-     * @param handle
+     * @param handle    Handle assigned by OpenGL subsystem
      */
     protected void setGlHandle(int handle) {
         mHandle[0] = handle;

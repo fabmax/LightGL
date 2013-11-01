@@ -37,7 +37,7 @@ public class TextureProperties {
         LINEAR(GL_LINEAR),
         TRILINEAR(GL_LINEAR_MIPMAP_LINEAR);
         
-        private int mMethod;
+        private final int mMethod;
         
         MinFilterMethod(int method) {
             mMethod = method;
@@ -55,7 +55,7 @@ public class TextureProperties {
         NEAREST(GL_NEAREST),
         LINEAR(GL_LINEAR);
         
-        private int mMethod;
+        private final int mMethod;
         
         MagFilterMethod(int method) {
             mMethod = method;
@@ -74,7 +74,7 @@ public class TextureProperties {
         REPEAT(GL_REPEAT),
         MIRRORED_REPEAT(GL_MIRRORED_REPEAT);
         
-        private int mMethod;
+        private final int mMethod;
         
         WrappingMethod(int method) {
             mMethod = method;

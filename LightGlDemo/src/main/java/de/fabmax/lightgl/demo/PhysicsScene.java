@@ -30,8 +30,8 @@ public class PhysicsScene extends LigthtGlActivity {
     private Shader mCubeMaterial;
     private Group mScene;
 
-    private BufferedTouchListener mTouchHandler = new BufferedTouchListener();
-    private float mRadius = 20, mPhi = 0, mTheta = GlMath.PI / 2;
+    private final BufferedTouchListener mTouchHandler = new BufferedTouchListener();
+    private float mPhi = 0, mTheta = GlMath.PI / 2;
 
     private int mCubeCount = 0;
 
@@ -75,9 +75,9 @@ public class PhysicsScene extends LigthtGlActivity {
         }
 
         // update camera position
-        float x = mRadius * (float) Math.sin(mTheta) * (float) Math.sin(mPhi);
-        float z = mRadius * (float) Math.sin(mTheta) * (float) Math.cos(mPhi);
-        float y = mRadius * (float) Math.cos(mTheta);
+        float x = 20 * (float) Math.sin(mTheta) * (float) Math.sin(mPhi);
+        float z = 20 * (float) Math.sin(mTheta) * (float) Math.cos(mPhi);
+        float y = 20 * (float) Math.cos(mTheta);
         engine.getCamera().setPosition(x, y, z);
     }
 

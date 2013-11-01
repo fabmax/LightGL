@@ -42,9 +42,9 @@ public abstract class LiveWallpaperBase extends WallpaperService {
     public abstract class GlWallpaperEngine extends Engine implements GfxEngineListener {
         private static final String TAG = "LiveWallpaperBase.WallpaperEngine";
 
+        private final GlConfiguration mConfigChooser;
         private final GfxEngine mGfxEngine;
         private WallpaperGlSurfaceView mGlView;
-        private GlConfiguration mConfigChooser;
         private boolean mCreated = false;
 
         /**
@@ -101,16 +101,12 @@ public abstract class LiveWallpaperBase extends WallpaperService {
         /**
          * Is called if the user changes the homescreen.
          * 
-         * @param xOffset
-         *            normalized x offset in range 0 .. 1
-         * @param yOffset
-         *            normalized y offset in range 0 .. 1
-         * @param xOffsetStep
-         *            step size between two homescreens for normalized x offset
-         * @param yOffsetStep
-         *            step size between two homescreens for normalized y offset
-         * @param xPixelOffset
-         * @param yPixelOffset
+         * @param xOffset         normalized x offset in range 0 .. 1
+         * @param yOffset         normalized y offset in range 0 .. 1
+         * @param xOffsetStep     step size between two homescreens for normalized x offset
+         * @param yOffsetStep     step size between two homescreens for normalized y offset
+         * @param xPixelOffset    not used?
+         * @param yPixelOffset    not used?
          */
         @Override
         public void onOffsetsChanged(float xOffset, float yOffset, float xOffsetStep,

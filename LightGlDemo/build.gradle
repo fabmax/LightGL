@@ -6,24 +6,31 @@ buildscript {
         classpath 'com.android.tools.build:gradle:0.6.3'
     }
 }
-apply plugin: 'android'
 
 repositories {
     mavenCentral()
-    mavenLocal()
 }
 
+apply plugin: 'android'
+
 android {
-    compileSdkVersion 18
-    buildToolsVersion "18.1.1"
+    compileSdkVersion 19
+    buildToolsVersion "19.0.0"
 
     defaultConfig {
         minSdkVersion 9
-        targetSdkVersion 18
+        targetSdkVersion 19
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 
+
+
 dependencies {
-	compile 'com.android.support:appcompat-v7:18.0.0'
+	//compile 'com.android.support:appcompat-v7:19.0.0'
     compile project(':LightGlLib')
 }

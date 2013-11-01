@@ -33,8 +33,8 @@ public class PhysicsFactory {
      * A simple box shaped physics body.
      */
     private static class BoxBody extends PhysicsBody {
-        private Vector3f mHalfSize;
-        private float mMass;
+        private final Vector3f mHalfSize;
+        private final float mMass;
 
         /**
          * Creates a boy shaped physics body.

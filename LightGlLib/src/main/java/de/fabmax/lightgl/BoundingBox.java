@@ -226,9 +226,6 @@ public class BoundingBox {
         if (tzmin > tmin) {
             tmin = tzmin;
         }
-        if (tzmax < tmax) {
-            tmax = tzmax;
-        }
 
         if (tmin > 0) {
             // hit! calculate square distance between ray origin and hit point

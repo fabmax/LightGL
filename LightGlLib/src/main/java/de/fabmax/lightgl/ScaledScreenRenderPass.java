@@ -1,5 +1,11 @@
 package de.fabmax.lightgl;
 
+import android.util.Log;
+
+import de.fabmax.lightgl.scene.Mesh;
+import de.fabmax.lightgl.scene.Node;
+import de.fabmax.lightgl.util.MeshFactory;
+
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.GL_DEPTH_BUFFER_BIT;
 import static android.opengl.GLES20.GL_DEPTH_TEST;
@@ -8,18 +14,13 @@ import static android.opengl.GLES20.glDisable;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform1i;
-import android.util.Log;
-
-import de.fabmax.lightgl.scene.Mesh;
-import de.fabmax.lightgl.scene.Node;
-import de.fabmax.lightgl.util.MeshFactory;
 
 public class ScaledScreenRenderPass implements RenderPass {
     
     private static final String TAG = "RenderPass";
 
+    private final TextureRenderer mRenderer;
     private float mViewportScale = 0;
-    private TextureRenderer mRenderer;
     private int mTexWidth = 0;
     private int mTexHeight = 0;
     private Mesh mTexMesh;

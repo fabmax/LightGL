@@ -16,7 +16,7 @@ public class GlMath {
     /**
      * PI = 3.14159265f
      */
-    public static float PI = 3.14159265f;
+    public static final float PI = 3.14159265f;
 
     /**
      * Scales the specified vector to unit length.

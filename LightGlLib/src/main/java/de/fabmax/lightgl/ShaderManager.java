@@ -1,5 +1,15 @@
 package de.fabmax.lightgl;
 
+import android.content.Context;
+import android.util.Log;
+import android.util.SparseIntArray;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+
 import static android.opengl.GLES20.GL_COMPILE_STATUS;
 import static android.opengl.GLES20.GL_FRAGMENT_SHADER;
 import static android.opengl.GLES20.GL_LINK_STATUS;
@@ -19,16 +29,6 @@ import static android.opengl.GLES20.glLinkProgram;
 import static android.opengl.GLES20.glShaderSource;
 import static android.opengl.GLES20.glUseProgram;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-
-import android.content.Context;
-import android.util.Log;
-import android.util.SparseIntArray;
-
 /**
  * The ShaderManager handles loading and binding of shaders.
  * 
@@ -39,11 +39,12 @@ public class ShaderManager {
     private static final String TAG = "ShaderManager";
 
     // context is needed to load assets
-    private Context mContext;
+    private final Context mContext;
 
-    private ArrayList<Shader> mLoadedShaders = new ArrayList<Shader>();
-    // map that holds all generated shader handles
-    private SparseIntArray mShaderHandles = new SparseIntArray();
+    // list of loaded shaders
+    private final ArrayList<Shader> mLoadedShaders = new ArrayList<>();
+    // map with hashes of loaded shaders and the corresponding GL handles
+    private final SparseIntArray mShaderHandles = new SparseIntArray();
     // currently bound shader
     private Shader mBoundShader;
 
@@ -266,7 +267,7 @@ public class ShaderManager {
      * Helper method that reads a asset file with shader source code into a String.
      */
     private static String loadSource(String assetName, Context context) throws IOException {
-        StringBuffer sBuf = new StringBuffer();
+        StringBuilder sBuf = new StringBuilder();
 
         // open asset
         InputStream in = context.getAssets().open(assetName);

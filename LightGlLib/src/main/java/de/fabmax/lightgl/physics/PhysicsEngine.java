@@ -29,9 +29,9 @@ public class PhysicsEngine {
 
     private final DiscreteDynamicsWorld mWorld;
 
-    private ArrayList<PhysicsBody> mAddObjects = new ArrayList<PhysicsBody>();
-    private ArrayList<PhysicsBody> mRemoveObjects = new ArrayList<PhysicsBody>();
-    private ArrayList<PhysicsBody> mObjects = new ArrayList<PhysicsBody>();
+    private final ArrayList<PhysicsBody> mAddObjects = new ArrayList<>();
+    private final ArrayList<PhysicsBody> mRemoveObjects = new ArrayList<>();
+    private final ArrayList<PhysicsBody> mObjects = new ArrayList<>();
 
     private PhysicsThread mPhysicsThread;
     private PhysicsListener mPhysicsListener;

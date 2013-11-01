@@ -32,7 +32,7 @@ public class SimpleScene extends LigthtGlActivity {
     private float mRotationX = 180;
     private float mRotationY = 0;
 
-    private BufferedTouchListener mTouchHandler = new BufferedTouchListener();
+    private final BufferedTouchListener mTouchHandler = new BufferedTouchListener();
     
     /**
      * Called on Activity startup.

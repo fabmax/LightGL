@@ -1,9 +1,10 @@
 package de.fabmax.lightgl;
 
+import de.fabmax.lightgl.scene.Mesh;
+
 import static android.opengl.GLES20.glDisableVertexAttribArray;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glGetAttribLocation;
-import de.fabmax.lightgl.scene.Mesh;
 
 /**
  * Base class for custom shader implementations.
@@ -21,7 +22,7 @@ public abstract class Shader extends GlObject {
     private final ShaderManager mShaderMgr;
     
     /** Shader attribute pointers */
-    protected int[] mVertexAttributes;
+    protected final int[] mVertexAttributes;
     
     /**
      * Initializes the shader attributes.
@@ -107,28 +108,32 @@ public abstract class Shader extends GlObject {
         int ptr = mVertexAttributes[ATTRIBUTE_POSITIONS];
         if (ptr != -1) {
             ShaderAttributeBinder binder = mesh.getVertexPositionBinder();
-            if (binder != null && binder.bindAttribute(ptr)) {
+            if (binder != null) {
+                binder.bindAttribute(ptr);
                 glEnableVertexAttribArray(ptr);
             }
         }
         ptr = mVertexAttributes[ATTRIBUTE_NORMALS];
         if (ptr != -1) {
             ShaderAttributeBinder binder = mesh.getVertexNormalBinder();
-            if (binder != null && binder.bindAttribute(ptr)) {
+            if (binder != null) {
+                binder.bindAttribute(ptr);
                 glEnableVertexAttribArray(ptr);
             }
         }
         ptr = mVertexAttributes[ATTRIBUTE_TEXTURE_COORDS];
         if (ptr != -1) {
             ShaderAttributeBinder binder = mesh.getVertexTexCoordBinder();
-            if (binder != null && binder.bindAttribute(ptr)) {
+            if (binder != null) {
+                binder.bindAttribute(ptr);
                 glEnableVertexAttribArray(ptr);
             }
         }
         ptr = mVertexAttributes[ATTRIBUTE_COLORS];
         if (ptr != -1) {
             ShaderAttributeBinder binder = mesh.getVertexColorBinder();
-            if (binder != null && binder.bindAttribute(ptr)) {
+            if (binder != null) {
+                binder.bindAttribute(ptr);
                 glEnableVertexAttribArray(ptr);
             }
         }

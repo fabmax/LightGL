@@ -14,18 +14,18 @@ import de.fabmax.lightgl.util.GlMath;
 public abstract class Camera {
 
     // Camera position
-    private AnimatedVector mEye = new AnimatedVector(0, 0, 10);
+    private final AnimatedVector mEye = new AnimatedVector(0, 0, 10);
     // Camera look at position
-    private AnimatedVector mLookAt = new AnimatedVector(0, 0, 0);
+    private final AnimatedVector mLookAt = new AnimatedVector(0, 0, 0);
     // Camera up direction
-    private AnimatedVector mUp = new AnimatedVector(0, 1, 0);
+    private final AnimatedVector mUp = new AnimatedVector(0, 1, 0);
     
     /** Matrix recalculation flag */
     protected boolean mDirty = true;
 
     /** Camera transformation matrices */
-    protected float[] mViewMatrix = new float[16];
-    protected float[] mProjMatrix = new float[16];
+    protected final float[] mViewMatrix = new float[16];
+    protected final float[] mProjMatrix = new float[16];
 
     /**
      * Sets the camera position.

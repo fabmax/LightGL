@@ -31,8 +31,8 @@ public class PhysicsBody extends TransformGroup {
 
     protected Mesh mGfxMesh;
 
-    private TriangleIndexVertexArray mCollisionMesh;
-    private float mMass;
+    private final TriangleIndexVertexArray mCollisionMesh;
+    private final float mMass;
 
     protected RigidBody mPhysicsBody;
     protected final Transform mPhysicsTransform = new Transform();
