@@ -19,8 +19,8 @@ attribute vec2 aVertexTexCoord;
 
 varying vec2 vTexCoord;
 varying vec4 vShadowCoord;
-varying vec3 vDiffuseLightColor;
-varying vec3 vSpecularLightColor;
+varying vec4 vDiffuseLightColor;
+varying vec4 vSpecularLightColor;
 
 void main() {
 	// interpolate vertex color for usage in fragment shader
@@ -47,6 +47,6 @@ void main() {
 	// Cosine of the angle between the eye vector and the reflect vector
 	float cosAlpha = clamp(dot(e, r), 0.0, 1.0);
 	
-	vDiffuseLightColor = uLightColor * cosTheta;
-	vSpecularLightColor = uLightColor * pow(cosAlpha, uShininess);
+	vDiffuseLightColor = vec4(uLightColor, 1.0)  * (cosTheta + 0.2);
+	vSpecularLightColor = vec4(uLightColor, 0.0) * pow(cosAlpha, uShininess);
 }

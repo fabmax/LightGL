@@ -45,12 +45,11 @@ public class ScaledScreenRenderPass implements RenderPass {
      * Renders the scene. Rendering is done in two steps: At first the scene is rendered into a
      * texture of configurable size. Then the texture is drawn to the screen.
      * 
-     * @param engine
-     *            graphics engine
+     * @param glContext    graphics engine context
      */
     @Override
-    public void onRender(GfxEngine engine) {
-        int[] vp = engine.getState().getViewport();
+    public void onRender(LightGlContext glContext) {
+        int[] vp = glContext.getState().getViewport();
         
         // update texture size if a fixed viewport scale is set
         if (mViewportScale > 0) {
@@ -63,19 +62,19 @@ public class ScaledScreenRenderPass implements RenderPass {
         
         if (mTexWidth != vp[2] || mTexHeight != vp[3]) {
             // render scene to texture
-            mRenderer.renderToTexture(engine, engine.getScene());
+            mRenderer.renderToTexture(glContext, glContext.getEngine().getScene());
             // draw texture to the screen
             glDisable(GL_DEPTH_TEST);
-            engine.getState().bindTexture(mRenderer.getTexture());
-            mTexMesh.render(engine.getState());
+            glContext.getTextureManager().bindTexture(mRenderer.getTexture());
+            mTexMesh.render(glContext);
             glEnable(GL_DEPTH_TEST);
             
         } else {
             // render scene directly to screen
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            Node scene = engine.getScene();
+            Node scene = glContext.getEngine().getScene();
             if(scene != null) {
-                scene.render(engine.getState());
+                scene.render(glContext);
             }
         }
     }
@@ -150,10 +149,10 @@ public class ScaledScreenRenderPass implements RenderPass {
         /**
          * Is called if this shader is bound.
          * 
-         * @see Shader#onBind(GfxState)
+         * @see Shader#onBind(LightGlContext)
          */
         @Override
-        public void onBind(GfxState state) {
+        public void onBind(LightGlContext glContext) {
             // set used texture sampler
             glUniform1i(muTextureSampler, 0);
         }

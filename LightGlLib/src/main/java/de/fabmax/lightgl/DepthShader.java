@@ -47,12 +47,12 @@ public class DepthShader extends Shader {
     /**
      * Is called if this shader is bound.
      * 
-     * @see Shader#onBind(GfxState)
+     * @see Shader#onBind(LightGlContext)
      */
     @Override
-    public void onBind(GfxState state) {
+    public void onBind(LightGlContext glContext) {
         // pass current MVP matrix to shader
-        glUniformMatrix4fv(muMvpMatrixHandle, 1, false, state.getMvpMatrix(), 0);
+        glUniformMatrix4fv(muMvpMatrixHandle, 1, false, glContext.getState().getMvpMatrix(), 0);
     }
 
     /**

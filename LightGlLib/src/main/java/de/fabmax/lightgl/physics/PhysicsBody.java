@@ -11,6 +11,7 @@ import com.bulletphysics.linearmath.Transform;
 import javax.vecmath.Vector3f;
 
 import de.fabmax.lightgl.GfxState;
+import de.fabmax.lightgl.LightGlContext;
 import de.fabmax.lightgl.scene.Mesh;
 import de.fabmax.lightgl.scene.TransformGroup;
 
@@ -207,25 +208,25 @@ public class PhysicsBody extends TransformGroup {
      * object.
      */
     @Override
-    public void render(GfxState state) {
+    public void render(LightGlContext glContext) {
         // apply current transformation from physics to parent transform group
         mBufferedTransform.getOpenGLMatrix(mTransformationM);
 
         // render body
-        super.render(state);
+        super.render(glContext);
     }
 
     /**
      * Deletes this body. The underlying mesh is deleted and the body is removed from the physics
      * simulation.
      *
-     * @param state    the current graphics engine state
+     * @param glContext    graphics engine context
      */
     @Override
-    public void delete(GfxState state) {
+    public void delete(LightGlContext glContext) {
         // deletes the mesh
-        super.delete(state);
+        super.delete(glContext);
         // remove body from physics simulation
-        state.getEngine().getPhysicsEngine().removeObject(this);
+        glContext.getEngine().getPhysicsEngine().removeObject(this);
     }
 }

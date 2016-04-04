@@ -122,11 +122,11 @@ public class ShadowShader extends SimpleShader {
     /**
      * Is called if this shader is bound.
      * 
-     * @see SimpleShader#onBind(GfxState)
+     * @see SimpleShader#onBind(LightGlContext)
      */
     @Override
-    public void onBind(GfxState state) {
-        super.onBind(state);
+    public void onBind(LightGlContext glContext) {
+        super.onBind(glContext);
 
         glUniform1i(muShadowSamplerHandle, mShadowPass.getTextureUnit());
         glUniform1f(muMapScaleHandle, 1.4142f / mShadowPass.getShadowMapSize());

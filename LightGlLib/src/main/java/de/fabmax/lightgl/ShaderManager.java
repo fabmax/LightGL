@@ -48,6 +48,8 @@ public class ShaderManager {
     // currently bound shader
     private Shader mBoundShader;
 
+    private boolean mLockShader = false;
+
     /**
      * Creates a new ShaderManager object.
      * 
@@ -67,6 +69,17 @@ public class ShaderManager {
         }
         mShaderHandles.clear();
         mBoundShader = null;
+    }
+
+    /**
+     * Locks the currently bound shader. If the shader is locked calls to
+     * {@link #bindShader(LightGlContext, de.fabmax.lightgl.Shader)} will be ignored. This is useful
+     * for special render passes such as the depth render pass for shadow mapping.
+     *
+     * @param enabled    if true succeeding calls to {@link #bindShader(LightGlContext, Shader)} will be ignored.
+     */
+    public void setLockShader(boolean enabled) {
+        mLockShader = enabled;
     }
     
     /**
@@ -118,12 +131,17 @@ public class ShaderManager {
     /**
      * Binds the specified shader. If the shader is not already bound its onBind() method is called.
      * 
-     * @param state
-     *            current graphics engine state
+     * @param glContext
+     *            graphics engine context
      * @param shader
      *            shader to be bound
      */
-    public void bindShader(GfxState state, Shader shader) {
+    public void bindShader(LightGlContext glContext, Shader shader) {
+        if (mLockShader) {
+            // shader is locked, don't bind the new one
+            return;
+        }
+
         if (shader != null) {
             if (!shader.isValid()) {
                 shader.loadShader(this);
@@ -133,7 +151,7 @@ public class ShaderManager {
                 glUseProgram(shader.getGlHandle());
                 mBoundShader = shader;
                 // notify shader that it was bound
-                shader.onBind(state);
+                shader.onBind(glContext);
             }
         } else {
             // clear used shader

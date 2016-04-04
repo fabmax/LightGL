@@ -183,6 +183,7 @@ public abstract class ShaderAttributeBinder {
         public void bindAttribute(int target) {
             mBuffer.position(mOffset);
             glVertexAttribPointer(target, mSize, mType, false, mStride, mBuffer);
+            mBuffer.position(0);
         }
 
         /**

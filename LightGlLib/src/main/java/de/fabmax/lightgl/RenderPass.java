@@ -10,10 +10,9 @@ public interface RenderPass {
 
     /**
      * Is called from GfxEngine during frame rendering.
-     * 
-     * @param engine
-     *            the graphics engine
+     *
+     * @param context    the graphics engine context
      */
-    public void onRender(GfxEngine engine);
+    public void onRender(LightGlContext context);
 
 }

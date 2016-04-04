@@ -12,9 +12,9 @@ uniform vec3 uLightDirection_worldspace;
 
 attribute vec3 aVertexPosition_modelspace;
 attribute vec3 aVertexNormal_modelspace;
-attribute vec3 aVertexColor;
+attribute vec4 aVertexColor;
 
-varying vec3 vFragmentColor;
+varying vec4 vFragmentColor;
 varying vec3 vEyeDirection_cameraspace;
 varying vec3 vLightDirection_cameraspace;
 varying vec3 vNormal_cameraspace;

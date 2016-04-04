@@ -13,11 +13,10 @@ public interface GfxEngineListener {
      * context is (re-)created. Because of the possibility of GL context recreation this callback
      * might be called more than once, so be sure to drop all your GL related objects and reload
      * them if this method is called another time.
-     * 
-     * @param engine
-     *            the graphics engine
+     *
+     * @param glContext    the graphics engine context
      */
-    public void onLoadScene(GfxEngine engine);
+    public void onLoadScene(LightGlContext glContext);
     
     /**
      * Is called when the GL viewport changes its size.
@@ -29,19 +28,17 @@ public interface GfxEngineListener {
     
     /**
      * Is called every time before a new frame is rendered.
-     * 
-     * @param engine
-     *            the graphics engine
+     *
+     * @param glContext    the graphics engine context
      */
-    public void onRenderFrame(GfxEngine engine);
+    public void onRenderFrame(LightGlContext glContext);
 
     /**
      * Is called every time before the main-pass is rendered. That is after the camera matrices in
      * the engine state are updated and after the pre-pass was rendered.
-     * 
-     * @param engine
-     *            the graphics engine
+     *
+     * @param glContext    the graphics engine context
      */
-    public void onRenderMainPass(GfxEngine engine);
+    public void onRenderMainPass(LightGlContext glContext);
 
 }

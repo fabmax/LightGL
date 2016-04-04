@@ -2,49 +2,53 @@ package de.fabmax.lightgl;
 
 import android.opengl.Matrix;
 
-import static android.opengl.GLES20.GL_TEXTURE0;
-import static android.opengl.GLES20.glClearColor;
-import static android.opengl.GLES20.glViewport;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+
+import de.fabmax.lightgl.util.BufferHelper;
+
+import static android.opengl.GLES20.*;
 
 /**
  * Current graphics engine state.
  * 
- * @author fabmax
+ * @author fth
  * 
  */
 public class GfxState {
 
     public static final int MODEL_MATRIX_STACK_SIZE = 10;
 
-    private final GfxEngine mEngine;
-    private final ShaderManager mShaderManager;
-    private final TextureManager mTextureManager;
-
     // viewport dimensions (x, y, width, height)
-    private final int[] mViewport = new int[4];
+    private final IntBuffer mViewportBuffer = BufferHelper.createIntBuffer(4);
+    private final int[] mViewport = new int[16];
     // projection matrix - holds field of view and mAspect ratio of the camera
+    private final FloatBuffer mProjMatrixBuffer = BufferHelper.createFloatBuffer(16);
     private final float[] mProjMatrix = new float[16];
     // view matrix - holds the camera position
+    private final FloatBuffer mViewMatrixBuffer = BufferHelper.createFloatBuffer(16);
     private final float[] mViewMatrix = new float[16];
     // model matrix stack - holds the geometry transformation
+    private final FloatBuffer mModelMatrixBuffer = BufferHelper.createFloatBuffer(16);
     private final float[][] mModelMatrix = new float[MODEL_MATRIX_STACK_SIZE][16];
     private int mModelMatrixIdx = 0;
     // combined model view projection matrix
     private final float[] mMvpMatrix = new float[16];
+    private final FloatBuffer mMvpMatrixBuffer = BufferHelper.createFloatBuffer(16);
     // temp matrix buffer for calculations
     private final float[] mTempMatrix = new float[16];
     
     private final float[] mBackgroundColor;
-    
-    private boolean mLockShader = false;
+
+    private float mGlobalSaturation = 1.0f;
+
+    private final ShaderManager mShaderManager;
 
     /**
      * Creates a new GfxState object.
      */
-    protected GfxState(GfxEngine engine, ShaderManager shaderMgr, TextureManager textureMgr) {
-        mEngine = engine;
-        mShaderManager = shaderMgr;
-        mTextureManager = textureMgr;
+    protected GfxState(ShaderManager shaderManager) {
+        mShaderManager = shaderManager;
 
         Matrix.setIdentityM(mProjMatrix, 0);
         Matrix.setIdentityM(mViewMatrix, 0);
@@ -55,73 +59,9 @@ public class GfxState {
     }
 
     /**
-     * Returns the graphics engine this state belongs to.
-     * 
-     * @return the graphics engine.
-     */
-    public GfxEngine getEngine() {
-        return mEngine;
-    }
-
-    /**
-     * Binds the specified texture to texture unit 0.
-     * 
-     * @param texture
-     *            the texture to be bound
-     */
-    public void bindTexture(Texture texture) {
-        mTextureManager.bindTexture(texture, GL_TEXTURE0);
-    }
-
-    /**
-     * Binds the specified texture to the given texture unit.
-     * 
-     * @param texture
-     *            the texture to be bound
-     * @param texUnit
-     *            the texture unit to use
-     */
-    public void bindTexture(Texture texture, int texUnit) {
-        mTextureManager.bindTexture(texture, texUnit);
-    }
-    
-    /**
-     * Locks the currently bound shader. If the shader is locked calls to
-     * {@link #bindShader(Shader)} will be ignored. This is useful for special render passes such as
-     * the depth render pass for shadow mapping.
-     * 
-     * @param enabled
-     *            if true succeeding calls to {@link #bindShader(Shader)} will be ignored.
-     */
-    public void setLockShader(boolean enabled) {
-        mLockShader = enabled;
-    }
-
-    /**
-     * Binds the specified shader that is to be used for successive rendering operations.
-     * 
-     * @param shader
-     *            the shader to be used for successive primitive rendering.
-     */
-    public void bindShader(Shader shader) {
-        if (!mLockShader) {
-            mShaderManager.bindShader(this, shader);
-        }
-    }
-
-    /**
-     * Returns the currently bound shader.
-     * 
-     * @return the currently bound shader
-     */
-    public Shader getBoundShader() {
-        return mShaderManager.getBoundShader();
-    }
-
-    /**
      * Resets the current engine state. This method is called before a new frame is rendered.
      */
-    public void reset() {
+    public void reset(LightGlContext context) {
         // reset matrices
         mModelMatrixIdx = 0;
         Matrix.setIdentityM(mModelMatrix[0], 0);
@@ -131,7 +71,7 @@ public class GfxState {
         
         // unbind shader, is needed so that Shader#onBind() is called on next frame render
         // if only one shader is used
-        mShaderManager.bindShader(this, null);
+        mShaderManager.bindShader(context, null);
     }
 
     /**
@@ -149,6 +89,14 @@ public class GfxState {
      */
     public void resetBackgroundColor() {
         glClearColor(mBackgroundColor[0], mBackgroundColor[1], mBackgroundColor[2], 1.0f);
+    }
+
+    public float getGlobalSaturation() {
+        return mGlobalSaturation;
+    }
+
+    public void setGloabalSaturation(float globalSaturation) {
+        mGlobalSaturation = globalSaturation;
     }
 
     /**
@@ -173,16 +121,29 @@ public class GfxState {
     public int[] getViewport() {
         return mViewport;
     }
+
+    /**
+     * Returns the viewport as an IntBuffer. The returned buffer is not kept in sync with the
+     * viewport. Recall this method to update the buffer content.
+     * 
+     * @see #getViewport()
+     * @return the viewport as an IntBuffer
+     */
+    public IntBuffer getViewportAsBuffer() {
+        mViewportBuffer.put(mViewport);
+        mViewportBuffer.flip();
+        return mViewportBuffer;
+    }
     
     /**
-     * Sets the viewport dimensions. This is called automatically by
-     * {@link GfxEngine#onSurfaceChanged(javax.microedition.khronos.opengles.GL10, int, int)}
+     * Updates the viewport dimensions.
      */
     public void setViewport(int x, int y, int width, int height) {
         mViewport[0] = x;
         mViewport[1] = y;
         mViewport[2] = width;
         mViewport[3] = height;
+
         glViewport(x, y, width, height);
     }
 
@@ -222,6 +183,19 @@ public class GfxState {
     }
 
     /**
+     * Returns the current MVP matrix as an FloatBuffer. The returned buffer is not kept in sync with the
+     * MVP matrix. Recall this method to update the buffer content.
+     * 
+     * @see #getMvpMatrix()
+     * @return the MVP matrix as an FloatBuffer
+     */
+    public FloatBuffer getMvpMatrixAsBuffer() {
+        mMvpMatrixBuffer.put(mMvpMatrix);
+        mMvpMatrixBuffer.flip();
+        return mMvpMatrixBuffer;
+    }
+
+    /**
      * Returns the current view matrix. The matrix is returned by reference and changes to it will
      * be reflected immediately. However, for the MVP matrix to reflect the changes
      * {@link GfxState#matrixUpdate()} must be called.
@@ -230,6 +204,19 @@ public class GfxState {
      */
     public float[] getViewMatrix() {
         return mViewMatrix;
+    }
+
+    /**
+     * Returns the current view matrix as an FloatBuffer. The returned buffer is not kept in sync with the
+     * view matrix. Recall this method to update the buffer content.
+     * 
+     * @see #getViewMatrix()
+     * @return the view matrix as an FloatBuffer
+     */
+    public FloatBuffer getViewMatrixAsBuffer() {
+        mViewMatrixBuffer.put(mViewMatrix);
+        mViewMatrixBuffer.flip();
+        return mViewMatrixBuffer;
     }
 
     /**
@@ -244,12 +231,38 @@ public class GfxState {
     }
 
     /**
+     * Returns the current projection matrix as an FloatBuffer. The returned buffer is not kept in sync with the
+     * projection matrix. Recall this method to update the buffer content.
+     * 
+     * @see #getProjectionMatrix()
+     * @return the projection matrix as an FloatBuffer
+     */
+    public FloatBuffer getProjectionMatrixAsBuffer() {
+        mProjMatrixBuffer.put(mProjMatrix);
+        mProjMatrixBuffer.flip();
+        return mProjMatrixBuffer;
+    }
+
+    /**
      * Returns the current model matrix. The matrix is returned by reference and changes to it
      * will be reflected immediately. However, for the MVP matrix to reflect the changes
      * {@link GfxState#matrixUpdate()} must be called.
      */
     public float[] getModelMatrix() {
         return mModelMatrix[mModelMatrixIdx];
+    }
+
+    /**
+     * Returns the current model matrix as an FloatBuffer. The returned buffer is not kept in sync with the
+     * model matrix. Recall this method to update the buffer content.
+     * 
+     * @see #getModelMatrix()
+     * @return the model matrix as an FloatBuffer
+     */
+    public FloatBuffer getModelMatrixAsBuffer() {
+        mModelMatrixBuffer.put(mModelMatrix[mModelMatrixIdx]);
+        mModelMatrixBuffer.flip();
+        return mModelMatrixBuffer;
     }
 
     /**

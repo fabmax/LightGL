@@ -9,19 +9,17 @@ precision mediump float;
 uniform sampler2D uTextureSampler;
 
 varying vec2 vTexCoord;
-varying vec3 vDiffuseLightColor;
-varying vec3 vSpecularLightColor;
+varying vec4 vDiffuseLightColor;
+varying vec4 vSpecularLightColor;
 
 void main() {
 	// Get base fragment color from texture
-	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
-	
-	vec3 materialAmbientColor = fragmentColor * vec3(0.2, 0.2, 0.2);
-	vec3 materialDiffuseColor = fragmentColor * vDiffuseLightColor;
-	vec3 materialSpecularColor = vSpecularLightColor;
+	vec4 fragmentColor = texture2D(uTextureSampler, vTexCoord);
+
+	vec4 materialAmbientColor = fragmentColor * vec4(0.4, 0.4, 0.4, 1.0);
+	vec4 materialDiffuseColor = fragmentColor * vDiffuseLightColor;
+	vec4 materialSpecularColor = vSpecularLightColor;
 
 	// compute output color
-	gl_FragColor.rgb = materialAmbientColor +
-					   materialDiffuseColor +
-					   materialSpecularColor;
+	gl_FragColor = materialAmbientColor + materialDiffuseColor + materialSpecularColor;
 }

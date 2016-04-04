@@ -10,7 +10,7 @@ precision mediump float;
 uniform float uShininess;
 uniform vec3 uLightColor;
 
-varying vec3 vFragmentColor;
+varying vec4 vFragmentColor;
 varying vec3 vEyeDirection_cameraspace;
 varying vec3 vLightDirection_cameraspace;
 varying vec3 vNormal_cameraspace;
@@ -28,13 +28,11 @@ void main() {
 	vec3 r = reflect(-l, n);
 	// Cosine of the angle between the eye vector and the reflect vector
 	float cosAlpha = clamp(dot(e, r), 0.0, 1.0);
-	
-	vec3 materialAmbientColor = vFragmentColor * vec3(0.2, 0.2, 0.2);
-	vec3 materialDiffuseColor = vFragmentColor * uLightColor * cosTheta;
-	vec3 materialSpecularColor = uLightColor * pow(cosAlpha, uShininess);
+
+	vec4 materialAmbientColor = vFragmentColor * vec4(0.4, 0.4, 0.4, 1.0);
+	vec4 materialDiffuseColor = vFragmentColor * vec4(uLightColor, 1.0) * (cosTheta + 0.2);
+	vec4 materialSpecularColor = vec4(uLightColor, 0.0) * pow(cosAlpha, uShininess);
 
 	// compute output color
-	gl_FragColor.rgb = materialAmbientColor +
-					   materialDiffuseColor +
-					   materialSpecularColor;
+	gl_FragColor = materialAmbientColor + materialDiffuseColor + materialSpecularColor;
 }

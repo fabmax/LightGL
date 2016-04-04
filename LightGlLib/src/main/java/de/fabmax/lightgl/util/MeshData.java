@@ -5,7 +5,7 @@ package de.fabmax.lightgl.util;
  * MeshConstructionInfo holds all information needed to create a
  * {@link de.fabmax.lightgl.scene.Mesh}. Only {@link #indices} and {@link #positions} are
  * required to create a mesh. All other information is optional. Moreover the
- * {@link de.fabmax.lightgl.shading.Shader}, used to render the mesh, must support texturing or coloring
+ * {@link de.fabmax.lightgl.Shader}, used to render the mesh, must support texturing or coloring
  * in order to reflect additional mesh information like texture coordinates or vertex colors.
  *
  * @author fth

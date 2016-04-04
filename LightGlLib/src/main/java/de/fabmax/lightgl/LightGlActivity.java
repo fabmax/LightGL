@@ -122,34 +122,34 @@ public abstract class LightGlActivity extends Activity implements GfxEngineListe
      * scene or do other dynamic stuff. However, your should call super.onRenderFrame() when
      * overriding this method.
      *
-     * @see #onRenderMainPass(de.fabmax.lightgl.GfxEngine)
-     * @see de.fabmax.lightgl.GfxEngineListener#onRenderFrame(de.fabmax.lightgl.GfxEngine)
+     * @see #onRenderMainPass(LightGlContext)
+     * @see de.fabmax.lightgl.GfxEngineListener#onRenderFrame(LightGlContext)
      *
-     * @param engine the graphics engine
+     * @param glContext    the graphics engine context
      */
     @Override
-    public void onRenderFrame(GfxEngine engine) {
+    public void onRenderFrame(LightGlContext glContext) {
         // calculate frames per second and log them every second
         if (mLogFps) {
             long t = System.currentTimeMillis();
             if(t > mLastFpsOut + 1000) {
                 mLastFpsOut = t;
-                Log.d(TAG, "Fps: " + engine.getFps());
+                Log.d(TAG, "Fps: " + glContext.getEngine().getFps());
             }
         }
     }
 
     /**
      * Called every time before the main-pass is rendered. The default implementation does nothing.
-     * In contrast to {@link #onRenderFrame(GfxEngine)} this method is called after the pre render
+     * In contrast to {@link #onRenderFrame(LightGlContext)} this method is called after the pre render
      * pass is run (e.g. {@link de.fabmax.lightgl.ShadowRenderPass} and the camera is set up.
      *
-     * @see de.fabmax.lightgl.GfxEngineListener#onRenderMainPass(de.fabmax.lightgl.GfxEngine)
+     * @see de.fabmax.lightgl.GfxEngineListener#onRenderMainPass(LightGlContext)
      *
-     * @param engine the graphics engine
+     * @param glContext    the graphics engine
      */
     @Override
-    public void onRenderMainPass(GfxEngine engine) {
+    public void onRenderMainPass(LightGlContext glContext) {
         // default implementation does nothing
     }
 

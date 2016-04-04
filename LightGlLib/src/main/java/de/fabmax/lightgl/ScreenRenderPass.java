@@ -18,14 +18,11 @@ public class ScreenRenderPass implements RenderPass {
      * Renders the scene directly to the screen.
      */
     @Override
-    public void onRender(GfxEngine engine) {
-        // clear screen
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+    public void onRender(LightGlContext glContext) {
         // render scene
-        Node scene = engine.getScene();
+        Node scene = glContext.getEngine().getScene();
         if(scene != null) {
-            scene.render(engine.getState());
+            scene.render(glContext);
         }
     }
 

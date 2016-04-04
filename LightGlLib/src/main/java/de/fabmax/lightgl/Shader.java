@@ -50,17 +50,15 @@ public abstract class Shader extends GlObject {
      * Is called if the shader is bound. Implementations should update all their shader uniforms
      * here.
      * 
-     * @param state
-     *            Current graphics engine state
+     * @param glContext    graphics engine context
      */
-    protected abstract void onBind(GfxState state);
+    protected abstract void onBind(LightGlContext glContext);
     
     /**
      * Is called if the MVP matrix has changed. Implementations should update their transform matrix
      * uniforms here.
-     * 
-     * @param state
-     *            Current graphics engine state
+     *
+     * @param state    graphics engine state
      */
     public abstract void onMatrixUpdate(GfxState state);
     

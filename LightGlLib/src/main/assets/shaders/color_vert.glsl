@@ -7,9 +7,9 @@
 uniform mat4 uMvpMatrix;
 
 attribute vec3 aVertexPosition_modelspace;
-attribute vec3 aVertexColor;
+attribute vec4 aVertexColor;
 
-varying vec3 vFragmentColor;
+varying vec4 vFragmentColor;
 
 void main() {
 	vFragmentColor = aVertexColor;

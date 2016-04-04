@@ -69,16 +69,14 @@ void main() {
 	vec3 r = reflect(-l, n);
 	// Cosine of the angle between the eye vector and the reflect vector
 	float cosAlpha = clamp(dot(e, r), 0.0, 1.0);
-	
-	// useful for debugging: vec3 fragmentColor = texture2D(uShadowSampler, vShadowCoord.xy).rgb;
-	//vec3 fragmentColor = texture2D(uShadowSampler, vShadowCoord.xy).rgb;
-	//fragmentColor.b = clamp((vShadowCoord.z - 0.005) / vShadowCoord.w, 0.0, 1.0);
-	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
-	
-	vec3 materialAmbientColor = fragmentColor * vec3(0.2, 0.2, 0.2);
-	vec3 materialDiffuseColor = fragmentColor * uLightColor * cosTheta;
-	vec3 materialSpecularColor = uLightColor * pow(cosAlpha, uShininess);
+
+	vec4 fragmentColor = texture2D(uTextureSampler, vTexCoord);
+
+	// Ambient color is the fragment color in dark
+	vec4 materialAmbientColor = fragmentColor * vec4(0.4, 0.4, 0.4, 1.0);
+	vec4 materialDiffuseColor = fragmentColor * vec4(uLightColor, 1.0) * (cosTheta + 0.2);
+	vec4 materialSpecularColor = vec4(uLightColor, 0.0) * pow(cosAlpha, uShininess);
 
 	// compute output color
-	gl_FragColor.rgb = materialAmbientColor + (materialDiffuseColor + materialSpecularColor ) * visibility;
+	gl_FragColor = materialAmbientColor + (materialDiffuseColor + materialSpecularColor) * visibility;
 }

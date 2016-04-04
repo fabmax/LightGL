@@ -1,8 +1,8 @@
 package de.fabmax.lightgl.util;
 
-import java.nio.FloatBuffer;
+import android.util.Log;
 
-import de.fabmax.lightgl.platform.Log;
+import java.nio.FloatBuffer;
 
 /**
  * A buffer containing vertex data. Vertices always have a position. Moreover they can have normals, texture coordinates
@@ -11,6 +11,8 @@ import de.fabmax.lightgl.platform.Log;
  * @author fth
 */
 public class PackedVertexBuffer {
+
+    private static final String TAG = "PackedVertexBuffer";
 
     public final int vertexCount;
     public final int offsetPositions;
@@ -77,7 +79,7 @@ public class PackedVertexBuffer {
 
         int vertCnt = builder.getVertexCount();
         if (vertCnt > vertexCount) {
-            Log.w("Supplied mesh data does not fit in this buffer, truncating...");
+            Log.w(TAG, "Supplied mesh data does not fit in this buffer, truncating...");
             vertCnt = vertexCount;
         }
 
@@ -126,7 +128,7 @@ public class PackedVertexBuffer {
 
         int vertCnt = meshData.getVertexCount();
         if (vertCnt > vertexCount) {
-            Log.w("Supplied mesh data does not fit in this buffer, truncating...");
+            Log.w(TAG, "Supplied mesh data does not fit in this buffer, truncating...");
             vertCnt = vertexCount;
         }
 
@@ -156,10 +158,10 @@ public class PackedVertexBuffer {
     public void setVertexAt(int index, float[] position, int posOff, float[] normal, int normOff,
                             float[] texCoord, int texOff, float[] color, int colOff) {
         if (!hasTextureCoordinates() && texCoord!= null) {
-            Log.w("Normal data supplied although this vertex buffer has no normals, ignoring...");
+            Log.w(TAG, "Normal data supplied although this vertex buffer has no normals, ignoring...");
         }
         if (!hasColors() && color != null) {
-            Log.w("Normal data supplied although this vertex buffer has no normals, ignoring...");
+            Log.w(TAG, "Normal data supplied although this vertex buffer has no normals, ignoring...");
         }
         if (index < 0 || index >= vertexCount) {
             throw new ArrayIndexOutOfBoundsException("Invalid vertex index specified: " + index +

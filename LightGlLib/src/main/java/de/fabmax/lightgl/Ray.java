@@ -26,8 +26,8 @@ public class Ray {
      * @see Camera#getPickRay(int[], float, float, Ray)
      */
     public Ray() {
-        origin = new float[] { 0.0f, 0.0f, 0.0f };
-        direction = new float[] { 1.0f, 0.0f, 0.0f };
+        origin = new float[] { 0.0f, 0.0f, 0.0f, 1.0f };
+        direction = new float[] { 1.0f, 0.0f, 0.0f, 0.0f };
     }
 
     /**
@@ -37,6 +37,7 @@ public class Ray {
         direction[0] = x;
         direction[1] = y;
         direction[2] = z;
+        direction[3] = 0;
     }
 
     /**
@@ -46,6 +47,7 @@ public class Ray {
         origin[0] = x;
         origin[1] = y;
         origin[2] = z;
+        origin[3] = 1;
     }
 
 }

@@ -26,17 +26,17 @@ public class ShadowRenderPass implements RenderPass {
     /**
      * Renders a shadow map for a single light.
      * 
-     * @see RenderPass#onRender(GfxEngine)
+     * @see RenderPass#onRender(LightGlContext)
      */
     @Override
-    public void onRender(GfxEngine engine) {
-        checkCreateGlObjects(engine);
+    public void onRender(LightGlContext glContext) {
+        checkCreateGlObjects(glContext);
         
-        if (engine.getLights().size() == 0) {
+        if (glContext.getEngine().getLights().size() == 0) {
             // there is no light to cast a shadow
             return;
         }
-        Light l = engine.getLights().get(0);
+        Light l = glContext.getEngine().getLights().get(0);
 
         // compute view matrix for current light direction
         computeCamClipSize(l);
@@ -44,36 +44,35 @@ public class ShadowRenderPass implements RenderPass {
         mShadowCamera.computeProjectionMatrix(mShadowProjMatrix);
 
         // setup engine state
-        GfxState state = engine.getState();
-        state.bindShader(mDepthShader);
-        state.setLockShader(true);
-        mShadowCamera.setup(state);
+        glContext.getShaderManager().bindShader(glContext, mDepthShader);
+        glContext.getShaderManager().setLockShader(true);
+        mShadowCamera.setup(glContext.getState());
         
         // set the depth texture clear color values to maximum depth
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         
         // render scene to the texture
-        mRenderer.renderToTexture(engine, engine.getScene());
+        mRenderer.renderToTexture(glContext, glContext.getEngine().getScene());
 
         // cleanup
-        state.setLockShader(false);
-        engine.getTextureManager().bindTexture(mRenderer.getTexture(), mTextureUnit);
-        engine.getState().resetBackgroundColor();
+        glContext.getShaderManager().setLockShader(false);
+        glContext.getTextureManager().bindTexture(mRenderer.getTexture(), mTextureUnit);
+        glContext.getState().resetBackgroundColor();
     }
     
     /**
      * Checks if the GL objects (texture renderer, shader, etc.) are created and if not creates them.
      */
-    private void checkCreateGlObjects(GfxEngine engine) {
+    private void checkCreateGlObjects(LightGlContext glContext) {
         if (mDepthShader == null || mRenderer == null) {
-            mDepthShader = new DepthShader(engine.getShaderManager());
+            mDepthShader = new DepthShader(glContext.getShaderManager());
             mRenderer = new TextureRenderer();
             mRenderer.setTextureSize(mShadowMapSz, mShadowMapSz);
             
             // initialize the depth texture with maximum depth value
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            mRenderer.renderToTexture(engine, null);
-            engine.getState().resetBackgroundColor();
+            mRenderer.renderToTexture(glContext, null);
+            glContext.getState().resetBackgroundColor();
             
             // set texture renderer border to 1 to reduce artifacts
             mRenderer.setBorder(1);

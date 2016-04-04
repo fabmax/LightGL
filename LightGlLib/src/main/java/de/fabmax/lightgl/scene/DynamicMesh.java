@@ -1,20 +1,19 @@
 package de.fabmax.lightgl.scene;
 
 
-import static de.fabmax.lightgl.platform.GL.GL_TRIANGLES;
-import static de.fabmax.lightgl.platform.GL.glDrawElements;
-import static de.fabmax.lightgl.platform.GL.glGetError;
+import android.util.Log;
 
 import java.nio.ShortBuffer;
 
 import de.fabmax.lightgl.LightGlContext;
-import de.fabmax.lightgl.platform.Log;
-import de.fabmax.lightgl.shading.ShaderAttributeBinder;
+import de.fabmax.lightgl.ShaderAttributeBinder;
 import de.fabmax.lightgl.util.BufferHelper;
 import de.fabmax.lightgl.util.IntList;
 import de.fabmax.lightgl.util.MeshBuilder;
 import de.fabmax.lightgl.util.MeshData;
 import de.fabmax.lightgl.util.PackedVertexBuffer;
+
+import static android.opengl.GLES20.*;
 
 /**
  * A dynamic (modifiable) mesh.
@@ -22,6 +21,8 @@ import de.fabmax.lightgl.util.PackedVertexBuffer;
  * @author fth
  */
 public class DynamicMesh extends Mesh {
+
+    private static final String TAG = "DynamicMesh";
 
     protected final int mGlPrimitiveType;
 
@@ -120,7 +121,7 @@ public class DynamicMesh extends Mesh {
         int len = indices.size();
         if (len > mIndexBuffer.capacity()) {
             len  = mIndexBuffer.capacity();
-            Log.w("Supplied mesh data does not fit in this DynamicMesh, truncating...");
+            Log.w(TAG, "Supplied mesh data does not fit in this DynamicMesh, truncating...");
         }
         mIndexBuffer.limit(len);
         indices.copyToBuffer(mIndexBuffer);
@@ -135,7 +136,7 @@ public class DynamicMesh extends Mesh {
         int len = data.indices.length;
         if (len > mIndexBuffer.capacity()) {
             len  = mIndexBuffer.capacity();
-            Log.w("Supplied mesh data does not fit in this DynamicMesh, truncating...");
+            Log.w(TAG, "Supplied mesh data does not fit in this DynamicMesh, truncating...");
         }
         mIndexBuffer.limit(len);
         //mIndexBuffer.put(data.indices, 0, len);
@@ -151,6 +152,6 @@ public class DynamicMesh extends Mesh {
 
     @Override
     protected void drawElements(LightGlContext context) {
-        glDrawElements(mGlPrimitiveType, mIndexBuffer);
+        glDrawElements(mGlPrimitiveType, mIndexBuffer.remaining(), GL_UNSIGNED_SHORT, mIndexBuffer);
     }
 }

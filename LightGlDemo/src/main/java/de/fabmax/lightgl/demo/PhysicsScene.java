@@ -5,7 +5,8 @@ import android.util.Log;
 
 import de.fabmax.lightgl.GfxEngine;
 import de.fabmax.lightgl.Light;
-import de.fabmax.lightgl.LigthtGlActivity;
+import de.fabmax.lightgl.LightGlActivity;
+import de.fabmax.lightgl.LightGlContext;
 import de.fabmax.lightgl.Shader;
 import de.fabmax.lightgl.SimpleShader;
 import de.fabmax.lightgl.Texture;
@@ -23,7 +24,7 @@ import de.fabmax.lightgl.util.MeshFactory;
  * @author fabmax
  *
  */
-public class PhysicsScene extends LigthtGlActivity {
+public class PhysicsScene extends LightGlActivity {
 
     private static final String TAG = "PhysicsScene";
 
@@ -57,8 +58,8 @@ public class PhysicsScene extends LigthtGlActivity {
      * Called before a frame is rendered.
      */
     @Override
-    public void onRenderFrame(GfxEngine engine) {
-        super.onRenderFrame(engine);
+    public void onRenderFrame(LightGlContext glContext) {
+        super.onRenderFrame(glContext);
 
         BufferedTouchListener.Pointer pt = mTouchHandler.getFirstPointer();
         if (pt.isValid()) {
@@ -69,7 +70,7 @@ public class PhysicsScene extends LigthtGlActivity {
 
             if (!pt.isDown() && Math.abs(pt.getOverallDX()) < 10 && Math.abs(pt.getOverallDY()) < 10) {
                 // spawn a new cube on tap
-                spawnCube(engine);
+                spawnCube(glContext);
             }
             pt.recycle();
         }
@@ -78,10 +79,10 @@ public class PhysicsScene extends LigthtGlActivity {
         float x = 20 * (float) Math.sin(mTheta) * (float) Math.sin(mPhi);
         float z = 20 * (float) Math.sin(mTheta) * (float) Math.cos(mPhi);
         float y = 20 * (float) Math.cos(mTheta);
-        engine.getCamera().setPosition(x, y, z);
+        glContext.getEngine().getCamera().setPosition(x, y, z);
     }
 
-    private void spawnCube(GfxEngine engine) {
+    private void spawnCube(LightGlContext glContext) {
         // add a color cube
         Mesh boxMesh = MeshFactory.createStaticMesh(MeshFactory.createColorCube(1, 1, 1, null));
         //Mesh boxMesh = MeshFactory.createCylinder(0.5f, 1, 20);
@@ -89,7 +90,7 @@ public class PhysicsScene extends LigthtGlActivity {
         PhysicsBody cube = PhysicsFactory.createBox(boxMesh, 1, 1, 1, 1);
         cube.setPosition((float)Math.random(), 10, (float)Math.random());
         mScene.addChild(cube);
-        engine.getPhysicsEngine().addObject(cube);
+        glContext.getEngine().getPhysicsEngine().addObject(cube);
 
         Log.d(TAG, "Cube count: " + ++mCubeCount);
     }
@@ -98,28 +99,28 @@ public class PhysicsScene extends LigthtGlActivity {
      * Called on startup after the GL context is created.
      */
     @Override
-    public void onLoadScene(GfxEngine engine) {
-        engine.getState().setBackgroundColor(0, 0, 0.2f);
-        engine.getPhysicsEngine().initSimulation(true);
+    public void onLoadScene(LightGlContext glContext) {
+        glContext.getState().setBackgroundColor(0, 0, 0.2f);
+        glContext.getEngine().getPhysicsEngine().initSimulation(true);
 
         // add a directional light
         Light light = Light.createDirectionalLight(1, 1, 1, 0.7f, 0.7f, 0.7f);
-        engine.addLight(light);
+        glContext.getEngine().addLight(light);
 
-        mCubeMaterial = SimpleShader.createPhongColorShader(engine.getShaderManager());
+        mCubeMaterial = SimpleShader.createPhongColorShader(glContext.getShaderManager());
         mScene = new Group();
-        engine.setScene(mScene);
+        glContext.getEngine().setScene(mScene);
 
         // add a color cube as floor
         float floorX = 100;
         float floorY = 1;
         float floorZ = 100;
-        Texture tex = engine.getTextureManager().createTextureFromAsset("textures/gray.png");
+        Texture tex = glContext.getTextureManager().createTextureFromAsset("textures/gray.png");
         Mesh boxMesh = MeshFactory.createStaticMesh(MeshFactory.createColorCube(floorX, floorY, floorZ, null));
-        boxMesh.setShader(SimpleShader.createPhongTextureShader(engine.getShaderManager(), tex));
+        boxMesh.setShader(SimpleShader.createPhongTextureShader(glContext.getShaderManager(), tex));
         PhysicsBody floor = PhysicsFactory.createBox(boxMesh, floorX, floorY, floorZ, 0);
         floor.setPosition(0, -5, 0);
         mScene.addChild(floor);
-        engine.getPhysicsEngine().addObject(floor);
+        glContext.getEngine().getPhysicsEngine().addObject(floor);
     }
 }

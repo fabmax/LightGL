@@ -5,8 +5,9 @@ import android.os.Bundle;
 import de.fabmax.lightgl.Camera;
 import de.fabmax.lightgl.GfxEngine;
 import de.fabmax.lightgl.Light;
+import de.fabmax.lightgl.LightGlActivity;
+import de.fabmax.lightgl.LightGlContext;
 import de.fabmax.lightgl.LightGlException;
-import de.fabmax.lightgl.LigthtGlActivity;
 import de.fabmax.lightgl.ShadowRenderPass;
 import de.fabmax.lightgl.ShadowShader;
 import de.fabmax.lightgl.Texture;
@@ -22,7 +23,7 @@ import de.fabmax.lightgl.util.ObjLoader;
  * @author fabmax
  *
  */
-public class SimpleScene extends LigthtGlActivity {
+public class SimpleScene extends LightGlActivity {
 
     private static final String STATE_ROT_X = "state_rot_x";
     private static final String STATE_ROT_Y = "state_rot_y";
@@ -59,8 +60,8 @@ public class SimpleScene extends LigthtGlActivity {
      * Called before a frame is rendered.
      */
     @Override
-    public void onRenderFrame(GfxEngine engine) {
-        super.onRenderFrame(engine);
+    public void onRenderFrame(LightGlContext glContext) {
+        super.onRenderFrame(glContext);
 
         // rotate the camera
         BufferedTouchListener.Pointer pt = mTouchHandler.getPointers()[0];
@@ -79,32 +80,32 @@ public class SimpleScene extends LigthtGlActivity {
      * Called on startup after the GL context is created.
      */
     @Override
-    public void onLoadScene(GfxEngine engine) {
-        engine.getState().setBackgroundColor(0, 0, 0.2f);
-        Camera cam = engine.getCamera();
+    public void onLoadScene(LightGlContext glContext) {
+        glContext.getState().setBackgroundColor(0, 0, 0.2f);
+        Camera cam = glContext.getEngine().getCamera();
         cam.setPosition(0, 120, 180);
         cam.animatePositionTo(0, 12, 18);
         
         // add a directional light
         Light light = Light.createDirectionalLight(1, 1, 1, 0.7f, 0.7f, 0.7f);
-        engine.addLight(light);
+        glContext.getEngine().addLight(light);
 
         // enable shadow rendering
         ShadowRenderPass shadow = new ShadowRenderPass();
-        engine.setPreRenderPass(shadow);
+        glContext.getEngine().setPreRenderPass(shadow);
         
         try {
             // create scene
             mScene = new TransformGroup();
-            engine.setScene(mScene);
+            glContext.getEngine().setScene(mScene);
             
             // load model and add it to the scene
             Mesh scene = ObjLoader.loadObj(this, "models/room_thickwalls.obj");
             mScene.addChild(scene);
             
             // set model material
-            Texture tex = engine.getTextureManager().createTextureFromAsset("textures/stone_wall.png");
-            scene.setShader(ShadowShader.createPhongShadowShader(engine.getShaderManager(), tex, shadow));
+            Texture tex = glContext.getTextureManager().createTextureFromAsset("textures/stone_wall.png");
+            scene.setShader(ShadowShader.createPhongShadowShader(glContext.getShaderManager(), tex, shadow));
         } catch (LightGlException e) {
             e.printStackTrace();
         }

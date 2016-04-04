@@ -124,15 +124,12 @@ public class TextureRenderer {
      * Renders the specified Node to the texture using the current engine state. The image that is
      * rendered into the texture will have the aspect ratio of the current viewport - not the aspect
      * ratio of the texture itself.
-     * 
-     * @param engine
-     *            graphics engine
-     * @param nodeToRender
-     *            node to be rendered to the texture
+     *
+     * @param glContext         graphics engine
+     * @param nodeToRender    node to be rendered to the texture
      */
-    public void renderToTexture(GfxEngine engine, Node nodeToRender) {
-        GfxState state = engine.getState();
-        bindFramebuffer(engine);
+    public void renderToTexture(LightGlContext glContext, Node nodeToRender) {
+        bindFramebuffer(glContext);
 
         // set viewport size to the size of our target texture
         // do not use GfxState#setViewport for this as this would affect the camera
@@ -142,11 +139,11 @@ public class TextureRenderer {
 
         // draw scene
         if (nodeToRender != null) {
-            nodeToRender.render(state);
+            nodeToRender.render(glContext);
         }
 
         // restore normal state
-        int[] vp = state.getViewport();
+        int[] vp = glContext.getState().getViewport();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
         glViewport(vp[0], vp[1], vp[2], vp[3]);
@@ -155,12 +152,11 @@ public class TextureRenderer {
     /**
      * Checks the size of the target texture and binds the framebuffer
      * 
-     * @param engine
-     *            graphics engine
+     * @param glContext    graphics engine context
      */
-    private void bindFramebuffer(GfxEngine engine) {
+    private void bindFramebuffer(LightGlContext glContext) {
         if (mTargetTex == null || !mTargetTex.isValid()) {
-            createTexture(engine);
+            createTexture(glContext.getTextureManager());
         }
         
         if (mFramebufferHandle == 0) {
@@ -175,7 +171,7 @@ public class TextureRenderer {
             mHeight = mNewHeight;
 
             // create / resize target texture
-            engine.getState().bindTexture(mTargetTex);
+            glContext.getTextureManager().bindTexture(mTargetTex);
             GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES20.GL_RGB, mWidth, mHeight, 0,
                     GLES20.GL_RGB, GLES20.GL_UNSIGNED_BYTE, null);
 
@@ -206,9 +202,9 @@ public class TextureRenderer {
     /**
      * Creates the target texture.
      */
-    private void createTexture(GfxEngine engine) {
+    private void createTexture(TextureManager textureManager) {
         // create the target texture
-        mTargetTex = engine.getTextureManager().createEmptyTexture();
+        mTargetTex = textureManager.createEmptyTexture();
         TextureProperties props = new TextureProperties();
         props.magFilter = MagFilterMethod.LINEAR;
         props.minFilter = MinFilterMethod.LINEAR;

@@ -1,15 +1,12 @@
 package de.fabmax.lightgl.scene;
 
-import static de.fabmax.lightgl.platform.GL.GL_LINES;
-import static de.fabmax.lightgl.platform.GL.GL_POINTS;
-import static de.fabmax.lightgl.platform.GL.glDrawElements;
-import static de.fabmax.lightgl.platform.GL.glLineWidth;
-import static de.fabmax.lightgl.platform.GL.glPointSize;
+import android.opengl.GLES20;
+
+import de.fabmax.lightgl.ColorShader;
 import de.fabmax.lightgl.LightGlContext;
-import de.fabmax.lightgl.shading.ShaderBuilder;
-import de.fabmax.lightgl.shading.ShaderBuilder.ColorModel;
-import de.fabmax.lightgl.shading.ShaderBuilder.LightModel;
 import de.fabmax.lightgl.util.Color;
+
+import static android.opengl.GLES20.*;
 
 /**
  * Created by fth on 24.02.14.
@@ -17,18 +14,12 @@ import de.fabmax.lightgl.util.Color;
 public class DynamicLineMesh extends DynamicMesh {
 
     private float mLineWidth = 1.0f;
-    private float mPointSize = 3.0f;
-    private boolean mRenderVerts = false;
-    
     private final float[] vertexBuf = new float[7];
 
     public DynamicLineMesh(int maxLines, LightGlContext glContext) {
         super(maxLines * 2, maxLines * 2, false, false, true, GL_LINES);
 
-        setShader(ShaderBuilder.getInstance()
-	            	.setColorModel(ColorModel.VERTEX_COLOR)
-	            	.setLightModel(LightModel.NO_LIGHTING)
-	            	.build(glContext));
+        setShader(new ColorShader(glContext.getShaderManager()));
     }
 
     public float getLineWidth() {
@@ -37,22 +28,6 @@ public class DynamicLineMesh extends DynamicMesh {
 
     public void setLineWidth(float lineWidth) {
         this.mLineWidth = lineWidth;
-    }
-
-    public float getPointSize() {
-        return mPointSize;
-    }
-
-    public void setPointSize(float pointSize) {
-        this.mPointSize = pointSize;
-    }
-
-    public boolean isRenderVertices() {
-        return mRenderVerts;
-    }
-
-    public void setRenderVertices(boolean renderVerts) {
-        this.mRenderVerts = renderVerts;
     }
 
     public void addLine(int vertIdx0, int vertIdx1) {
@@ -105,13 +80,6 @@ public class DynamicLineMesh extends DynamicMesh {
             glLineWidth(mLineWidth);
         }
         super.drawElements(context);
-
-        if (mRenderVerts) {
-            glPointSize(mPointSize);
-            glDrawElements(GL_POINTS, mIndexBuffer);
-            glPointSize(1.0f);
-        }
-
         if (mLineWidth != 1.0f) {
             glLineWidth(1.0f);
         }

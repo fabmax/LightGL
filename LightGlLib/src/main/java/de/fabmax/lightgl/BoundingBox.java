@@ -149,6 +149,63 @@ public class BoundingBox {
     }
 
     /**
+     * Convenience method for retrieving the box' width. Same as box.maxX - box.minX.
+     *
+     * @return box size in X direction
+     */
+    public float getSizeX() {
+        return maxX - minX;
+    }
+
+    /**
+     * Convenience method for retrieving the box' height. Same as box.maxY - box.minY.
+     *
+     * @return box size in Y direction
+     */
+    public float getSizeY() {
+        return maxY - minY;
+    }
+
+    /**
+     * Convenience method for retrieving the box' depth. Same as box.maxZ - box.minZ.
+     *
+     * @return box size in Z direction
+     */
+    public float getSizeZ() {
+        return maxZ - minZ;
+    }
+
+    /**
+     * Convenience method for retrieving the box' center X coordinate. Same as
+     * box.minX + (box.maxX - box.minX) / 2.
+     *
+     * @return box center in X coordinate
+     */
+    public float getCenterX() {
+        return minX + (maxX - minX) / 2;
+    }
+
+    /**
+     * Convenience method for retrieving the box' center Y coordinate. Same as
+     * box.minY + (box.maxY - box.minY) / 2.
+     *
+     * @return box center in Y coordinate
+     */
+    public float getCenterY() {
+        return minY + (maxY - minY) / 2;
+    }
+
+    /**
+     * Convenience method for retrieving the box' center Z coordinate. Same as
+     * box.minZ + (box.maxZ - box.minZ) / 2.
+     *
+     * @return box center in Z coordinate
+     */
+    public float getCenterZ() {
+        return minZ + (maxZ - minZ) / 2;
+    }
+
+    /**
      * Tests whether the specified coordinates are included by this BoundingBox.
      * 
      * @param x     X coordinate to test

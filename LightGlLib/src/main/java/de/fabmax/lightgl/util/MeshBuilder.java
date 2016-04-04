@@ -1,6 +1,7 @@
 package de.fabmax.lightgl.util;
 
-import de.fabmax.lightgl.compat.Matrix;
+
+import android.opengl.Matrix;
 
 /**
  * MeshBuilder can be used to iteratively build a mesh.
@@ -20,9 +21,7 @@ public class MeshBuilder {
     private boolean mHasColors;
     
     private final float[] mTransform = new float[16];
-    
-    //private PolygonTesselator mTesselator;
-    
+
     /**
      * Creates a new MeshBuilder instance. The mesh to be build can optionally have normals,
      * texture coordinates and colors as additional vertex attributes.
@@ -54,20 +53,6 @@ public class MeshBuilder {
         
         Matrix.setIdentityM(mTransform, 0);
     }
-    
-    /**
-     * Returns a {@link PolygonTesselator} that can be used to add arbitrary polygons to this
-     * MeshBuilder.
-     * 
-     * @return a {@link PolygonTesselator} that can be used to add arbitrary polygons to this
-     *         MeshBuilder
-     */
-//    public PolygonTesselator getTesselator() {
-//        if (mTesselator == null) {
-//            mTesselator = new PolygonTesselator(this);
-//        }
-//        return mTesselator;
-//    }
     
     /**
      * Clears all data in this MeshBuilder and resets the transform matrix to identity.

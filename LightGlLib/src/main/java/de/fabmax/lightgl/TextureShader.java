@@ -1,23 +1,28 @@
 package de.fabmax.lightgl;
 
-import static android.opengl.GLES20.glGetUniformLocation;
-import static android.opengl.GLES20.glUniformMatrix4fv;
 import android.util.Log;
 
+import static android.opengl.GLES20.glGetUniformLocation;
+import static android.opengl.GLES20.glUniform1i;
+import static android.opengl.GLES20.glUniformMatrix4fv;
+
 /**
- * A very basic shader. Meshes rendered with this shader must have defined color attributes.
+ * A basic texture shader without any lighting
  * 
  * @author fabmax
  * 
  */
 public class TextureShader extends Shader {
 
-    private static final String TAG = "ColorShader";
+    private static final String TAG = "TextureShader";
 
     private int muMvpMatrixHandle = 0;
+    private int muTextureSamplerHandle = 0;
+
+    private Texture mTexture;
 
     /**
-     * Creates a new ColorShader.
+     * Creates a new TextureShader.
      *
      * @param shaderMgr the {@link ShaderManager}
      */
@@ -36,18 +41,38 @@ public class TextureShader extends Shader {
     public void loadShader(ShaderManager shaderMgr) {
         try {
             // load color shader code
-            int handle = shaderMgr.loadShader("color");
+            int handle = shaderMgr.loadShader("texture");
             setGlHandle(handle);
 
             // get uniform locations
             muMvpMatrixHandle = glGetUniformLocation(handle, "uMvpMatrix");
+            muTextureSamplerHandle = glGetUniformLocation(handle, "uTextureSampler");
             
             // enable attributes
+            enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
             enableAttribute(ATTRIBUTE_POSITIONS, "aVertexPosition_modelspace");
-            enableAttribute(ATTRIBUTE_COLORS, "aVertexColor");
         } catch (LightGlException e) {
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    /**
+     * Returns the texture used by this shader.
+     *
+     * @return the texture used by this shader
+     */
+    public Texture getTexture() {
+        return mTexture;
+    }
+
+    /**
+     * Sets the texture to be used by this shader.
+     *
+     * @param texture
+     *            the texture to be used by this shader
+     */
+    public void setTexture(Texture texture) {
+        mTexture = texture;
     }
 
     /**
@@ -58,7 +83,12 @@ public class TextureShader extends Shader {
     @Override
     public void onBind(LightGlContext glContext) {
         // pass current MVP matrix to shader
-        glUniformMatrix4fv(muMvpMatrixHandle, 1, false, glContext.getState().getMvpMatrix(), 0);
+        onMatrixUpdate(glContext.getState());
+
+        if(mTexture != null) {
+            glContext.getTextureManager().bindTexture(mTexture);
+            glUniform1i(muTextureSamplerHandle, 0);
+        }
     }
 
     /**

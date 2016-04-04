@@ -2,14 +2,14 @@ package de.fabmax.lightgl.util;
 
 
 import android.graphics.Typeface;
+import android.util.Log;
 
+import de.fabmax.lightgl.ColorShader;
 import de.fabmax.lightgl.LightGlContext;
+import de.fabmax.lightgl.SimpleShader;
 import de.fabmax.lightgl.Texture;
+import de.fabmax.lightgl.TextureShader;
 import de.fabmax.lightgl.scene.DynamicMesh;
-import de.fabmax.lightgl.shading.GeneratedShader;
-import de.fabmax.lightgl.shading.ShaderBuilder;
-import de.fabmax.lightgl.shading.ShaderBuilder.ColorModel;
-import de.fabmax.lightgl.shading.ShaderBuilder.LightModel;
 
 public class Painter {
 
@@ -24,7 +24,7 @@ public class Painter {
     private final MeshBuilder builder;
 
     private final DynamicMesh fontMesh;
-    private final GeneratedShader fontShader;
+    private final TextureShader fontShader;
     private final MeshBuilder fontBuilder;
 
     private final float[] pos = new float[5];
@@ -43,18 +43,10 @@ public class Painter {
 
         builder = new MeshBuilder(false, false, true);
         mesh = new DynamicMesh(10000, 10000, false, false, true);
-        mesh.setShader(ShaderBuilder.getInstance()
-                .setLightModel(LightModel.NO_LIGHTING)
-                .setColorModel(ColorModel.VERTEX_COLOR)
-                .setHasSaturation(false)
-                .build(glContext));
+        mesh.setShader(new ColorShader(glContext.getShaderManager()));
 
-        fontShader = ShaderBuilder.getInstance()
-                .setLightModel(LightModel.NO_LIGHTING)
-                .setColorModel(ColorModel.TEXTURE_COLOR)
-                .setHasSaturation(false)
-                .build(glContext);
-        fontShader.setTexture(glContext, font.getFontTexture());
+        fontShader = new TextureShader(glContext.getShaderManager());
+        fontShader.setTexture(font.getFontTexture());
         fontBuilder = new MeshBuilder(false, true, false);
         fontMesh = new DynamicMesh(10000, 10000, false, true, false);
         fontMesh.setShader(fontShader);
@@ -71,13 +63,13 @@ public class Painter {
 
     public void setDefaultFont() {
         font = defaultFont;
-        fontShader.setTexture(glContext, font.getFontTexture());
+        fontShader.setTexture(font.getFontTexture());
     }
 
     public void setFont(GlFont font) {
         commit();
         this.font = font;
-        fontShader.setTexture(glContext, this.font.getFontTexture());
+        fontShader.setTexture(this.font.getFontTexture());
     }
 
     public GlFont getFont() {
@@ -87,7 +79,7 @@ public class Painter {
     public void setAlpha(float alpha) {
         this.alpha = alpha;
         color[3] *= alpha;
-        fontShader.setGlobalAlpha(alpha);
+        //fontShader.setGlobalAlpha(alpha);
     }
 
     public LightGlContext getGlContext() {
@@ -119,12 +111,12 @@ public class Painter {
             fontBuilder.clear();
         }
 
-        fontShader.setTexture(glContext, texture);
+        fontShader.setTexture(texture);
         addTexQuad(x, y, width, height);
         fontMesh.updateMeshData(fontBuilder);
         fontMesh.render(glContext);
         fontBuilder.clear();
-        fontShader.setTexture(glContext, font.getFontTexture());
+        fontShader.setTexture(font.getFontTexture());
     }
 
     public void pushTransform() {

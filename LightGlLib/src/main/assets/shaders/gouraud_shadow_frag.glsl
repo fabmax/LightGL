@@ -15,8 +15,8 @@ uniform float uMapScale;
 
 varying vec2 vTexCoord;
 varying vec4 vShadowCoord;
-varying vec3 vDiffuseLightColor;
-varying vec3 vSpecularLightColor;
+varying vec4 vDiffuseLightColor;
+varying vec4 vSpecularLightColor;
 
 float shadow2Dsmooth(vec4 coord) {
 	float visibility = 4.0;
@@ -58,11 +58,11 @@ void main() {
 	//vec3 fragmentColor = texture2D(uShadowSampler, vShadowCoord.xy).rgb;
 	//fragmentColor.b = clamp((vShadowCoord.z - 0.005) / vShadowCoord.w, 0.0, 1.0);
 	vec3 fragmentColor = texture2D(uTextureSampler, vTexCoord).rgb;
-	
-	vec3 materialAmbientColor = fragmentColor * vec3(0.2, 0.2, 0.2);
-	vec3 materialDiffuseColor = fragmentColor * vDiffuseLightColor;
-	vec3 materialSpecularColor = vSpecularLightColor;
+
+	vec4 materialAmbientColor = fragmentColor * vec4(0.4, 0.4, 0.4, 1.0);
+	vec4 materialDiffuseColor = fragmentColor * vDiffuseLightColor;
+	vec4 materialSpecularColor = vSpecularLightColor;
 
 	// compute output color
-	gl_FragColor.rgb = materialAmbientColor + (materialDiffuseColor + materialSpecularColor ) * visibility;
+	gl_FragColor = materialAmbientColor + (materialDiffuseColor + materialSpecularColor) * visibility;
 }

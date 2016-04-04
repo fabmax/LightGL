@@ -22,6 +22,9 @@ import de.fabmax.lightgl.TextureProperties.MinFilterMethod;
 public class Texture extends GlObject {
 
     private TextureManager mTexManager;
+
+    private int mWidthPixels;
+    private int mHeightPixels;
     
     /**
      * Creates a Texture with a newly generated OpenGL texture object associated to it.
@@ -29,6 +32,42 @@ public class Texture extends GlObject {
     protected Texture(TextureManager manager) {
         mTexManager = manager;
         glGenTextures(1, mHandle, 0);
+    }
+
+    /**
+     * Sets the width of this texture in pixels.
+     *
+     * @param pixels    pixel width of the data buffer associated with this texture
+     */
+    protected void setWidth(int pixels) {
+        mWidthPixels = pixels;
+    }
+
+    /**
+     * The width of this texture in pixels.
+     *
+     * @return pixel width of the data buffer associated with this texture
+     */
+    public int getWidth() {
+        return mWidthPixels;
+    }
+
+    /**
+     * Sets the height of this texture in pixels.
+     *
+     * @param pixels    pixel height of the data buffer associated with this texture
+     */
+    protected void setHeight(int pixels) {
+        mHeightPixels = pixels;
+    }
+
+    /**
+     * The height of this texture in pixels.
+     *
+     * @return pixel height of the data buffer associated with this texture
+     */
+    public int getHeight() {
+        return mHeightPixels;
     }
     
     /**

@@ -183,18 +183,18 @@ public class SimpleShader extends Shader {
     /**
      * Is called if this shader is bound.
      * 
-     * @see Shader#onBind(GfxState)
+     * @see Shader#onBind(LightGlContext)
      */
     @Override
-    public void onBind(GfxState state) {
+    public void onBind(LightGlContext glContext) {
         // pass current transformation matrices to shader
-        onMatrixUpdate(state);
+        onMatrixUpdate(glContext.getState());
 
         // set shininess
         glUniform1f(muShininessHandle, mShininess);
 
         // take first light and interpret it as directional light
-        ArrayList<Light> lights = state.getEngine().getLights();
+        ArrayList<Light> lights = glContext.getEngine().getLights();
         if (lights.size() > 0) {
             Light l = lights.get(0);
             glUniform3f(muLightDirectionHandle, l.position[0], l.position[1], l.position[2]);
@@ -207,7 +207,7 @@ public class SimpleShader extends Shader {
         
         // bind texture if enabled
         if(mTexture != null) {
-            state.bindTexture(mTexture);
+            glContext.getTextureManager().bindTexture(mTexture);
             glUniform1i(muTextureSamplerHandle, 0);
         }
     }

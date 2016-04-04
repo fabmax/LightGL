@@ -4,13 +4,18 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.util.Log;
 import android.util.SparseArray;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
+
+import de.fabmax.lightgl.util.BufferHelper;
 
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
@@ -88,6 +93,15 @@ public class TextureManager {
             tex.delete();
         }
         mLoadedTextures.remove(tex);
+    }
+
+    /**
+     * Binds the given texture to the texture unit 0.
+     *
+     * @param texture    texture to be bound
+     */
+    public void bindTexture(Texture texture) {
+        bindTexture(texture, GL_TEXTURE0);
     }
 
     /**
@@ -174,6 +188,67 @@ public class TextureManager {
     }
 
     /**
+     * Creates a texture from the given Bitmap with the specified properties,
+     *
+     * @param bitmap    Bitmap to create the texture from
+     * @param props     Texture properties to use
+     * @return a texture containing the bitmap data
+     */
+    public Texture createTextureFromBitmap(Bitmap bitmap, TextureProperties props) {
+        boolean alpha = bitmap.hasAlpha();
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        ByteBuffer data = convertImage(bitmap, alpha);
+        return createTextureFromBuffer(data, width, height, alpha, props);
+    }
+
+    /**
+     * Creates a texture from the given data. If hasAlpha is true data format is assumed to be
+     * 32-bit RGBA, otherwise it is 24-bit RGB. TextureProperties can be null, in that case default
+     * properties are used.
+     *
+     * @param data      Buffer with per-pixel texture data
+     * @param width     width of texture in pixels
+     * @param height    height of texture in pixels
+     * @param hasAlpha  true if texture data has an alpha channel
+     * @param props     {@link TextureProperties} to set, can be null
+     * @return the loaded texture
+     */
+    public Texture createTextureFromBuffer(ByteBuffer data, int width, int height,
+                                           boolean hasAlpha, TextureProperties props) {
+
+        if (props == null) {
+            // set default texture properties, if nothing else is specfied
+            props = DEFAULT_PROPERTIES;
+        }
+
+        if (!isPow2(width) || !isPow2(height)) {
+            Log.w(TAG, "Tex width / height is not a power of 2, this might cause problems on some " +
+                    "platforms... (size is " + width + "x" + height + ")");
+        }
+
+        int target = GL_TEXTURE_2D;
+        int format = hasAlpha ? GLES20.GL_RGBA : GLES20.GL_RGB;
+        //int components = hasAlpha ? 4 : 3;
+
+        // create texture handle
+        Texture tex = createEmptyTexture();
+
+        // load texture data
+        bindTexture(tex, GL_TEXTURE0);
+        GLES20.glTexImage2D(target, 0, format, width, height, 0, format, GLES20.GL_UNSIGNED_BYTE, data);
+        if (props.minFilter == TextureProperties.MinFilterMethod.TRILINEAR) {
+            GLES20.glGenerateMipmap(GL_TEXTURE_2D);
+        }
+
+        tex.setTextureProperties(props);
+        tex.setWidth(width);
+        tex.setHeight(height);
+
+        return tex;
+    }
+
+    /**
      * Generates and binds an empty texture handle.
      * 
      * @return the created texture
@@ -182,5 +257,60 @@ public class TextureManager {
         Texture tex = new Texture(this);
         mLoadedTextures.add(tex);
         return tex;
+    }
+
+    /**
+     * Helper method that converts an BufferedImage to a ByteBuffer.
+     *
+     * @param image
+     *            BufferedImage to convert
+     * @param alpha
+     *            set to true if the specified image has an alpha channel
+     * @return a ByteBuffer containing the image data
+     */
+    private ByteBuffer convertImage(Bitmap image, boolean alpha) {
+        int w = image.getWidth();
+        int h = image.getHeight();
+        int stride = alpha ? 4 : 3;
+        byte[] buf = new byte[w * h * stride];
+
+        if (image.getConfig() == Bitmap.Config.ARGB_8888) {
+            // this take even more memory but is significantly faster
+            buf = new byte[w * h * 4];
+            IntBuffer out = IntBuffer.allocate(w*h);
+            image.copyPixelsToBuffer(out);
+            for (int i = 0, j = 0; i < w * h; i++, j += stride) {
+                int px = out.get(i);
+                int pa = ((px >> 24) & 0xff);
+                if (pa > 0) {
+                    float fa = 255.0f / pa;
+                    buf[j]     = (byte) (( px        & 0xff) * fa);
+                    buf[j + 1] = (byte) (((px >> 8)  & 0xff) * fa);
+                    buf[j + 2] = (byte) (((px >> 16) & 0xff) * fa);
+                }
+                if (alpha) {
+                    buf[j + 3] = (byte) pa;
+                }
+            }
+        } else {
+            for (int i = 0; i < w * h; i++) {
+                int px = image.getPixel(i % w, i / w);
+                buf[i * stride]     = (byte) ((px >> 16) & 0xff);
+                buf[i * stride + 1] = (byte) ((px >>  8) & 0xff);
+                buf[i * stride + 2] = (byte) (px & 0xff);
+                if (alpha) {
+                    buf[i * stride + 3] = (byte) ((px >> 24) & 0xff);
+                }
+            }
+        }
+
+        return BufferHelper.createByteBuffer(buf);
+    }
+
+    private boolean isPow2(int sz) {
+        while ((sz & 1) == 0) {
+            sz >>= 1;
+        }
+        return sz == 1;
     }
 }

@@ -164,8 +164,8 @@ public class GlMath {
     public static void computePickRay(int[] viewport, float[] viewMatrix, float[] projMatrix,
                                       float x, float y, Ray result) {
         float yInv = viewport[3] - y;
-        GLU.gluUnProject(x, yInv, 0.0f, viewMatrix, 0, projMatrix, 0, viewport, 0, result.origin, 0);
-        GLU.gluUnProject(x, yInv, 1.0f, viewMatrix, 0, projMatrix, 0, viewport, 0, result.direction, 0);
+        gluUnProject(x, yInv, 0.0f, viewMatrix, 0, projMatrix, 0, viewport, 0, result.origin, 0);
+        gluUnProject(x, yInv, 1.0f, viewMatrix, 0, projMatrix, 0, viewport, 0, result.direction, 0);
         
         // only took me a hour to figure out that the Android gluUnProject version does not divide
         // the resulting coordinates by w...
@@ -182,6 +182,14 @@ public class GlMath {
         result.direction[0] -= result.origin[0];
         result.direction[1] -= result.origin[1];
         result.direction[2] -= result.origin[2];
+
+        float len = (float) Math.sqrt(
+                result.direction[0] * result.direction[0] +
+                result.direction[1] * result.direction[1] +
+                result.direction[2] * result.direction[2]);
+        result.direction[0] /= len;
+        result.direction[1] /= len;
+        result.direction[2] /= len;
     }
 
     /**
@@ -340,5 +348,93 @@ public class GlMath {
         }
 
         return (ia << 24) | (ib << 16) | (ig << 8) | ir;
+    }
+
+    /**
+     * Map window coordinates to object coordinates. gluUnProject maps the
+     * specified window coordinates into object coordinates using model, proj,
+     * and view. The result is stored in obj.
+     * <p>
+     * Note that you can use the OES_matrix_get extension, if present, to get
+     * the current modelView and projection matrices.
+     * <p>
+     * This method is taken from the Android framework as it uses float arrays
+     * instead of FloatBuffers
+     *
+     * @param winX window coordinates X
+     * @param winY window coordinates Y
+     * @param winZ window coordinates Z
+     * @param model the current modelview matrix
+     * @param modelOffset the offset into the model array where the modelview
+     *        maxtrix data starts.
+     * @param project the current projection matrix
+     * @param projectOffset the offset into the project array where the project
+     *        matrix data starts.
+     * @param view the current view, {x, y, width, height}
+     * @param viewOffset the offset into the view array where the view vector
+     *        data starts.
+     * @param obj the output vector {objX, objY, objZ}, that returns the
+     *        computed object coordinates.
+     * @param objOffset the offset into the obj array where the obj vector data
+     *        starts.
+     * @return A return value of true indicates success, a return value
+     *         of false indicates failure.
+     */
+    public static boolean gluUnProject(float winX, float winY, float winZ,
+                                       float[] model, int modelOffset, float[] project, int projectOffset,
+                                       int[] view, int viewOffset, float[] obj, int objOffset) {
+        float[] scratch = sScratch;
+        synchronized(sScratch) {
+            final int PM_OFFSET = 0; // 0..15
+            final int INVPM_OFFSET = 16; // 16..31
+            final int V_OFFSET = 0; // 0..3 Reuses PM_OFFSET space
+            Matrix.multiplyMM(scratch, PM_OFFSET, project, projectOffset,
+                    model, modelOffset);
+
+            if (!Matrix.invertM(scratch, INVPM_OFFSET, scratch, PM_OFFSET)) {
+                return false;
+            }
+
+            scratch[V_OFFSET + 0] =
+                    2.0f * (winX - view[viewOffset + 0]) / view[viewOffset + 2]
+                            - 1.0f;
+            scratch[V_OFFSET + 1] =
+                    2.0f * (winY - view[viewOffset + 1]) / view[viewOffset + 3]
+                            - 1.0f;
+            scratch[V_OFFSET + 2] = 2.0f * winZ - 1.0f;
+            scratch[V_OFFSET + 3] = 1.0f;
+
+            Matrix.multiplyMV(obj, objOffset, scratch, INVPM_OFFSET, scratch, V_OFFSET);
+        }
+
+        return true;
+    }
+
+    private static final float[] sScratch = new float[32];
+
+    public static void multiplyMV(float[] lhsMat, int lhsMatOffset,
+                                  float[] rhsVec, int rhsVecOffset) {
+
+        float x = lhsMat[lhsMatOffset] * rhsVec[rhsVecOffset] +
+                lhsMat[lhsMatOffset +  4] * rhsVec[rhsVecOffset + 1] +
+                lhsMat[lhsMatOffset +  8] * rhsVec[rhsVecOffset + 2] +
+                lhsMat[lhsMatOffset + 12] * rhsVec[rhsVecOffset + 3];
+        float y = lhsMat[lhsMatOffset +  1] * rhsVec[rhsVecOffset] +
+                lhsMat[lhsMatOffset +  5] * rhsVec[rhsVecOffset + 1] +
+                lhsMat[lhsMatOffset +  9] * rhsVec[rhsVecOffset + 2] +
+                lhsMat[lhsMatOffset + 13] * rhsVec[rhsVecOffset + 3];
+        float z = lhsMat[lhsMatOffset +  2] * rhsVec[rhsVecOffset] +
+                lhsMat[lhsMatOffset +  6] * rhsVec[rhsVecOffset + 1] +
+                lhsMat[lhsMatOffset + 10] * rhsVec[rhsVecOffset + 2] +
+                lhsMat[lhsMatOffset + 14] * rhsVec[rhsVecOffset + 3];
+        float w = lhsMat[lhsMatOffset +  3] * rhsVec[rhsVecOffset] +
+                lhsMat[lhsMatOffset +  7] * rhsVec[rhsVecOffset + 1] +
+                lhsMat[lhsMatOffset + 11] * rhsVec[rhsVecOffset + 2] +
+                lhsMat[lhsMatOffset + 15] * rhsVec[rhsVecOffset + 3];
+
+        rhsVec[rhsVecOffset]     = x;
+        rhsVec[rhsVecOffset + 1] = y;
+        rhsVec[rhsVecOffset + 2] = z;
+        rhsVec[rhsVecOffset + 3] = w;
     }
 }

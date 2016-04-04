@@ -1,6 +1,7 @@
 package de.fabmax.lightgl;
 
 import android.content.Context;
+import android.opengl.GLES20;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 import android.util.Log;
@@ -13,27 +14,22 @@ import javax.microedition.khronos.opengles.GL10;
 import de.fabmax.lightgl.physics.PhysicsEngine;
 import de.fabmax.lightgl.scene.Node;
 
-import static android.opengl.GLES20.GL_CULL_FACE;
-import static android.opengl.GLES20.GL_DEPTH_TEST;
-import static android.opengl.GLES20.GL_LEQUAL;
-import static android.opengl.GLES20.glClearColor;
-import static android.opengl.GLES20.glDepthFunc;
-import static android.opengl.GLES20.glEnable;
-import static android.opengl.GLES20.glGetError;
+import static android.opengl.GLES20.*;
 
 /**
  * The central graphics engine management class.
- * 
+ *
  * @author fabmax
- * 
+ *
  */
 public class GfxEngine implements Renderer {
-    
+
     private static final String TAG = "GfxEngine";
 
     private final ShaderManager mShaderManager;
     private final TextureManager mTextureManager;
     private final GfxState mState;
+    private LightGlContext mGlContext;
 
     private final ArrayList<Light> mLights = new ArrayList<>();
 
@@ -43,6 +39,7 @@ public class GfxEngine implements Renderer {
     private GfxEngineListener mEngineListener;
     private RenderPass mPrePass;
     private RenderPass mMainPass;
+    private boolean mClearScreen = true;
 
     private PhysicsEngine mPhysics;
 
@@ -52,7 +49,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Creates a new GfxEngine object.
-     * 
+     *
      * @param context       the application context
      * @param usePhysics    true to create a {@link de.fabmax.lightgl.physics.PhysicsEngine}
      */
@@ -62,17 +59,32 @@ public class GfxEngine implements Renderer {
 
         mShaderManager = new ShaderManager(context);
         mTextureManager = new TextureManager(context);
-        mState = new GfxState(this, mShaderManager, mTextureManager);
+        mState = new GfxState(mShaderManager);
 
         // by default the scene is directly rendered to the screen
         mMainPass = new ScreenRenderPass();
-        
+
         // by default a standard perspective camera is used
         mCamera = new PerspectiveCamera();
+
+        setContext(new LightGlContext(this));
 
         if (usePhysics) {
             mPhysics = new PhysicsEngine();
         }
+    }
+
+    /**
+     * Sets the context that is passed to nodes during rendering. However, the given context must have been created for
+     * this GfxEngine instance.
+     *
+     * @param context    the context used during rendering
+     */
+    public void setContext(LightGlContext context) {
+        if (context.getEngine() != this) {
+            throw new IllegalArgumentException("Context was created for another instance of GfxEngine");
+        }
+        mGlContext = context;
     }
 
     /**
@@ -87,24 +99,28 @@ public class GfxEngine implements Renderer {
 
     /**
      * Is called by a {@link android.opengl.GLSurfaceView} to render the scene.
-     * 
+     *
      * @see Renderer#onDrawFrame(GL10)
      */
     @Override
     public void onDrawFrame(GL10 unused) {
         doTimeControl();
-        
-        mState.reset();
+
+        mState.reset(mGlContext);
         if (mPhysics != null) {
             mPhysics.synchronizeBodyConfigurations();
         }
 
         if (mEngineListener != null) {
-            mEngineListener.onRenderFrame(this);
+            mEngineListener.onRenderFrame(mGlContext);
         }
-        
+
         if (mPrePass != null) {
-            mPrePass.onRender(this);
+            mPrePass.onRender(mGlContext);
+        }
+
+        if (mClearScreen) {
+            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         }
 
         if (mMainPass != null) {
@@ -112,19 +128,19 @@ public class GfxEngine implements Renderer {
                 mCamera.animate(1.0f / mFps);
                 mCamera.setup(mState);
             }
-            
+
             if (mEngineListener != null) {
-                mEngineListener.onRenderMainPass(this);
+                mEngineListener.onRenderMainPass(mGlContext);
             }
-            mMainPass.onRender(this);
+            mMainPass.onRender(mGlContext);
         }
-        
+
         int err = glGetError();
         if (err != 0) {
             Log.e(TAG, "glError " + err + ": " + GLU.gluErrorString(err));
         }
     }
-    
+
     /**
      * Determines current FPS and controls the maximum frame rate if a limit is set.
      */
@@ -134,7 +150,7 @@ public class GfxEngine implements Renderer {
 
         if (mMaxFrameInterval > 0) {
             long tDif = t - mLastFrameTime;
-            
+
             // limit framerate
             long s = mMaxFrameInterval - tDif;
             if(s > 0) {
@@ -160,7 +176,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Is called on change of widget size.
-     * 
+     *
      * @see Renderer#onSurfaceChanged(GL10, int, int)
      */
     @Override
@@ -169,7 +185,7 @@ public class GfxEngine implements Renderer {
 
         // update GL viewport size
         mState.setViewport(0, 0, width, height);
-        
+
         if (mEngineListener != null) {
             mEngineListener.onViewportChange(width, height);
         }
@@ -177,26 +193,29 @@ public class GfxEngine implements Renderer {
 
     /**
      * Is called on startup and sets the default GL configuration.
-     * 
+     *
      * @see Renderer#onSurfaceCreated(GL10, EGLConfig)
      */
     @Override
     public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         Log.d(TAG, "onSurfaceCreated");
-        
+
         // drop all existing texture and shader handles
         mTextureManager.newGlContext();
         mShaderManager.newGlContext();
-        
+
         // setup GL stuff
         glClearColor(0, 0, 0, 1);
         glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
-        
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         // notify registered listener that now is the right time to load scene data
         if (mEngineListener != null) {
-            mEngineListener.onLoadScene(this);
+            mEngineListener.onLoadScene(mGlContext);
         }
     }
 
@@ -230,7 +249,7 @@ public class GfxEngine implements Renderer {
     /**
      * Sets the specified {@link GfxEngineListener} as engine listener. The engine listener is
      * called on certain GL events.
-     * 
+     *
      * @param listener
      *            the engine listener to set
      */
@@ -240,14 +259,14 @@ public class GfxEngine implements Renderer {
 
     /**
      * Sets the pre-pass renderer. The pre-pass is processed before the main-pass.
-     * 
+     *
      * @param prePass
      *            the pre-pass renderer to set
      */
     public void setPreRenderPass(RenderPass prePass) {
         mPrePass = prePass;
     }
-    
+
     /**
      * Returns the pre-pass renderer
      */
@@ -257,14 +276,14 @@ public class GfxEngine implements Renderer {
 
     /**
      * Sets the main-pass renderer.
-     * 
+     *
      * @param mainPass
      *            the main-pass renderer to set
      */
     public void setMainRenderPass(RenderPass mainPass) {
         mMainPass = mainPass;
     }
-    
+
     /**
      * Returns the main-pass renderer
      */
@@ -274,7 +293,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Returns the {@link ShaderManager} of this GfxEngine.
-     * 
+     *
      * @return the {@link ShaderManager} of this GfxEngine
      */
     public ShaderManager getShaderManager() {
@@ -283,7 +302,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Returns the {@link TextureManager} of this GfxEngine.
-     * 
+     *
      * @return the {@link TextureManager} of this GfxEngine
      */
     public TextureManager getTextureManager() {
@@ -292,7 +311,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Returns the {@link GfxState} of this GfxEngine.
-     * 
+     *
      * @return the {@link GfxState} of this GfxEngine
      */
     public GfxState getState() {
@@ -301,7 +320,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Adds a light to the scene.
-     * 
+     *
      * @param light
      *            the light to add to the scene
      */
@@ -311,7 +330,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Removes a light from the scene.
-     * 
+     *
      * @param light
      *            the light to remove from the scene
      */
@@ -321,7 +340,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Returns a list with all lights in the scene.
-     * 
+     *
      * @return the list with all lights in the scene.
      */
     public ArrayList<Light> getLights() {
@@ -330,7 +349,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Returns the scene Node.
-     * 
+     *
      * @return the scene node
      */
     public Node getScene() {
@@ -339,7 +358,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Sets the scene Node.
-     * 
+     *
      * @param scene
      *            the scene Node to set
      */
@@ -349,7 +368,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Returns the active camera.
-     * 
+     *
      * @return the active camera
      */
     public Camera getCamera() {
@@ -358,27 +377,27 @@ public class GfxEngine implements Renderer {
 
     /**
      * Sets the specified camera.
-     * 
+     *
      * @param cam
      *            the camera to set
      */
     public void setCamera(Camera cam) {
         mCamera = cam;
     }
-    
+
     /**
      * Returns the current frame rate. The frame rate is updated on every frame; however it is
      * filtered to get more steady values.
-     * 
+     *
      * @return the current frame rate
      */
     public float getFps() {
         return mFps;
     }
-    
+
     /**
      * Returns the currently set maximum frame rate. If no maximum frame rate is set 0 is returned.
-     * 
+     *
      * @return the maximum frame rate
      */
     public float getMaximumFps() {
@@ -391,7 +410,7 @@ public class GfxEngine implements Renderer {
 
     /**
      * Sets the maximum frame rate. fps = 0 disables the frame rate limit.
-     * 
+     *
      * @param fps
      *            the maximum frame rate
      */
@@ -401,5 +420,14 @@ public class GfxEngine implements Renderer {
         } else {
             mMaxFrameInterval = Math.round(1000.0f / fps);
         }
+    }
+
+    /**
+     * Sets whether to automatically clear the screen buffer before a new frame is rendered. By default this is enabled.
+     *
+     * @param enabled    true to enable automatic screen clearing
+     */
+    public void setClearScreen(boolean enabled) {
+        mClearScreen = enabled;
     }
 }

@@ -40,7 +40,7 @@ public abstract class LiveWallpaperBase extends WallpaperService {
      * Base class for OpenGL ES 2.0 enabled live wallpaper engine.
      */
     public abstract class GlWallpaperEngine extends Engine implements GfxEngineListener {
-        private static final String TAG = "LiveWallpaperBase.WallpaperEngine";
+        private static final String TAG = "WallpaperEngine";
 
         private final GlConfiguration mConfigChooser;
         private final GfxEngine mGfxEngine;
