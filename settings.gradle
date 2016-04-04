@@ -1,1 +1,1 @@
-include ':LightGlDemo', ':LightGl', ':LightGlLib'
+include ':LightGlDemo', ':LightGlLib'

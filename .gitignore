@@ -1,5 +1,22 @@
+# Gradle
 .gradle
-/CarDemo
-/local.properties
-/.idea/workspace.xml
+build
+gradle.properties
+local.properties
+
+# IntelliJ
+.idea
+*.iml
+
+# Eclipse
+.classpath
+.project
+.settings
+bin
+
+# OS X
 .DS_Store
+
+# Emacs
+*~
+\#*\#
