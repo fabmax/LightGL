@@ -13,7 +13,7 @@ import de.fabmax.lightgl.util.GlConfiguration;
  *
  * @author fabmax
  */
-public abstract class LigthtGlActivity extends Activity implements GfxEngineListener {
+public abstract class LightGlActivity extends Activity implements GfxEngineListener {
 
     private static final String TAG = "LightGlActivity";
 
