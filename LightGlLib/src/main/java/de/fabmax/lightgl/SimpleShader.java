@@ -25,6 +25,7 @@ public class SimpleShader extends Shader {
 
     private final String mShaderName;
     private final boolean mUseTexture;
+    private final boolean mUseLighting;
     
     // uniform handles
     private int muMvpMatrixHandle = 0;
@@ -51,7 +52,7 @@ public class SimpleShader extends Shader {
      * @return a SimpleShader that uses a texture
      */
     public static SimpleShader createGouraudTextureShader(ShaderManager shaderMgr, Texture texture) {
-        SimpleShader shader = new SimpleShader(shaderMgr, true, "gouraud_texture");
+        SimpleShader shader = new SimpleShader(shaderMgr, true, true, "gouraud_texture");
         shader.setTexture(texture);
         return shader;
     }
@@ -67,7 +68,7 @@ public class SimpleShader extends Shader {
      * @return a SimpleShader that uses a texture
      */
     public static SimpleShader createPhongTextureShader(ShaderManager shaderMgr, Texture texture) {
-        SimpleShader shader = new SimpleShader(shaderMgr, true, "phong_texture");
+        SimpleShader shader = new SimpleShader(shaderMgr, true, true, "phong_texture");
         shader.setTexture(texture);
         return shader;
     }
@@ -81,7 +82,7 @@ public class SimpleShader extends Shader {
      * @return a SimpleShader that uses vertex colors
      */
     public static SimpleShader createPhongColorShader(ShaderManager shaderMgr) {
-        return new SimpleShader(shaderMgr, false, "phong_color");
+        return new SimpleShader(shaderMgr, false, true, "phong_color");
     }
 
     /**
@@ -96,10 +97,11 @@ public class SimpleShader extends Shader {
      * @param shaderName
      *            name of the shader to load
      */
-    protected SimpleShader(ShaderManager shaderMgr, boolean useTexture, String shaderName) {
+    protected SimpleShader(ShaderManager shaderMgr, boolean useTexture, boolean useLighting, String shaderName) {
         super(shaderMgr);
         mUseTexture = useTexture;
         mShaderName = shaderName;
+        mUseLighting = useLighting;
     }
     
     /**
@@ -118,11 +120,13 @@ public class SimpleShader extends Shader {
 
             // get uniform locations
             muMvpMatrixHandle = glGetUniformLocation(handle, "uMvpMatrix");
-            muModelMatrixHandle = glGetUniformLocation(handle, "uModelMatrix");
-            muViewMatrixHandle = glGetUniformLocation(handle, "uViewMatrix");
-            muLightDirectionHandle = glGetUniformLocation(handle, "uLightDirection_worldspace");
-            muShininessHandle = glGetUniformLocation(handle, "uShininess");
-            muLightColorHandle = glGetUniformLocation(handle, "uLightColor");
+            if (mUseLighting) {
+                muModelMatrixHandle = glGetUniformLocation(handle, "uModelMatrix");
+                muViewMatrixHandle = glGetUniformLocation(handle, "uViewMatrix");
+                muLightDirectionHandle = glGetUniformLocation(handle, "uLightDirection_worldspace");
+                muShininessHandle = glGetUniformLocation(handle, "uShininess");
+                muLightColorHandle = glGetUniformLocation(handle, "uLightColor");
+            }
     
             if (mUseTexture) {
                 // enable texture mapping
@@ -190,19 +194,21 @@ public class SimpleShader extends Shader {
         // pass current transformation matrices to shader
         onMatrixUpdate(glContext.getState());
 
-        // set shininess
-        glUniform1f(muShininessHandle, mShininess);
+        if (mUseLighting) {
+            // set shininess
+            glUniform1f(muShininessHandle, mShininess);
 
-        // take first light and interpret it as directional light
-        ArrayList<Light> lights = glContext.getEngine().getLights();
-        if (lights.size() > 0) {
-            Light l = lights.get(0);
-            glUniform3f(muLightDirectionHandle, l.position[0], l.position[1], l.position[2]);
-            glUniform3f(muLightColorHandle, l.color[0], l.color[1], l.color[2]);
-        } else {
-            // set some default light properties if no light is defines
-            glUniform3f(muLightDirectionHandle, 1, 1, 1);
-            glUniform3f(muLightColorHandle, 1, 1, 1);
+            // take first light and interpret it as directional light
+            ArrayList<Light> lights = glContext.getEngine().getLights();
+            if (lights.size() > 0) {
+                Light l = lights.get(0);
+                glUniform3f(muLightDirectionHandle, l.position[0], l.position[1], l.position[2]);
+                glUniform3f(muLightColorHandle, l.color[0], l.color[1], l.color[2]);
+            } else {
+                // set some default light properties if no light is defines
+                glUniform3f(muLightDirectionHandle, 1, 1, 1);
+                glUniform3f(muLightColorHandle, 1, 1, 1);
+            }
         }
         
         // bind texture if enabled

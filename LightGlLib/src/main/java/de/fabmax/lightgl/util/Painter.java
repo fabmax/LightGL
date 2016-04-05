@@ -6,6 +6,9 @@ import android.util.Log;
 
 import de.fabmax.lightgl.ColorShader;
 import de.fabmax.lightgl.LightGlContext;
+import de.fabmax.lightgl.RenderPass;
+import de.fabmax.lightgl.ShadowRenderPass;
+import de.fabmax.lightgl.ShadowShader;
 import de.fabmax.lightgl.SimpleShader;
 import de.fabmax.lightgl.Texture;
 import de.fabmax.lightgl.TextureShader;
@@ -43,7 +46,14 @@ public class Painter {
 
         builder = new MeshBuilder(false, false, true);
         mesh = new DynamicMesh(10000, 10000, false, false, true);
-        mesh.setShader(new ColorShader(glContext.getShaderManager()));
+
+        RenderPass prePass = glContext.getEngine().getPreRenderPass();
+        if (prePass != null && prePass instanceof ShadowRenderPass) {
+            mesh.setShader(ShadowShader.createNoLightingShadowShader(
+                    glContext.getShaderManager(), (ShadowRenderPass) prePass));
+        } else {
+            mesh.setShader(new ColorShader(glContext.getShaderManager()));
+        }
 
         fontShader = new TextureShader(glContext.getShaderManager());
         fontShader.setTexture(font.getFontTexture());

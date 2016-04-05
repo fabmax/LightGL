@@ -40,6 +40,8 @@ public class GfxState {
     
     private final float[] mBackgroundColor;
 
+    private boolean mIsPrePass = false;
+
     private float mGlobalSaturation = 1.0f;
 
     private final ShaderManager mShaderManager;
@@ -56,6 +58,14 @@ public class GfxState {
         Matrix.setIdentityM(mMvpMatrix, 0);
         
         mBackgroundColor = new float[] { 0.0f, 0.0f, 0.0f };
+    }
+
+    protected void setIsPrePass(boolean isPrePass) {
+        mIsPrePass = isPrePass;
+    }
+
+    public boolean isPrePass() {
+        return mIsPrePass;
     }
 
     /**

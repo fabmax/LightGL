@@ -28,6 +28,18 @@ public class ShadowShader extends SimpleShader {
     private final float[] mShadowBiasMatrix;
 
     /**
+     * Creates a ShadowShader with vertex coloring and no further lighting.
+     *
+     * @param shaderMgr
+     *            the shader manager
+     * @param shadowPass
+     *            the ShadowRenderPass used to compute the depth texture
+     */
+    public static ShadowShader createNoLightingShadowShader(ShaderManager shaderMgr, ShadowRenderPass shadowPass) {
+        return new ShadowShader(shaderMgr, null, false, shadowPass, "color_shadow");
+    }
+
+    /**
      * Creates a ShadowShader with Gouraud model. Gouraud shading is faster than Phong shading but
      * not as accurate.
      * 
@@ -39,7 +51,7 @@ public class ShadowShader extends SimpleShader {
      *            the ShadowRenderPass used to compute the depth texture
      */
     public static ShadowShader createGouraudShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass) {
-        return new ShadowShader(shaderMgr, texture, shadowPass, "gouraud_shadow");
+        return new ShadowShader(shaderMgr, texture, true, shadowPass, "gouraud_shadow");
     }
 
     /**
@@ -54,7 +66,7 @@ public class ShadowShader extends SimpleShader {
      *            the ShadowRenderPass used to compute the depth texture
      */
     public static ShadowShader createPhongShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass) {
-        return new ShadowShader(shaderMgr, texture, shadowPass, "phong_shadow");
+        return new ShadowShader(shaderMgr, texture, true, shadowPass, "phong_shadow");
     }
     
     /**
@@ -69,8 +81,8 @@ public class ShadowShader extends SimpleShader {
      * @param shaderFile
      *            the shader filename to load
      */
-    private ShadowShader(ShaderManager shaderMgr, Texture texture, ShadowRenderPass shadowPass, String shaderFile) {
-        super(shaderMgr, true, shaderFile);
+    private ShadowShader(ShaderManager shaderMgr, Texture texture, boolean useLighting, ShadowRenderPass shadowPass, String shaderFile) {
+        super(shaderMgr, texture != null, useLighting, shaderFile);
         setTexture(texture);
 
         mShadowPass = shadowPass;
@@ -129,6 +141,7 @@ public class ShadowShader extends SimpleShader {
         super.onBind(glContext);
 
         glUniform1i(muShadowSamplerHandle, mShadowPass.getTextureUnit());
-        glUniform1f(muMapScaleHandle, 1.4142f / mShadowPass.getShadowMapSize());
+        //glUniform1f(muMapScaleHandle, 1.4142f / mShadowPass.getShadowMapSize());
+        glUniform1f(muMapScaleHandle, 3f / mShadowPass.getShadowMapSize());
     }
 }

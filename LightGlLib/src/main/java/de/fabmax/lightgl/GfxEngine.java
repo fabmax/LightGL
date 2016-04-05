@@ -116,7 +116,9 @@ public class GfxEngine implements Renderer {
         }
 
         if (mPrePass != null) {
+            mState.setIsPrePass(true);
             mPrePass.onRender(mGlContext);
+            mState.setIsPrePass(false);
         }
 
         if (mClearScreen) {
