@@ -37,7 +37,7 @@ public class FloatList implements Iterable<Float> {
 
     /**
      * Returns the list value at the specified index.
-     * 
+     *
      * @param index
      *            index of the value to return
      * @return the list value at the specified index
@@ -47,6 +47,19 @@ public class FloatList implements Iterable<Float> {
             throw new ArrayIndexOutOfBoundsException(index);
         }
         return mBuffer[index];
+    }
+
+    /**
+     * Sets the list value at the specified index to the given value.
+     *
+     * @param index    index of the value to return
+     * @param value    value to set
+     */
+    public void set(int index, float value) {
+        if (index < 0 || index >= mSize) {
+            throw new ArrayIndexOutOfBoundsException(index);
+        }
+        mBuffer[index] = value;
     }
 
     /**

@@ -139,7 +139,7 @@ public class GfxEngine implements Renderer {
 
         int err = glGetError();
         if (err != 0) {
-            Log.e(TAG, "glError " + err + ": " + GLU.gluErrorString(err));
+            //Log.e(TAG, "glError " + err + ": " + GLU.gluErrorString(err));
         }
     }
 
@@ -208,7 +208,7 @@ public class GfxEngine implements Renderer {
 
         // setup GL stuff
         glClearColor(0, 0, 0, 1);
-        glEnable(GL_CULL_FACE);
+        //glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL);
 

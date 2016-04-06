@@ -2,6 +2,7 @@ package de.fabmax.lightgl.util;
 
 
 import android.graphics.Typeface;
+import android.opengl.Matrix;
 import android.util.Log;
 
 import de.fabmax.lightgl.ColorShader;
@@ -33,8 +34,8 @@ public class Painter {
     private final float[] pos = new float[5];
 	private final float[] color = new float[4];
 
-    private float[][] mTranslation = new float[20][3];
-    private int mTranslationIdx = 0;
+    //private float[][] mTranslation = new float[20][3];
+    //private int mTranslationIdx = 0;
 
     public Painter(LightGlContext glContext) {
         GlFont.onContextCreated();
@@ -86,6 +87,15 @@ public class Painter {
         return font;
     }
 
+    public MeshBuilder getMeshBuilder() {
+        return builder;
+    }
+
+    public void drawMeshData(MeshData data) {
+        commit();
+        builder.addMeshData(data);
+    }
+
     public void setAlpha(float alpha) {
         this.alpha = alpha;
         color[3] *= alpha;
@@ -130,44 +140,31 @@ public class Painter {
     }
 
     public void pushTransform() {
-        if (mTranslationIdx < mTranslation.length - 1) {
-            mTranslation[mTranslationIdx + 1][0] = mTranslation[mTranslationIdx][0];
-            mTranslation[mTranslationIdx + 1][1] = mTranslation[mTranslationIdx][1];
-            mTranslation[mTranslationIdx + 1][2] = mTranslation[mTranslationIdx][2];
-            mTranslationIdx++;
-        } else {
-            throw new IllegalStateException("Translation stack overflow");
-        }
+        commit();
+        glContext.getState().pushModelMatrix();
     }
 
     public void popTransform() {
-        if (mTranslationIdx > 0) {
-            mTranslationIdx--;
-        } else {
-            throw new IllegalStateException("Translation stack underflow");
-        }
+        commit();
+        glContext.getState().popModelMatrix();
     }
 
-    /*public void rotate(float degrees) {
-        flush();
+    public void rotate(float degrees) {
+        commit();
         Matrix.rotateM(glContext.getState().getModelMatrix(), 0, degrees, 0, 0, 1);
         glContext.getState().matrixUpdate();
-    }*/
+    }
 
-    /*public void scale(float sX, float sY) {
-        flush();
-        Matrix.scaleM(glContext.getState().getModelMatrix(), 0, sX, sY, 1);
+    public void scale(float sX, float sY, float sZ) {
+        commit();
+        Matrix.scaleM(glContext.getState().getModelMatrix(), 0, sX, sY, sZ);
         glContext.getState().matrixUpdate();
-    }*/
+    }
 
     public void translate(float tX, float tY, float tZ) {
-        mTranslation[mTranslationIdx][0] += tX;
-        mTranslation[mTranslationIdx][1] += tY;
-        mTranslation[mTranslationIdx][2] += tZ;
-
-//        commit();
-//        Matrix.translateM(glContext.getState().getModelMatrix(), 0, tX, tY, 0);
-//        glContext.getState().matrixUpdate();
+        commit();
+        Matrix.translateM(glContext.getState().getModelMatrix(), 0, tX, tY, tZ);
+        glContext.getState().matrixUpdate();
     }
 
     public void setColor(Color color) {
@@ -239,24 +236,31 @@ public class Painter {
         float dx = x1 - x0;
         float dy = y1 - y0;
         float len = (float) Math.sqrt(dx * dx + dy * dy);
-        if (len < 0.01f) {
-            return;
-        }
+
+        float addX = lineThickness * .25f * dx / len;
+        float addY = lineThickness * .25f * dy / len;
+        x1 += addX;
+        x0 -= addX;
+        y1 += addY;
+        y0 -= addY;
+        dx += addX + addX;
+        dy += addY + addY;
+        len += lineThickness;
 
         float dxu = dx / len * lineThickness / 2;
         float dyu = dy / len * lineThickness / 2;
 
-        float qx0 = x0 - dyu - 0.5f;
-        float qy0 = y0 + dxu - 0.5f;
+        float qx0 = x0 - dyu;
+        float qy0 = y0 + dxu;
 
-        float qx1 = x1 - dyu - 0.5f;
-        float qy1 = y1 + dxu - 0.5f;
+        float qx1 = x1 - dyu;
+        float qy1 = y1 + dxu;
 
-        float qx2 = x1 + dyu - 0.5f;
-        float qy2 = y1 - dxu - 0.5f;
+        float qx2 = x1 + dyu;
+        float qy2 = y1 - dxu;
 
-        float qx3 = x0 + dyu - 0.5f;
-        float qy3 = y0 - dxu - 0.5f;
+        float qx3 = x0 + dyu;
+        float qy3 = y0 - dxu;
 
         addQuad(qx0, qy0, qx1, qy1, qx2, qy2, qx3, qy3);
     }
@@ -269,10 +273,7 @@ public class Painter {
     }
 
     public float drawString(float x, float y, String str) {
-        float tx = mTranslation[mTranslationIdx][0];
-        float ty = mTranslation[mTranslationIdx][1];
-        float tz = mTranslation[mTranslationIdx][2];
-        return font.drawString(str, x + tx, y + ty, tz, fontBuilder);
+        return font.drawString(str, x, y, 0, fontBuilder);
     }
 
     public void fillArc(float x, float y, float rInner, float rOuter, float start, float sweep) {
@@ -337,21 +338,18 @@ public class Painter {
         float s = sweep / steps;
         float a = (float) Math.toRadians(start);
 
-        float tx = mTranslation[mTranslationIdx][0];
-        float ty = mTranslation[mTranslationIdx][1];
-        pos[2] = mTranslation[mTranslationIdx][2];
-
-        pos[0] = tx + x;
-        pos[1] = ty + y;
+        pos[0] = x;
+        pos[1] = y;
+        pos[2] = 0;
         int idx0 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
-        pos[0] = tx + x + (float) Math.cos(a);
-        pos[1] = ty + y - (float) Math.sin(a);
+        pos[0] = x + (float) Math.cos(a);
+        pos[1] = y - (float) Math.sin(a);
         int idx1 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
 
         for (int i = 0; i <= steps; i++) {
             a = (float) Math.toRadians(start + i * s);
-            pos[0] = tx + x + (float) Math.cos(a) * radius;
-            pos[1] = ty + y - (float) Math.sin(a) * radius;
+            pos[0] = x + (float) Math.cos(a) * radius;
+            pos[1] = y - (float) Math.sin(a) * radius;
             int idx2 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
             builder.addTriangle(idx0, idx1, idx2);
             idx1 = idx2;
@@ -373,21 +371,19 @@ public class Painter {
     }
 
     private void addQuad(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3) {
-        float tx = mTranslation[mTranslationIdx][0];
-        float ty = mTranslation[mTranslationIdx][1];
-        pos[2] = mTranslation[mTranslationIdx][2];
 
-        pos[0] = tx + x0;
-        pos[1] = ty + y0;
+        pos[0] = x0;
+        pos[1] = y0;
+        pos[2] = 0;
         int idx0 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
-        pos[0] = tx + x1;
-        pos[1] = ty + y1;
+        pos[0] = x1;
+        pos[1] = y1;
         int idx1 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
-        pos[0] = tx + x2;
-        pos[1] = ty + y2;
+        pos[0] = x2;
+        pos[1] = y2;
         int idx2 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
-        pos[0] = tx + x3;
-        pos[1] = ty + y3;
+        pos[0] = x3;
+        pos[1] = y3;
         int idx3 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
 
         builder.addTriangle(idx0, idx1, idx2);
@@ -395,27 +391,24 @@ public class Painter {
     }
 
     private void addTexQuad(float x, float y, float width, float height) {
-        float tx = mTranslation[mTranslationIdx][0];
-        float ty = mTranslation[mTranslationIdx][1];
-        pos[2] = mTranslation[mTranslationIdx][2];
-
-        pos[0] = tx + x;
-        pos[1] = ty + y;
+        pos[0] = x;
+        pos[1] = y;
+        pos[2] = 0;
         pos[3] = 0;
         pos[4] = 0;
         int idx0 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
-        pos[0] = tx + x;
-        pos[1] = ty + y + height;
+        pos[0] = x;
+        pos[1] = y + height;
         pos[3] = 0;
         pos[4] = 1;
         int idx1 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
-        pos[0] = tx + x + width;
-        pos[1] = ty + y + height;
+        pos[0] = x + width;
+        pos[1] = y + height;
         pos[3] = 1;
         pos[4] = 1;
         int idx2 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
-        pos[0] = tx + x + width;
-        pos[1] = ty + y;
+        pos[0] = x + width;
+        pos[1] = y;
         pos[3] = 1;
         pos[4] = 0;
         int idx3 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);

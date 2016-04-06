@@ -17,7 +17,7 @@ import static android.opengl.GLES20.*;
  */
 public class GfxState {
 
-    public static final int MODEL_MATRIX_STACK_SIZE = 10;
+    public static final int MODEL_MATRIX_STACK_SIZE = 20;
 
     // viewport dimensions (x, y, width, height)
     private final IntBuffer mViewportBuffer = BufferHelper.createIntBuffer(4);

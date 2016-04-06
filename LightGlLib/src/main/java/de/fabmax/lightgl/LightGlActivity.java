@@ -132,7 +132,7 @@ public abstract class LightGlActivity extends Activity implements GfxEngineListe
         // calculate frames per second and log them every second
         if (mLogFps) {
             long t = System.currentTimeMillis();
-            if(t > mLastFpsOut + 1000) {
+            if(t > mLastFpsOut + 10000) {
                 mLastFpsOut = t;
                 Log.d(TAG, "Fps: " + glContext.getEngine().getFps());
             }
