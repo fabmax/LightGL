@@ -34,8 +34,8 @@ public class Painter {
     private final float[] pos = new float[5];
 	private final float[] color = new float[4];
 
-    //private float[][] mTranslation = new float[20][3];
-    //private int mTranslationIdx = 0;
+    private float[][] mSoftTranslation = new float[20][3];
+    private int mTranslationIdx = 0;
 
     public Painter(LightGlContext glContext) {
         GlFont.onContextCreated();
@@ -165,6 +165,20 @@ public class Painter {
         commit();
         Matrix.translateM(glContext.getState().getModelMatrix(), 0, tX, tY, tZ);
         glContext.getState().matrixUpdate();
+    }
+
+    public void softTranslate(float tX, float tY, float tZ) {
+        mSoftTranslation[mTranslationIdx][0] += tX;
+        mSoftTranslation[mTranslationIdx][1] += tY;
+        mSoftTranslation[mTranslationIdx][2] += tZ;
+    }
+
+    public void pushSoftTransform() {
+        mTranslationIdx++;
+    }
+
+    public void popSoftTransform() {
+        mTranslationIdx--;
     }
 
     public void setColor(Color color) {
@@ -338,9 +352,12 @@ public class Painter {
         float s = sweep / steps;
         float a = (float) Math.toRadians(start);
 
+        x += mSoftTranslation[mTranslationIdx][0];
+        y += mSoftTranslation[mTranslationIdx][1];
+
         pos[0] = x;
         pos[1] = y;
-        pos[2] = 0;
+        pos[2] = mSoftTranslation[mTranslationIdx][2];
         int idx0 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
         pos[0] = x + (float) Math.cos(a);
         pos[1] = y - (float) Math.sin(a);
@@ -371,19 +388,22 @@ public class Painter {
     }
 
     private void addQuad(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3) {
+        float tx = mSoftTranslation[mTranslationIdx][0];
+        float ty = mSoftTranslation[mTranslationIdx][1];
+        float tz = mSoftTranslation[mTranslationIdx][2];
 
-        pos[0] = x0;
-        pos[1] = y0;
-        pos[2] = 0;
+        pos[0] = x0 + tx;
+        pos[1] = y0 + ty;
+        pos[2] = tz;
         int idx0 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
-        pos[0] = x1;
-        pos[1] = y1;
+        pos[0] = x1 + tx;
+        pos[1] = y1 + ty;
         int idx1 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
-        pos[0] = x2;
-        pos[1] = y2;
+        pos[0] = x2 + tx;
+        pos[1] = y2 + ty;
         int idx2 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
-        pos[0] = x3;
-        pos[1] = y3;
+        pos[0] = x3 + tx;
+        pos[1] = y3 + ty;
         int idx3 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
 
         builder.addTriangle(idx0, idx1, idx2);
@@ -391,24 +411,28 @@ public class Painter {
     }
 
     private void addTexQuad(float x, float y, float width, float height) {
-        pos[0] = x;
-        pos[1] = y;
-        pos[2] = 0;
+        float tx = mSoftTranslation[mTranslationIdx][0];
+        float ty = mSoftTranslation[mTranslationIdx][1];
+        float tz = mSoftTranslation[mTranslationIdx][2];
+
+        pos[0] = x + tx;
+        pos[1] = y + ty;
+        pos[2] = tz;
         pos[3] = 0;
         pos[4] = 0;
         int idx0 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
-        pos[0] = x;
-        pos[1] = y + height;
+        pos[0] = x + tx;
+        pos[1] = y + ty + height;
         pos[3] = 0;
         pos[4] = 1;
         int idx1 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
-        pos[0] = x + width;
-        pos[1] = y + height;
+        pos[0] = x + tx + width;
+        pos[1] = y + ty + height;
         pos[3] = 1;
         pos[4] = 1;
         int idx2 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
-        pos[0] = x + width;
-        pos[1] = y;
+        pos[0] = x + tx + width;
+        pos[1] = y + ty;
         pos[3] = 1;
         pos[4] = 0;
         int idx3 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
