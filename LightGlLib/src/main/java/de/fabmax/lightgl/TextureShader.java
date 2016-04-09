@@ -4,6 +4,7 @@ import android.util.Log;
 
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniform1i;
+import static android.opengl.GLES20.glUniform1f;
 import static android.opengl.GLES20.glUniformMatrix4fv;
 
 /**
@@ -18,8 +19,10 @@ public class TextureShader extends Shader {
 
     private int muMvpMatrixHandle = 0;
     private int muTextureSamplerHandle = 0;
+    private int muAlphaHandle = 0;
 
     private Texture mTexture;
+    private float mAlpha = 1;
 
     /**
      * Creates a new TextureShader.
@@ -47,6 +50,7 @@ public class TextureShader extends Shader {
             // get uniform locations
             muMvpMatrixHandle = glGetUniformLocation(handle, "uMvpMatrix");
             muTextureSamplerHandle = glGetUniformLocation(handle, "uTextureSampler");
+            muAlphaHandle  = glGetUniformLocation(handle, "uAlpha");
             
             // enable attributes
             enableAttribute(ATTRIBUTE_TEXTURE_COORDS, "aVertexTexCoord");
@@ -54,6 +58,23 @@ public class TextureShader extends Shader {
         } catch (LightGlException e) {
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    /**
+     * Sets the alpha value that is multiplied with the texture's alpha channel.
+     */
+    public void setAlpha(LightGlContext glContext, float alpha) {
+        mAlpha = alpha;
+        if (glContext.getShaderManager().getBoundShader() == this) {
+            glUniform1f(muAlphaHandle, mAlpha);
+        }
+    }
+
+    /**
+     * Returns the alpha value that is multiplied with the texture's alpha channel.
+     */
+    public float getAlpha() {
+        return mAlpha;
     }
 
     /**
@@ -85,6 +106,7 @@ public class TextureShader extends Shader {
         // pass current MVP matrix to shader
         onMatrixUpdate(glContext.getState());
 
+        glUniform1f(muAlphaHandle, mAlpha);
         if(mTexture != null) {
             glContext.getTextureManager().bindTexture(mTexture);
             glUniform1i(muTextureSamplerHandle, 0);

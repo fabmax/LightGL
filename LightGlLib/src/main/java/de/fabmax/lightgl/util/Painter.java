@@ -97,9 +97,14 @@ public class Painter {
     }
 
     public void setAlpha(float alpha) {
-        this.alpha = alpha;
-        color[3] *= alpha;
-        //fontShader.setGlobalAlpha(alpha);
+        if (alpha != this.alpha) {
+            if (fontBuilder.getVertexCount() > 0) {
+                commit();
+            }
+            this.alpha = alpha;
+            color[3] *= alpha;
+            fontShader.setAlpha(glContext, alpha);
+        }
     }
 
     public LightGlContext getGlContext() {
@@ -287,6 +292,8 @@ public class Painter {
     }
 
     public float drawString(float x, float y, String str) {
+        x += mSoftTranslation[mTranslationIdx][0];
+        y += mSoftTranslation[mTranslationIdx][1];
         return font.drawString(str, x, y, 0, fontBuilder);
     }
 

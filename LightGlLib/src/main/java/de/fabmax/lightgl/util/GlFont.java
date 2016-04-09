@@ -26,6 +26,7 @@ public class GlFont {
     private final float fontSize;
     private final float lineSpace;
     private final float charSpace;
+    private float fontScale = 1;
 	
     private Texture fontTexture;
     private int texWidth;
@@ -100,16 +101,20 @@ public class GlFont {
         }
 	}
 
+    public void setScale(float scale) {
+        fontScale = scale;
+    }
+
     public Texture getFontTexture() {
         return fontTexture;
     }
 
     public float getFontSize() {
-        return fontSize;
+        return fontSize * fontScale;
     }
 
     public float getLineSpace() {
-        return lineSpace;
+        return lineSpace * fontScale;
     }
 
     public float getStringWidth(String str) {
@@ -125,7 +130,7 @@ public class GlFont {
             }
             if (w > wMax) wMax = w;
         }
-        return wMax;
+        return wMax * fontScale;
     }
 
 	public float drawString(String str, float x, float y, float z, MeshBuilder target) {
@@ -143,38 +148,38 @@ public class GlFont {
             int idx = charIdx(c);
             if (idx >= 0) {
                 Rect b = charBounds[idx];
-                int cw = b.right - b.left;
-                int ch = b.bottom - b.top;
-                int cx = (idx) % 16 * maxCharWidth - minCharX + b.left;
-                int cy = (idx) / 16 * maxCharHeight - minCharY + b.top;
+                float cw = b.right - b.left;
+                float ch = b.bottom - b.top;
+                float cx = (idx) % 16 * maxCharWidth - minCharX + b.left;
+                float cy = (idx) / 16 * maxCharHeight - minCharY + b.top;
 
-                coordBuf[0] = x + b.left;                         coordBuf[1] = y + b.bottom;
-                coordBuf[3] = (float) cx / texWidth;              coordBuf[4] = (float) (cy + ch) / texHeight;
+                coordBuf[0] = x + b.left * fontScale;   coordBuf[1] = y + b.bottom * fontScale;
+                coordBuf[3] = cx / texWidth;            coordBuf[4] = (cy + ch) / texHeight;
                 int idx0 = target.addVertex(coordBuf, 0, null, 0, coordBuf, 3, null, 0);
 
-                coordBuf[0] = x + b.left;                         coordBuf[1] = y + b.top;
-                coordBuf[3] = (float) cx / texWidth;              coordBuf[4] = (float) cy / texHeight;
+                coordBuf[0] = x + b.left * fontScale;   coordBuf[1] = y + b.top * fontScale;
+                coordBuf[3] = cx / texWidth;            coordBuf[4] = cy / texHeight;
                 int idx1 = target.addVertex(coordBuf, 0, null, 0, coordBuf, 3, null, 0);
 
-                coordBuf[0] = x + b.right;                        coordBuf[1] = y + b.top;
-                coordBuf[3] = (float) (cx + cw) / texWidth;       coordBuf[4] = (float) cy / texHeight;
+                coordBuf[0] = x + b.right * fontScale;  coordBuf[1] = y + b.top * fontScale;
+                coordBuf[3] = (cx + cw) / texWidth;     coordBuf[4] = cy / texHeight;
                 int idx2 = target.addVertex(coordBuf, 0, null, 0, coordBuf, 3, null, 0);
 
-                coordBuf[0] = x + b.right;                        coordBuf[1] = y + b.bottom;
-                coordBuf[3] = (float) (cx + cw) / texWidth;       coordBuf[4] = (float) (cy + ch) / texHeight;
+                coordBuf[0] = x + b.right * fontScale;  coordBuf[1] = y + b.bottom * fontScale;
+                coordBuf[3] = (cx + cw) / texWidth;     coordBuf[4] = (cy + ch) / texHeight;
                 int idx3 = target.addVertex(coordBuf, 0, null, 0, coordBuf, 3, null, 0);
 
                 target.addTriangle(idx0, idx2, idx1);
                 target.addTriangle(idx0, idx3, idx2);
 
-                x += charAdvance[idx];
+                x += charAdvance[idx] * fontScale;
 
             } else  if (c == '\n') {
                 x = xBase;
-                y += lineSpace;
+                y += lineSpace * fontScale;
             }
         }
-        return y + lineSpace - yBase;
+        return y + lineSpace * fontScale - yBase;
 	}
 
 	private Bitmap renderFontImage(FontProps props) {
