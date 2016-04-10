@@ -31,7 +31,7 @@ public class Painter {
     private final TextureShader fontShader;
     private final MeshBuilder fontBuilder;
 
-    private final float[] pos = new float[5];
+    private final float[] pos = new float[8];
 	private final float[] color = new float[4];
 
     private float[][] mSoftTranslation = new float[20][3];
@@ -45,8 +45,12 @@ public class Painter {
         this.defaultFont = GlFont.createFont(glContext, fontConfig, Color.BLACK);
         this.font = this.defaultFont;
 
-        builder = new MeshBuilder(false, false, true);
-        mesh = new DynamicMesh(10000, 10000, false, false, true);
+        builder = new MeshBuilder(true, false, true);
+        mesh = new DynamicMesh(10000, 10000, true, false, true);
+
+        pos[5] = 0;
+        pos[6] = 0;
+        pos[7] = 1;
 
         RenderPass prePass = glContext.getEngine().getPreRenderPass();
         if (prePass != null && prePass instanceof ShadowRenderPass) {
@@ -57,7 +61,7 @@ public class Painter {
         }
 
         fontShader = new TextureShader(glContext.getShaderManager());
-        fontShader.setTexture(font.getFontTexture());
+        fontShader.setTexture(glContext, font.getFontTexture());
         fontBuilder = new MeshBuilder(false, true, false);
         fontMesh = new DynamicMesh(10000, 10000, false, true, false);
         fontMesh.setShader(fontShader);
@@ -74,13 +78,13 @@ public class Painter {
 
     public void setDefaultFont() {
         font = defaultFont;
-        fontShader.setTexture(font.getFontTexture());
+        fontShader.setTexture(glContext, font.getFontTexture());
     }
 
     public void setFont(GlFont font) {
         commit();
         this.font = font;
-        fontShader.setTexture(this.font.getFontTexture());
+        fontShader.setTexture(glContext, this.font.getFontTexture());
     }
 
     public GlFont getFont() {
@@ -136,12 +140,12 @@ public class Painter {
             fontBuilder.clear();
         }
 
-        fontShader.setTexture(texture);
+        fontShader.setTexture(glContext, texture);
         addTexQuad(x, y, width, height);
         fontMesh.updateMeshData(fontBuilder);
         fontMesh.render(glContext);
         fontBuilder.clear();
-        fontShader.setTexture(font.getFontTexture());
+        fontShader.setTexture(glContext, font.getFontTexture());
     }
 
     public void pushTransform() {
@@ -365,16 +369,16 @@ public class Painter {
         pos[0] = x;
         pos[1] = y;
         pos[2] = mSoftTranslation[mTranslationIdx][2];
-        int idx0 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
+        int idx0 = builder.addVertex(pos, 0, pos, 5, null, 0, color, 0);
         pos[0] = x + (float) Math.cos(a);
         pos[1] = y - (float) Math.sin(a);
-        int idx1 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
+        int idx1 = builder.addVertex(pos, 0, pos, 5, null, 0, color, 0);
 
         for (int i = 0; i <= steps; i++) {
             a = (float) Math.toRadians(start + i * s);
             pos[0] = x + (float) Math.cos(a) * radius;
             pos[1] = y - (float) Math.sin(a) * radius;
-            int idx2 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
+            int idx2 = builder.addVertex(pos, 0, pos, 5, null, 0, color, 0);
             builder.addTriangle(idx0, idx1, idx2);
             idx1 = idx2;
         }
@@ -402,16 +406,16 @@ public class Painter {
         pos[0] = x0 + tx;
         pos[1] = y0 + ty;
         pos[2] = tz;
-        int idx0 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
+        int idx0 = builder.addVertex(pos, 0, pos, 5, null, 0, color, 0);
         pos[0] = x1 + tx;
         pos[1] = y1 + ty;
-        int idx1 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
+        int idx1 = builder.addVertex(pos, 0, pos, 5, null, 0, color, 0);
         pos[0] = x2 + tx;
         pos[1] = y2 + ty;
-        int idx2 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
+        int idx2 = builder.addVertex(pos, 0, pos, 5, null, 0, color, 0);
         pos[0] = x3 + tx;
         pos[1] = y3 + ty;
-        int idx3 = builder.addVertex(pos, 0, null, 0, null, 0, color, 0);
+        int idx3 = builder.addVertex(pos, 0, pos, 5, null, 0, color, 0);
 
         builder.addTriangle(idx0, idx1, idx2);
         builder.addTriangle(idx0, idx2, idx3);
@@ -427,22 +431,22 @@ public class Painter {
         pos[2] = tz;
         pos[3] = 0;
         pos[4] = 0;
-        int idx0 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
+        int idx0 = fontBuilder.addVertex(pos, 0, pos, 5, pos, 3, null, 0);
         pos[0] = x + tx;
         pos[1] = y + ty + height;
         pos[3] = 0;
         pos[4] = 1;
-        int idx1 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
+        int idx1 = fontBuilder.addVertex(pos, 0, pos, 5, pos, 3, null, 0);
         pos[0] = x + tx + width;
         pos[1] = y + ty + height;
         pos[3] = 1;
         pos[4] = 1;
-        int idx2 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
+        int idx2 = fontBuilder.addVertex(pos, 0, pos, 5, pos, 3, null, 0);
         pos[0] = x + tx + width;
         pos[1] = y + ty;
         pos[3] = 1;
         pos[4] = 0;
-        int idx3 = fontBuilder.addVertex(pos, 0, null, 0, pos, 3, null, 0);
+        int idx3 = fontBuilder.addVertex(pos, 0, pos, 5, pos, 3, null, 0);
 
         fontBuilder.addTriangle(idx0, idx1, idx2);
         fontBuilder.addTriangle(idx0, idx2, idx3);

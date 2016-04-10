@@ -92,8 +92,11 @@ public class TextureShader extends Shader {
      * @param texture
      *            the texture to be used by this shader
      */
-    public void setTexture(Texture texture) {
+    public void setTexture(LightGlContext glContext, Texture texture) {
         mTexture = texture;
+        if (glContext.getShaderManager().getBoundShader() == this) {
+            glContext.getTextureManager().bindTexture(mTexture);
+        }
     }
 
     /**
