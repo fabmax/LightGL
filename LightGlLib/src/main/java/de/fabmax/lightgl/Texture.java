@@ -1,5 +1,7 @@
 package de.fabmax.lightgl;
 
+import de.fabmax.lightgl.TextureProperties.MinFilterMethod;
+
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.GL_TEXTURE_MAG_FILTER;
@@ -10,7 +12,6 @@ import static android.opengl.GLES20.glDeleteTextures;
 import static android.opengl.GLES20.glGenTextures;
 import static android.opengl.GLES20.glGenerateMipmap;
 import static android.opengl.GLES20.glTexParameteri;
-import de.fabmax.lightgl.TextureProperties.MinFilterMethod;
 
 
 /**

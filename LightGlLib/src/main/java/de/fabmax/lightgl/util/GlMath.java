@@ -1,6 +1,5 @@
 package de.fabmax.lightgl.util;
 
-import android.opengl.GLU;
 import android.opengl.Matrix;
 
 import de.fabmax.lightgl.Ray;

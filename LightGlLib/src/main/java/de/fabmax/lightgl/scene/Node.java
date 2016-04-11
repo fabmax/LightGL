@@ -1,6 +1,5 @@
 package de.fabmax.lightgl.scene;
 
-import de.fabmax.lightgl.GfxState;
 import de.fabmax.lightgl.LightGlContext;
 
 /**

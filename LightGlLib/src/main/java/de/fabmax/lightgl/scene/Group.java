@@ -2,7 +2,6 @@ package de.fabmax.lightgl.scene;
 
 import java.util.ArrayList;
 
-import de.fabmax.lightgl.GfxState;
 import de.fabmax.lightgl.LightGlContext;
 
 /**

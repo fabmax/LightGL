@@ -13,7 +13,9 @@ import de.fabmax.lightgl.util.MeshBuilder;
 import de.fabmax.lightgl.util.MeshData;
 import de.fabmax.lightgl.util.PackedVertexBuffer;
 
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.GL_TRIANGLES;
+import static android.opengl.GLES20.GL_UNSIGNED_SHORT;
+import static android.opengl.GLES20.glDrawElements;
 
 /**
  * A dynamic (modifiable) mesh.

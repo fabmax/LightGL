@@ -6,7 +6,6 @@ import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-import de.fabmax.lightgl.GfxState;
 import de.fabmax.lightgl.LightGlContext;
 import de.fabmax.lightgl.Shader;
 import de.fabmax.lightgl.ShaderAttributeBinder;

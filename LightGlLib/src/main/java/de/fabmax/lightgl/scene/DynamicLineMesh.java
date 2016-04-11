@@ -1,12 +1,11 @@
 package de.fabmax.lightgl.scene;
 
-import android.opengl.GLES20;
-
 import de.fabmax.lightgl.ColorShader;
 import de.fabmax.lightgl.LightGlContext;
 import de.fabmax.lightgl.util.Color;
 
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.GL_LINES;
+import static android.opengl.GLES20.glLineWidth;
 
 /**
  * Created by fth on 24.02.14.

@@ -1,9 +1,5 @@
 package de.fabmax.lightgl;
 
-import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
-import static android.opengl.GLES20.GL_DEPTH_BUFFER_BIT;
-import static android.opengl.GLES20.glClear;
-
 import de.fabmax.lightgl.scene.Node;
 
 /**

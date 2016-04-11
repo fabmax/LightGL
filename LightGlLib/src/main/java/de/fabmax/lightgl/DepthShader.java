@@ -1,8 +1,9 @@
 package de.fabmax.lightgl;
 
+import android.util.Log;
+
 import static android.opengl.GLES20.glGetUniformLocation;
 import static android.opengl.GLES20.glUniformMatrix4fv;
-import android.util.Log;
 
 public class DepthShader extends Shader {
 

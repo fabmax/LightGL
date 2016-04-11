@@ -3,14 +3,12 @@ package de.fabmax.lightgl.util;
 
 import android.graphics.Typeface;
 import android.opengl.Matrix;
-import android.util.Log;
 
 import de.fabmax.lightgl.ColorShader;
 import de.fabmax.lightgl.LightGlContext;
 import de.fabmax.lightgl.RenderPass;
 import de.fabmax.lightgl.ShadowRenderPass;
 import de.fabmax.lightgl.ShadowShader;
-import de.fabmax.lightgl.SimpleShader;
 import de.fabmax.lightgl.Texture;
 import de.fabmax.lightgl.TextureShader;
 import de.fabmax.lightgl.scene.DynamicMesh;

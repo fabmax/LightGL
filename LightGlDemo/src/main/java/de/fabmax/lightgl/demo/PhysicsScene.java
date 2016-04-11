@@ -3,7 +3,6 @@ package de.fabmax.lightgl.demo;
 import android.os.Bundle;
 import android.util.Log;
 
-import de.fabmax.lightgl.GfxEngine;
 import de.fabmax.lightgl.Light;
 import de.fabmax.lightgl.LightGlActivity;
 import de.fabmax.lightgl.LightGlContext;

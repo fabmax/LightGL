@@ -10,7 +10,6 @@ import com.bulletphysics.linearmath.Transform;
 
 import javax.vecmath.Vector3f;
 
-import de.fabmax.lightgl.GfxState;
 import de.fabmax.lightgl.LightGlContext;
 import de.fabmax.lightgl.scene.Mesh;
 import de.fabmax.lightgl.scene.TransformGroup;

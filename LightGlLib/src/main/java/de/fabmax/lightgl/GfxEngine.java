@@ -3,7 +3,6 @@ package de.fabmax.lightgl;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView.Renderer;
-import android.opengl.GLU;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -14,7 +13,16 @@ import javax.microedition.khronos.opengles.GL10;
 import de.fabmax.lightgl.physics.PhysicsEngine;
 import de.fabmax.lightgl.scene.Node;
 
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.GL_BLEND;
+import static android.opengl.GLES20.GL_DEPTH_TEST;
+import static android.opengl.GLES20.GL_LEQUAL;
+import static android.opengl.GLES20.GL_ONE_MINUS_SRC_ALPHA;
+import static android.opengl.GLES20.GL_SRC_ALPHA;
+import static android.opengl.GLES20.glBlendFunc;
+import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glDepthFunc;
+import static android.opengl.GLES20.glEnable;
+import static android.opengl.GLES20.glGetError;
 
 /**
  * The central graphics engine management class.

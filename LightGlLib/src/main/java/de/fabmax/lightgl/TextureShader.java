@@ -3,8 +3,8 @@ package de.fabmax.lightgl;
 import android.util.Log;
 
 import static android.opengl.GLES20.glGetUniformLocation;
-import static android.opengl.GLES20.glUniform1i;
 import static android.opengl.GLES20.glUniform1f;
+import static android.opengl.GLES20.glUniform1i;
 import static android.opengl.GLES20.glUniformMatrix4fv;
 
 /**

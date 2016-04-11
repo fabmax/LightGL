@@ -1,5 +1,6 @@
 package de.fabmax.lightgl;
 
+import android.opengl.GLES20;
 import android.opengl.Matrix;
 
 import java.nio.FloatBuffer;
@@ -7,7 +8,8 @@ import java.nio.IntBuffer;
 
 import de.fabmax.lightgl.util.BufferHelper;
 
-import static android.opengl.GLES20.*;
+import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glViewport;
 
 /**
  * Current graphics engine state.
@@ -92,6 +94,17 @@ public class GfxState {
         mBackgroundColor[1] = green;
         mBackgroundColor[2] = blue;
         resetBackgroundColor();
+    }
+
+    /**
+     * En-/ disables depth testing.
+     */
+    public void setDepthTesting(boolean enabled) {
+        if (enabled) {
+            GLES20.glEnable(GLES20.GL_DEPTH_TEST);
+        } else {
+            GLES20.glDisable(GLES20.GL_DEPTH_TEST);
+        }
     }
 
     /**
